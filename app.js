@@ -7,12 +7,13 @@
 /* ================= 状态 ================= */
 const LS_KEY = 'sgwd_progress_v1';
 const DEFAULT_STATE = {
-  learned: {},   // unitId(str) -> [wordIdx...] 已标记掌握
-  wrong: {},     // unitId(str) -> [wordIdx...] 错词
+  learned: {},   // unitId(str) -> {wordKey: true} 已标记掌握
+  wrong: {},     // unitId(str) -> {wordKey: true} 错词
   stats: { tested: 0, correct: 0 },
   settings: { rate: 0.9, fontSize: 17, sakura: true },
   scrolls: {},   // unitId(str) -> 学习页滚动位置
   lastUnit: null,
+  reminder: { id: '', enabled: false, time: '20:00', smart: true, custom: [] },  // 推送提醒
 };
 
 let DATA = { meta: {}, units: [] };
@@ -32,6 +33,7 @@ function loadState() {
       settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
       scrolls: s.scrolls || {},
       lastUnit: s.lastUnit || null,
+      reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -39,6 +41,7 @@ function loadState() {
 }
 function saveState() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  if (typeof Reminder !== 'undefined') Reminder.ping(); // 学习动作后上报（自带节流）
 }
 
 /* ================= 工具 ================= */
@@ -535,6 +538,7 @@ $('#file-import').addEventListener('change', (e) => {
         settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
         scrolls: s.scrolls || {},
         lastUnit: s.lastUnit || null,
+        reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
       };
       if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
@@ -629,6 +633,194 @@ const Sakura = (() => {
   };
 })();
 
+/* ================= 提醒（Web Push） ================= */
+const Reminder = (() => {
+  const DEFAULT_API = 'https://vocab-flash.netlify.app';
+  let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('netlify.app') ? '' : DEFAULT_API);
+  let subId = (state.reminder && state.reminder.id) || '';
+  let pingTimer = null;
+
+  function rem() {
+    if (!state.reminder) state.reminder = { id: '', enabled: false, time: '20:00', smart: true, custom: [] };
+    return state.reminder;
+  }
+
+  function isStandalone() {
+    return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  }
+
+  function setStatus(msg, cls) {
+    const el = $('#rem-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'set-note' + (cls ? ' ' + cls : '');
+  }
+
+  async function api(path, opts) {
+    const res = await fetch(API + '/api/' + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    const out = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+
+  function pushSupported() {
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  }
+
+  /** 订阅（需要用户手势内调用）*/
+  async function enable() {
+    if (!pushSupported()) {
+      setStatus('当前浏览器不支持通知（iPhone 需 iOS 16.4+，且先添加到主屏幕）', 'err');
+      return false;
+    }
+    if (!isStandalone()) {
+      setStatus('请先把本应用「添加到主屏幕」，再从主屏图标打开后开启提醒（iPhone 的限制）', 'warn');
+      return false;
+    }
+    try {
+      setStatus('正在开启…');
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        setStatus('通知权限被拒绝：到 iPhone 设置 → 通知 → 闪过背单词 里允许', 'err');
+        return false;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        const { publicKey } = await api('pubkey');
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+      }
+      const r = await api('subscribe', {
+        method: 'POST',
+        body: JSON.stringify({ subscription: sub.toJSON(), settings: rem() }),
+      });
+      rem().id = r.id;
+      rem().enabled = true;
+      saveState();
+      setStatus('提醒已开启 ✓ 到点会推送通知', 'ok');
+      sync(true);
+      return true;
+    } catch (e) {
+      setStatus('开启失败：' + String(e).slice(0, 80) + '（若刚添加主屏，杀掉重开一次再试）', 'err');
+      return false;
+    }
+  }
+
+  async function disable() {
+    rem().enabled = false;
+    saveState();
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+    } catch (e) { /* ignore */ }
+    setStatus('提醒已关闭', '');
+    sync(true);
+    return true;
+  }
+
+  /** 把设置推给服务端（节流）*/
+  let syncTimer = null;
+  function sync(now) {
+    if (!rem().id) return;
+    clearTimeout(syncTimer);
+    const doIt = () => api('settings', {
+      method: 'POST',
+      body: JSON.stringify({ id: rem().id, settings: rem() }),
+    }).catch(() => {});
+    now ? doIt() : (syncTimer = setTimeout(doIt, 1500));
+  }
+
+  /** 学习状态上报（供智能模式判断"今天是否已背过"）*/
+  function ping() {
+    if (!rem().id || !rem().enabled) return;
+    clearTimeout(pingTimer);
+    pingTimer = setTimeout(() => {
+      let learnedTotal = 0;
+      for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
+      api('settings', {
+        method: 'POST',
+        body: JSON.stringify({ id: rem().id, lastActive: Date.now(), learnedTotal }),
+      }).catch(() => {});
+    }, 2000);
+  }
+
+  async function sendTest() {
+    if (!rem().id) { setStatus('先开启提醒再发送测试', 'warn'); return; }
+    setStatus('正在发送测试通知…');
+    try {
+      await api('test', { method: 'POST', body: JSON.stringify({ id: rem().id }) });
+      setStatus('测试通知已发出，几秒内到（没收到检查系统通知设置）', 'ok');
+    } catch (e) {
+      setStatus('测试失败：' + String(e).slice(0, 80), 'err');
+    }
+  }
+
+  /** 渲染自定义事项列表 */
+  function renderCustom() {
+    const box = $('#rem-custom-list');
+    if (!box) return;
+    const items = (rem().custom || []).slice().sort((a, b) => String(a.when).localeCompare(String(b.when)));
+    box.innerHTML = items.length
+      ? items.map((x) => `
+        <div class="rem-item">
+          <div><div>${x.text}</div><div class="rem-when">${String(x.when).replace('T', ' ')}</div></div>
+          <button class="rem-del" data-del="${x.id}">删除</button>
+        </div>`).join('')
+      : '<div class="set-note">还没有自定义提醒。上面填内容+选时间→添加，到点会推送给你。</div>';
+    box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
+      rem().custom = (rem().custom || []).filter((x) => x.id !== b.dataset.del);
+      saveState(); renderCustom(); sync();
+    }));
+  }
+
+  /** 初始化 UI 事件（设置页加载后调用） */
+  function init() {
+    const r = rem();
+    const en = $('#rem-enabled');
+    if (!en) return;
+    en.checked = !!r.enabled;
+    $('#rem-time').value = r.time || '20:00';
+    $('#rem-smart').checked = r.smart !== false;
+
+    en.addEventListener('change', async () => {
+      if (en.checked) {
+        const ok = await enable();
+        en.checked = !!ok;
+      } else {
+        await disable();
+      }
+    });
+    $('#rem-time').addEventListener('change', (e) => { rem().time = e.target.value || '20:00'; saveState(); sync(); });
+    $('#rem-smart').addEventListener('change', (e) => { rem().smart = e.target.checked; saveState(); sync(); });
+    $('#rem-test').addEventListener('click', sendTest);
+    $('#rem-custom-add').addEventListener('click', () => {
+      const text = $('#rem-custom-text').value.trim();
+      const when = $('#rem-custom-when').value;
+      if (!text || !when) { setStatus('请填写内容和时间', 'warn'); return; }
+      rem().custom = rem().custom || [];
+      rem().custom.push({ id: 'c' + Date.now(), text, when });
+      $('#rem-custom-text').value = '';
+      saveState(); renderCustom(); sync();
+      setStatus('已添加，到点会推送 ✓', 'ok');
+    });
+    renderCustom();
+
+    if (r.enabled && r.id) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
+    else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
+  }
+
+  return { init, ping, sync, isStandalone };
+})();
+
 /* ================= Service Worker（https 环境下离线可用；http 下静默跳过） ================= */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -714,6 +906,7 @@ async function boot() {
   renderContinue();
   renderWrongList();
   nav('units');
+  Reminder.init();
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）
   const ok = await ensureData();
