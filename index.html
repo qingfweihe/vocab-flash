@@ -25,12 +25,17 @@
 
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
+    <button id="btn-continue" class="continue-btn hidden">继续学习</button>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
         <div class="ph-line1">已学 <b id="stat-learned">0</b> / <b id="stat-total">0</b> 词</div>
         <div class="ph-line2">错词本 <b id="stat-wrong">0</b> 词 · 已检验 <b id="stat-tested">0</b> 词</div>
       </div>
+    </div>
+    <div class="search-box">
+      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off">
+      <div id="search-results" class="hidden"></div>
     </div>
     <div id="unit-list"></div>
   </section>
