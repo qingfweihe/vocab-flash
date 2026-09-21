@@ -1,5 +1,5 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机） */
-const CACHE = 'sgwd-v2';
+const CACHE = 'sgwd-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './app.js',
   './manifest.webmanifest',
   './data/words.json',
+  './data/meta.json',
   './icons/icon-180.png',
   './icons/icon-512.png',
 ];
@@ -28,7 +29,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  const isData = url.pathname.endsWith('/data/words.json');
+  const isData = url.pathname.endsWith('/data/words.json') || url.pathname.endsWith('/data/meta.json');
 
   if (isData) {
     // 词表：网络优先，成功即刷新缓存；离线时回落缓存
