@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="闪过背单词">
+<meta name="theme-color" content="#ff6b9d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+<title>闪过背单词</title>
+</head>
+<body>
+<canvas id="sakura"></canvas>
+
+<!-- 顶部标题栏 -->
+<header id="topbar">
+  <div id="topbar-title">闪过背单词</div>
+  <div id="topbar-sub">高频词 971</div>
+</header>
+
+<main id="main">
+
+  <!-- 视图：单元列表 -->
+  <section id="view-units" class="view">
+    <div class="progress-hero">
+      <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
+      <div class="ph-info">
+        <div class="ph-line1">已学 <b id="stat-learned">0</b> / <b id="stat-total">0</b> 词</div>
+        <div class="ph-line2">错词本 <b id="stat-wrong">0</b> 词 · 已检验 <b id="stat-tested">0</b> 词</div>
+      </div>
+    </div>
+    <div id="unit-list"></div>
+  </section>
+
+  <!-- 视图：学习页 -->
+  <section id="view-study" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 返回</button>
+      <div class="subhead-title" id="study-title">Word List 1</div>
+      <button class="test-btn" id="btn-test-unit">检验本单元</button>
+    </div>
+    <div class="toolbar">
+      <label class="switch"><input type="checkbox" id="chk-hide-cn"><span>遮住中文（自测）</span></label>
+      <div class="toolbar-right">
+        <button class="mini-btn" id="btn-mark-all">全部标记已学</button>
+      </div>
+    </div>
+    <div id="word-list"></div>
+  </section>
+
+  <!-- 视图：检验（闪卡） -->
+  <section id="view-test" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 退出</button>
+      <div class="subhead-title" id="test-title">检验</div>
+      <div class="test-counter" id="test-counter">0/0</div>
+    </div>
+    <div id="test-stage">
+      <div id="flashcard">
+        <div class="fc-word" id="fc-word">word</div>
+        <div class="fc-phon" id="fc-phon"></div>
+        <button class="speak-btn big" id="fc-speak" aria-label="发音">🔊</button>
+        <div class="fc-answer hidden" id="fc-answer">
+          <div class="fc-defs" id="fc-defs"></div>
+          <div class="fc-root" id="fc-root"></div>
+          <div class="fc-exs" id="fc-exs"></div>
+        </div>
+        <button class="reveal-btn" id="btn-reveal">点击显示释义</button>
+      </div>
+      <div class="fc-judge hidden" id="fc-judge">
+        <button class="judge-btn no" id="btn-nope">没记住</button>
+        <button class="judge-btn yes" id="btn-got">记住了</button>
+      </div>
+    </div>
+    <div id="test-done" class="hidden">
+      <div class="done-card">
+        <div class="done-emoji">🌸</div>
+        <div class="done-title">本组检验完成</div>
+        <div class="done-body" id="done-body"></div>
+        <button class="primary-btn" id="btn-test-again">再测没记住的</button>
+        <button class="ghost-btn" data-nav="units">返回单元列表</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 视图：错词本 -->
+  <section id="view-wrong" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">错词本</div>
+      <button class="test-btn" id="btn-test-wrong">检验错词</button>
+    </div>
+    <div id="wrong-list"></div>
+  </section>
+
+  <!-- 视图：设置 -->
+  <section id="view-settings" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">设置</div>
+    </div>
+    <div class="settings-box">
+      <div class="set-item">
+        <div class="set-label">发音语速</div>
+        <input type="range" id="set-rate" min="0.5" max="1.2" step="0.05" value="0.9">
+      </div>
+      <div class="set-item">
+        <div class="set-label">字号</div>
+        <input type="range" id="set-fontsize" min="14" max="22" step="1" value="17">
+      </div>
+      <div class="set-item">
+        <div class="set-label">樱花飘落</div>
+        <label class="switch"><input type="checkbox" id="set-sakura" checked><span>开启</span></label>
+      </div>
+      <div class="set-btns">
+        <button class="ghost-btn" id="btn-export">导出备份（进度文件）</button>
+        <button class="ghost-btn" id="btn-import">导入备份</button>
+        <input type="file" id="file-import" accept=".json" hidden>
+        <button class="ghost-btn danger" id="btn-reset">清空全部进度</button>
+      </div>
+      <div class="set-note">
+        进度保存在本机浏览器中。换手机或清除 Safari 数据前，请先「导出备份」保存文件。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 底部导航 -->
+<nav id="tabbar">
+  <button class="tab active" data-nav="units"><span class="tab-ico">📖</span><span>单词</span></button>
+  <button class="tab" data-nav="wrong"><span class="tab-ico">📌</span><span>错词本</span></button>
+  <button class="tab" data-nav="settings"><span class="tab-ico">⚙️</span><span>设置</span></button>
+</nav>
+
+<div id="toast" class="hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
