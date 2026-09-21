@@ -1,0 +1,9 @@
+{
+  "name": "vocab-flash-reminder",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.0",
+    "web-push": "^3.6.7"
+  }
+}
