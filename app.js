@@ -54,13 +54,37 @@ function toast(msg, ms = 1800) {
 }
 
 function unitById(id) { return DATA.units.find((u) => u.id === Number(id)); }
-function learnedSet(id) { return new Set(state.learned[String(id)] || []); }
-function wrongSet(id) { return new Set(state.wrong[String(id)] || []); }
 
-function toggleInArray(arr, v) {
-  const i = arr.indexOf(v);
-  if (i >= 0) arr.splice(i, 1); else arr.push(v);
-  return arr;
+/* ---- 进度存储：以词头（小写）为键，词库重排不会错位 ---- */
+function wordKey(w) { return String(w).toLowerCase(); }
+function learnedMap(id) { return state.learned[String(id)] || (state.learned[String(id)] = {}); }
+function wrongMap(id) { return state.wrong[String(id)] || (state.wrong[String(id)] = {}); }
+function isLearned(id, w) { return !!learnedMap(id)[wordKey(w)]; }
+function isWrong(id, w) { return !!wrongMap(id)[wordKey(w)]; }
+function setLearned(id, w, v) { const m = learnedMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+function setWrong(id, w, v) { const m = wrongMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+function countKeys(store, id) {
+  const v = store[String(id)];
+  if (!v) return 0;
+  return Array.isArray(v) ? v.length : Object.keys(v).length;  // 兼容旧数组格式
+}
+
+/* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
+function migrateProgress() {
+  let changed = false;
+  for (const u of DATA.units) {
+    const uid = String(u.id);
+    for (const store of [state.learned, state.wrong]) {
+      const v = store[uid];
+      if (Array.isArray(v)) {
+        const m = {};
+        v.forEach((i) => { if (u.words[i]) m[wordKey(u.words[i].w)] = true; });
+        store[uid] = m;
+        changed = true;
+      }
+    }
+  }
+  if (changed) saveState();
 }
 
 /* ================= 发音 ================= */
@@ -120,8 +144,8 @@ function renderUnits() {
 
   info.forEach((u) => {
     const n = u.count;
-    const l = (state.learned[String(u.id)] || []).length;
-    const w = (state.wrong[String(u.id)] || []).length;
+    const l = countKeys(state.learned, u.id);
+    const w = countKeys(state.wrong, u.id);
     totalWords += n; totalLearned += l; totalWrong += w;
     const pct = n ? Math.round((l / n) * 100) : 0;
 
@@ -164,23 +188,25 @@ function ensureData() {
       .then((j) => {
         if (j && j.units && j.units.length) {
           DATA = j;
+          migrateProgress(); // 旧下标键 -> 词头键（一次性）
           $('#topbar-sub').textContent = DATA.meta.subtitle || '';
           renderUnits();
           renderWrongList();
           return true;
         }
+        DATA_PROMISE = null; // 数据异常：允许下次重试
         return false;
       })
-      .catch(() => false);
+      .catch(() => { DATA_PROMISE = null; return false; }); // 失败清空缓存，网络恢复后可重试
   }
   return DATA_PROMISE;
 }
 
-function openStudy(id, then) {
+function openStudy(id, then, skipRestore) {
   const u = unitById(id);
   if (!u) {
     toast('词库加载中，请稍候…');
-    ensureData().then((ok) => { if (ok) openStudy(id, then); else toast('词库加载失败，请联网后重试'); });
+    ensureData().then((ok) => { if (ok) openStudy(id, then, skipRestore); else toast('词库加载失败，请联网后重试'); });
     return;
   }
   studyUnitId = id;
@@ -189,8 +215,10 @@ function openStudy(id, then) {
   $('#study-title').textContent = `${u.name} · ${u.words.length} 词`;
   renderWordList();
   nav('study');
-  const y = (state.scrolls && state.scrolls[String(id)]) || 0;
-  requestAnimationFrame(() => window.scrollTo({ top: y }));
+  if (!skipRestore) {
+    const y = (state.scrolls && state.scrolls[String(id)]) || 0;
+    requestAnimationFrame(() => window.scrollTo({ top: y }));
+  }
   if (then) requestAnimationFrame(then);
 }
 
@@ -203,7 +231,7 @@ function gotoWord(unitId, idx) {
     if (d) d.classList.remove('collapsed');
     card.classList.add('locate');
     setTimeout(() => card.classList.remove('locate'), 2300);
-  });
+  }, true);
 }
 
 /* 学习页滚动位置记忆 */
@@ -221,8 +249,6 @@ window.addEventListener('scroll', () => {
 function renderWordList() {
   const u = unitById(studyUnitId);
   const box = $('#word-list');
-  const learned = learnedSet(studyUnitId);
-  const wrong = wrongSet(studyUnitId);
   const hideCn = $('#chk-hide-cn').checked;
   box.innerHTML = '';
 
@@ -246,7 +272,7 @@ function renderWordList() {
       <div class="wc-head">
         <div class="wc-main">
           <div class="wc-word-row">
-            <span class="wc-word">${w.w}${wrong.has(idx) ? ' <span style="color:#d84c4c;font-size:.7em">错词</span>' : ''}</span>
+            <span class="wc-word">${w.w}${isWrong(studyUnitId, w.w) ? ' <span style="color:#d84c4c;font-size:.7em">错词</span>' : ''}</span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
@@ -254,7 +280,7 @@ function renderWordList() {
         </div>
         <div class="wc-actions">
           <button class="speak-btn" data-speak="${idx}">🔊</button>
-          <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${learned.has(idx) ? 'checked' : ''}></label>
+          <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${isLearned(studyUnitId, w.w) ? 'checked' : ''}></label>
         </div>
       </div>
       <div class="wc-detail collapsed" data-detail="${idx}">${rows.join('') || '<div class="row" style="color:#9a9aab">（无更多信息）</div>'}</div>`;
@@ -274,13 +300,9 @@ function renderWordList() {
     });
     card.querySelector('[data-learn]').addEventListener('change', (ev) => {
       ev.stopPropagation();
-      const arr = state.learned[String(studyUnitId)] || (state.learned[String(studyUnitId)] = []);
-      toggleInArray(arr, idx);
-      if (arr.includes(idx)) { // 学会后从错词本移除
-        const wa = state.wrong[String(studyUnitId)] || [];
-        const wi = wa.indexOf(idx);
-        if (wi >= 0) { wa.splice(wi, 1); state.wrong[String(studyUnitId)] = wa; }
-      }
+      const on = ev.target.checked;
+      setLearned(studyUnitId, w.w, on);
+      if (on) setWrong(studyUnitId, w.w, false); // 学会后从错词本移除
       saveState();
       renderUnits();
     });
@@ -295,13 +317,14 @@ $('#chk-hide-cn').addEventListener('change', () => renderWordList());
 
 $('#btn-mark-all').addEventListener('click', () => {
   const u = unitById(studyUnitId);
-  const all = u.words.map((_, i) => i);
-  const cur = state.learned[String(studyUnitId)] || [];
-  if (cur.length === all.length) {
-    state.learned[String(studyUnitId)] = [];
+  const cur = countKeys(state.learned, studyUnitId);
+  if (cur === u.words.length) {
+    state.learned[String(studyUnitId)] = {};
     toast('已取消全部标记');
   } else {
-    state.learned[String(studyUnitId)] = all;
+    const m = {};
+    u.words.forEach((w) => { m[wordKey(w.w)] = true; });
+    state.learned[String(studyUnitId)] = m;
     toast('已全部标记为已学');
   }
   saveState(); renderWordList(); renderUnits();
@@ -320,9 +343,16 @@ function buildQueueByUnit(id) {
 function buildQueueWrong() {
   const q = [];
   DATA.units.forEach((u) => {
-    (state.wrong[String(u.id)] || []).forEach((idx) => {
-      if (u.words[idx]) q.push({ unitId: u.id, idx, word: u.words[idx] });
-    });
+    const m = state.wrong[String(u.id)] || {};
+    const keys = Array.isArray(m) ? null : Object.keys(m);
+    if (keys) {
+      keys.forEach((k) => {
+        const idx = u.words.findIndex((w) => wordKey(w.w) === k);
+        if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
+      });
+    } else {
+      m.forEach((idx) => { if (u.words[idx]) q.push({ unitId: u.id, idx, word: u.words[idx] }); });
+    }
   });
   shuffle(q);
   return q;
@@ -383,14 +413,11 @@ function judge(remembered) {
   state.stats.tested += 1;
   if (remembered) state.stats.correct += 1;
 
-  const wid = String(item.unitId);
-  const wa = state.wrong[wid] || (state.wrong[wid] = []);
   if (remembered) {
-    const i = wa.indexOf(item.idx);
-    if (i >= 0) wa.splice(i, 1); // 从错词本移除
+    setWrong(item.unitId, item.word.w, false); // 从错词本移除
     test.right += 1;
   } else {
-    if (!wa.includes(item.idx)) wa.push(item.idx);
+    setWrong(item.unitId, item.word.w, true);
     test.miss.push(item);
   }
   saveState();
@@ -428,11 +455,12 @@ function renderWrongList() {
   box.innerHTML = '';
   let count = 0;
   DATA.units.forEach((u) => {
-    const idxs = (state.wrong[String(u.id)] || []).slice().sort((a, b) => a - b);
-    if (!idxs.length) return;
-    idxs.forEach((idx) => {
-      const w = u.words[idx];
-      if (!w) return;
+    const m = state.wrong[String(u.id)] || {};
+    const words = Array.isArray(m)
+      ? m.map((idx) => u.words[idx]).filter(Boolean)
+      : Object.keys(m).map((k) => u.words.find((x) => wordKey(x.w) === k)).filter(Boolean);
+    if (!words.length) return;
+    words.forEach((w) => {
       count++;
       const card = document.createElement('div');
       card.className = 'word-card';
@@ -454,9 +482,7 @@ function renderWrongList() {
       card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
       card.querySelector('[data-remove]').addEventListener('click', (ev) => {
         ev.stopPropagation();
-        const arr = state.wrong[String(u.id)];
-        const i = arr.indexOf(idx);
-        if (i >= 0) arr.splice(i, 1);
+        setWrong(u.id, w.w, false);
         saveState(); renderWrongList(); renderUnits();
         toast('已移出错词本');
       });
@@ -507,7 +533,10 @@ $('#file-import').addEventListener('change', (e) => {
         learned: s.learned || {}, wrong: s.wrong || {},
         stats: s.stats || { tested: 0, correct: 0 },
         settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
+        scrolls: s.scrolls || {},
+        lastUnit: s.lastUnit || null,
       };
+      if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
       toast('进度已恢复');
     } catch (err) { toast('文件格式不对'); }
