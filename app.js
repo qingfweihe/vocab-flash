@@ -16,6 +16,8 @@ const DEFAULT_STATE = {
 };
 
 let DATA = { meta: {}, units: [] };
+let META = null;          // 轻量索引（单元名+词数），首屏秒开用
+let DATA_PROMISE = null;  // 全量词库加载 Promise（后台并行）
 let state = loadState();
 
 function loadState() {
@@ -111,8 +113,13 @@ function renderUnits() {
   box.innerHTML = '';
   let totalWords = 0, totalLearned = 0, totalWrong = 0;
 
-  DATA.units.forEach((u) => {
-    const n = u.words.length;
+  // 有全量用全量；否则用轻量索引先渲染（首屏秒开）
+  const info = DATA.units.length
+    ? DATA.units.map((u) => ({ id: u.id, name: u.name, count: u.words.length }))
+    : (META ? META.units : []);
+
+  info.forEach((u) => {
+    const n = u.count;
     const l = (state.learned[String(u.id)] || []).length;
     const w = (state.wrong[String(u.id)] || []).length;
     totalWords += n; totalLearned += l; totalWrong += w;
@@ -149,11 +156,36 @@ function renderUnits() {
 /* ================= 学习页 ================= */
 let studyUnitId = null;
 
+function ensureData() {
+  if (DATA.units.length) return Promise.resolve(true);
+  if (!DATA_PROMISE) {
+    DATA_PROMISE = fetch('data/words.json', { cache: 'no-cache' })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j && j.units && j.units.length) {
+          DATA = j;
+          $('#topbar-sub').textContent = DATA.meta.subtitle || '';
+          renderUnits();
+          renderWrongList();
+          return true;
+        }
+        return false;
+      })
+      .catch(() => false);
+  }
+  return DATA_PROMISE;
+}
+
 function openStudy(id, then) {
+  const u = unitById(id);
+  if (!u) {
+    toast('词库加载中，请稍候…');
+    ensureData().then((ok) => { if (ok) openStudy(id, then); else toast('词库加载失败，请联网后重试'); });
+    return;
+  }
   studyUnitId = id;
   state.lastUnit = id;
   saveState();
-  const u = unitById(id);
   $('#study-title').textContent = `${u.name} · ${u.words.length} 词`;
   renderWordList();
   nav('study');
@@ -641,18 +673,23 @@ $('#btn-continue').addEventListener('click', () => {
 
 /* ================= 启动 ================= */
 async function boot() {
+  // 阶段一：轻量索引，秒开首页
   try {
-    const res = await fetch('data/words.json', { cache: 'no-cache' });
-    DATA = await res.json();
-  } catch (e) {
-    $('#unit-list').innerHTML = '<div class="empty-tip">数据加载失败，请通过 http/https 访问本页面</div>';
-    return;
-  }
-  $('#topbar-sub').textContent = DATA.meta.subtitle || '';
+    const m = await (await fetch('data/meta.json', { cache: 'no-cache' })).json();
+    META = m;
+    $('#topbar-sub').textContent = (m.meta && m.meta.subtitle) || '';
+  } catch (e) { /* 忽略，等全量 */ }
+
   applySettings();
   renderUnits();
   renderContinue();
   renderWrongList();
   nav('units');
+
+  // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）
+  const ok = await ensureData();
+  if (!ok && !META) {
+    $('#unit-list').innerHTML = '<div class="empty-tip">词库加载失败，请联网后重开一次</div>';
+  }
 }
 boot();
