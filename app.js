@@ -11,6 +11,8 @@ const DEFAULT_STATE = {
   wrong: {},     // unitId(str) -> [wordIdx...] 错词
   stats: { tested: 0, correct: 0 },
   settings: { rate: 0.9, fontSize: 17, sakura: true },
+  scrolls: {},   // unitId(str) -> 学习页滚动位置
+  lastUnit: null,
 };
 
 let DATA = { meta: {}, units: [] };
@@ -26,6 +28,8 @@ function loadState() {
       wrong: s.wrong || {},
       stats: s.stats || { tested: 0, correct: 0 },
       settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
+      scrolls: s.scrolls || {},
+      lastUnit: s.lastUnit || null,
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -92,6 +96,7 @@ function nav(view) {
     b.classList.toggle('active', b.dataset.nav === view);
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
+  if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'wrong') renderWrongList();
 }
 
@@ -138,19 +143,48 @@ function renderUnits() {
   $('#ring-fg').style.strokeDasharray = C;
   $('#ring-fg').style.strokeDashoffset = C * (1 - pct);
   $('#ring-text').textContent = Math.round(pct * 100) + '%';
+  if (typeof renderContinue === 'function') renderContinue();
 }
 
 /* ================= 学习页 ================= */
 let studyUnitId = null;
 
-function openStudy(id) {
+function openStudy(id, then) {
   studyUnitId = id;
+  state.lastUnit = id;
+  saveState();
   const u = unitById(id);
   $('#study-title').textContent = `${u.name} · ${u.words.length} 词`;
   renderWordList();
   nav('study');
-  window.scrollTo({ top: 0 });
+  const y = (state.scrolls && state.scrolls[String(id)]) || 0;
+  requestAnimationFrame(() => window.scrollTo({ top: y }));
+  if (then) requestAnimationFrame(then);
 }
+
+function gotoWord(unitId, idx) {
+  openStudy(unitId, () => {
+    const card = document.querySelector(`#word-list .word-card[data-idx="${idx}"]`);
+    if (!card) return;
+    card.scrollIntoView({ block: 'center' });
+    const d = card.querySelector('.wc-detail');
+    if (d) d.classList.remove('collapsed');
+    card.classList.add('locate');
+    setTimeout(() => card.classList.remove('locate'), 2300);
+  });
+}
+
+/* 学习页滚动位置记忆 */
+let scrollTimer = null;
+window.addEventListener('scroll', () => {
+  if (currentView !== 'study' || studyUnitId == null) return;
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(() => {
+    state.scrolls = state.scrolls || {};
+    state.scrolls[String(studyUnitId)] = window.scrollY;
+    saveState();
+  }, 250);
+}, { passive: true });
 
 function renderWordList() {
   const u = unitById(studyUnitId);
@@ -541,6 +575,63 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+/* ================= 搜索 & 继续学习 ================= */
+function renderSearch(q) {
+  const box = $('#search-results');
+  q = q.trim().toLowerCase();
+  if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const hits = [];
+  for (const u of DATA.units) {
+    for (let i = 0; i < u.words.length; i++) {
+      const w = u.words[i];
+      const cn = w.defs.map((x) => x.cn).join(' ');
+      if (w.w.toLowerCase().includes(q) || cn.includes(q)) {
+        hits.push({ u, idx: i, w });
+        if (hits.length >= 40) break;
+      }
+    }
+    if (hits.length >= 40) break;
+  }
+  if (!hits.length) {
+    box.innerHTML = '<div class="sr-empty">没有找到相关单词</div>';
+    box.classList.remove('hidden');
+    return;
+  }
+  box.innerHTML = hits.map((h) => `
+    <div class="sr-item" data-unit="${h.u.id}" data-idx="${h.idx}">
+      <div><span class="sr-word">${h.w.w}</span><span class="sr-unit">${h.u.name}</span></div>
+      <div class="sr-cn">${(h.w.defs[0] && h.w.defs[0].cn) || ''}</div>
+    </div>`).join('');
+  box.classList.remove('hidden');
+}
+
+$('#search-input').addEventListener('input', (e) => renderSearch(e.target.value));
+$('#search-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+});
+$('#search-results').addEventListener('click', (e) => {
+  const item = e.target.closest('.sr-item');
+  if (!item) return;
+  $('#search-input').value = '';
+  $('#search-results').classList.add('hidden');
+  gotoWord(Number(item.dataset.unit), Number(item.dataset.idx));
+});
+
+function renderContinue() {
+  const b = $('#btn-continue');
+  const u = state.lastUnit && unitById(state.lastUnit);
+  if (u) {
+    const l = (state.learned[String(u.id)] || []).length;
+    b.textContent = `继续学习 · ${u.name}（${l}/${u.words.length}）`;
+    b.classList.remove('hidden');
+  } else {
+    b.classList.add('hidden');
+  }
+}
+$('#btn-continue').addEventListener('click', () => {
+  if (state.lastUnit) openStudy(state.lastUnit);
+});
+
 /* ================= 启动 ================= */
 async function boot() {
   try {
@@ -553,6 +644,7 @@ async function boot() {
   $('#topbar-sub').textContent = DATA.meta.subtitle || '';
   applySettings();
   renderUnits();
+  renderContinue();
   renderWrongList();
   nav('units');
 }
