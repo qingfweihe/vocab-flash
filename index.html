@@ -105,6 +105,37 @@
     <div class="subhead no-back">
       <div class="subhead-title">设置</div>
     </div>
+
+    <!-- 提醒 -->
+    <div class="settings-box">
+      <div class="set-section-title">⏰ 提醒</div>
+      <div class="set-item">
+        <div class="set-label">每日背单词提醒</div>
+        <label class="switch"><input type="checkbox" id="rem-enabled"><span>开启</span></label>
+      </div>
+      <div class="set-item">
+        <div class="set-label">提醒时间</div>
+        <input type="time" id="rem-time" value="20:00">
+      </div>
+      <div class="set-item">
+        <div class="set-label">智能模式<div class="set-hint">今天已背过就不打扰</div></div>
+        <label class="switch"><input type="checkbox" id="rem-smart" checked><span>开启</span></label>
+      </div>
+      <div id="rem-status" class="set-note"></div>
+
+      <div class="set-section-title" style="margin-top:14px">📌 自定义事项</div>
+      <div class="rem-custom-input">
+        <input type="text" id="rem-custom-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
+        <input type="datetime-local" id="rem-custom-when">
+        <button class="mini-btn" id="rem-custom-add" style="padding:9px 14px">添加</button>
+      </div>
+      <div id="rem-custom-list"></div>
+      <button class="ghost-btn" id="rem-test" style="margin-top:8px">发送测试通知</button>
+      <div class="set-note">
+        提醒需要 iPhone 把本应用「添加到主屏幕」后使用；首次开启会弹出「允许通知」请点允许。
+      </div>
+    </div>
+
     <div class="settings-box">
       <div class="set-item">
         <div class="set-label">发音语速</div>
@@ -128,6 +159,7 @@
         进度保存在本机浏览器中。换手机或清除 Safari 数据前，请先「导出备份」保存文件。
       </div>
     </div>
+
   </section>
 
 </main>
