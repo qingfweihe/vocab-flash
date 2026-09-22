@@ -16,6 +16,7 @@ const DEFAULT_STATE = {
   lastUnit: null,
   reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
   todo: [],      // 待办清单 [{id,text,type:'once'|'daily'|'weekly',date?,time,wd?,done?,todayDone?,createdAt}]
+  reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
 };
 
 let DATA = { meta: {}, units: [] };
@@ -38,6 +39,7 @@ function loadState() {
       lastUnit: s.lastUnit || null,
       reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
       todo: Array.isArray(s.todo) ? s.todo : [],
+      reading: Object.assign({}, DEFAULT_STATE.reading, s.reading || {}),
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -344,9 +346,11 @@ function nav(view) {
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
-  if (view === 'wrong') renderWrongList();
+  if (view === 'units') Reading.renderHome();
+  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); }
   if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
   if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
+  if (view === 'reading') Reading.renderPage();
 }
 
 document.addEventListener('click', (e) => {
@@ -883,9 +887,12 @@ $('#file-import').addEventListener('change', (e) => {
         scrolls: s.scrolls || {},
         lastUnit: s.lastUnit || null,
         reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
+        todo: Array.isArray(s.todo) ? s.todo : [],
+        reading: Object.assign({}, DEFAULT_STATE.reading, s.reading || {}),
       };
       if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
+      renderTodo(); Reading.renderHome(); Reading.renderWrongVocab();
       toast('进度已恢复');
     } catch (err) { toast('文件格式不对'); }
   };
@@ -975,6 +982,188 @@ const Sakura = (() => {
   return {
     setEnabled(v) { enabled = v; if (!v) ctx.clearRect(0, 0, W, H); },
   };
+})();
+
+/* ================= 阅读随手练 ================= */
+const Reading = (() => {
+  let ITEMS = null, PROMISE = null;
+  let cur = null; // 当前正在做的题
+
+  function ensure() {
+    if (ITEMS) return Promise.resolve(true);
+    if (!PROMISE) {
+      PROMISE = fetch('data/readings.json', { cache: 'no-cache' })
+        .then((r) => r.json())
+        .then((j) => { if (j && j.items && j.items.length) { ITEMS = j.items; return true; } return false; })
+        .catch(() => { PROMISE = null; return false; });
+    }
+    return PROMISE;
+  }
+
+  function rState() {
+    if (!state.reading || typeof state.reading !== 'object') state.reading = { done: {}, vocab: {} };
+    if (!state.reading.done) state.reading.done = {};
+    if (!state.reading.vocab) state.reading.vocab = {};
+    return state.reading;
+  }
+
+  function bjDate(ts) { return new Date((ts || Date.now()) + 8 * 3600e3).toISOString().slice(0, 10); }
+
+  function stats() {
+    const r = rState();
+    const ids = Object.keys(r.done);
+    const okN = ids.filter((k) => r.done[k].ok).length;
+    // 连续刷题天数（北京时间，今天或昨天截止）
+    const days = new Set(ids.map((k) => bjDate(r.done[k].ts)));
+    let streak = 0;
+    const d = new Date();
+    if (!days.has(bjDate())) d.setDate(d.getDate() - 1); // 今天没刷从昨天算
+    for (;;) {
+      if (days.has(bjDate(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return { done: ids.length, total: ITEMS ? ITEMS.length : 0, pct: ids.length ? Math.round(okN / ids.length * 100) : 0, streak };
+  }
+
+  function renderHome() {
+    const sub = $('#reading-card-sub');
+    const pct = $('#reading-card-pct');
+    if (!sub) return;
+    const s = stats();
+    if (s.done) {
+      sub.textContent = `已做 ${s.done} 篇 · 正确率 ${s.pct}%` + (s.streak > 1 ? ` · 连刷 ${s.streak} 天` : '');
+      pct.textContent = s.pct + '%';
+      pct.classList.remove('hidden');
+    } else {
+      sub.textContent = '六级真题 · 一篇一题 · 随手刷';
+      pct.classList.add('hidden');
+    }
+  }
+
+  function renderPage() {
+    const box = $('#reading-stats');
+    if (!box) return;
+    const s = stats();
+    box.innerHTML = `<div class="rs-item"><b>${s.done}</b><span>已做</span></div>
+      <div class="rs-item"><b>${s.done ? s.pct + '%' : '—'}</b><span>正确率</span></div>
+      <div class="rs-item"><b>${s.streak}</b><span>连刷天数</span></div>
+      <div class="rs-item"><b>${s.total}</b><span>题库总量</span></div>`;
+    // 做过列表（最近在前，可重做）
+    const r = rState();
+    const doneIds = Object.keys(r.done).sort((a, b) => r.done[b].ts - r.done[a].ts);
+    const list = $('#reading-list');
+    list.innerHTML = doneIds.length
+      ? '<div class="set-note" style="margin:10px 2px 6px">做过的篇目（点击重做）</div>' + doneIds.map((id) => {
+          const it = ITEMS && ITEMS.find((x) => x.id === id);
+          const d = r.done[id];
+          return `<div class="rd-item ${d.ok ? 'ok' : 'no'}" data-rd="${id}">
+            <span class="rd-mark">${d.ok ? '✓' : '✗'}</span>
+            <span class="rd-src">${it ? it.src : id}</span>
+            <span class="rd-pick">选了 ${d.pick}</span>
+          </div>`;
+        }).join('')
+      : '';
+    list.querySelectorAll('[data-rd]').forEach((el) => el.addEventListener('click', () => {
+      const it = ITEMS && ITEMS.find((x) => x.id === el.dataset.rd);
+      if (it) { cur = it; renderQuiz(it, true); }
+    }));
+  }
+
+  function start() {
+    ensure().then((ok) => {
+      if (!ok) { toast('题库加载失败，请联网重试'); return; }
+      renderPage(); // 更新列表/统计
+      const undone = ITEMS.filter((x) => !rState().done[x.id]);
+      const pool = undone.length ? undone : ITEMS;
+      cur = pool[Math.floor(Math.random() * pool.length)];
+      renderQuiz(cur);
+    });
+  }
+
+  function renderQuiz(it, redo) {
+    $('#reading-list').classList.add('hidden');
+    const box = $('#reading-quiz');
+    box.classList.remove('hidden');
+    const r = rState();
+    const prev = r.done[it.id];
+    box.innerHTML = `
+      <div class="rd-src-line">${it.src} · 约 ${it.words} 词 <button class="rd-speak" id="rd-speak">🔊 朗读</button></div>
+      <div class="rd-text">${it.text.replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
+      <div class="rd-q">${it.q.stem}</div>
+      <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => `
+        <button class="rd-opt" data-opt="${c}"><b>${c}</b> ${it.q.options[i]}</button>`).join('')}
+      </div>
+      <div id="rd-result" class="hidden"></div>
+      <div class="rd-actions hidden" id="rd-actions">
+        <button class="primary-btn" id="rd-next">再来一篇</button>
+        <button class="ghost-btn" id="rd-back">返回阅读页</button>
+      </div>`;
+    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', () => pick(it, b.dataset.opt)));
+    $('#rd-speak').addEventListener('click', () => speak(it.text.replace(/\n/g, ' ')));
+    $('#rd-next').addEventListener('click', () => { start(); });
+    $('#rd-back').addEventListener('click', () => { box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
+    if (redo && prev) { /* 重做也重新作答，不回填 */ }
+    window.scrollTo({ top: 0 });
+  }
+
+  function pick(it, letter) {
+    const r = rState();
+    if (r.done[it.id] && r.done[it.id].ts === undefined) { /* 不可达 */ }
+    const ok = letter === it.q.answer;
+    // 记录（重做覆盖）
+    r.done[it.id] = { pick: letter, ok, ts: Date.now() };
+    // 错题联动：生词收进错词本
+    let added = 0;
+    if (!ok) {
+      for (const v of (it.vocab || [])) {
+        if (!r.vocab[v.w]) { r.vocab[v.w] = { cn: v.cn, ts: Date.now() }; added++; }
+      }
+    }
+    saveState();
+    // 渲染结果
+    document.querySelectorAll('#reading-quiz .rd-opt').forEach((b) => {
+      b.disabled = true;
+      if (b.dataset.opt === it.q.answer) b.classList.add('right');
+      else if (b.dataset.opt === letter) b.classList.add('wrong');
+    });
+    const res = $('#rd-result');
+    res.classList.remove('hidden');
+    res.innerHTML = `
+      <div class="rd-verdict ${ok ? 'ok' : 'no'}">${ok ? '✓ 答对了' : `✗ 答错了，正确答案 ${it.q.answer}`}</div>
+      <div class="rd-explain">${it.q.explain}</div>
+      ${(it.vocab || []).length ? `<div class="rd-vocab"><b>本篇核心词</b>${it.vocab.map((v) => `<span class="rd-vw" data-vw="${v.w}" data-cn="${v.cn}">${v.w} <i>${v.cn}</i></span>`).join('')}</div>` : ''}
+      ${!ok && added ? `<div class="rd-note">已把 ${added} 个生词收进错词本的「阅读生词」</div>` : ''}`;
+    $('#rd-actions').classList.remove('hidden');
+    renderHome();
+  }
+
+  /** 错词本页的阅读生词分区 */
+  function renderWrongVocab() {
+    const box = $('#read-vocab-list');
+    if (!box) return;
+    const r = rState();
+    const words = Object.keys(r.vocab);
+    if (!words.length) {
+      box.innerHTML = '<div class="set-note">暂无。做错阅读题时，文中的六级核心词会自动收进这里。</div>';
+      return;
+    }
+    box.innerHTML = words.map((w) => `
+      <div class="rem-item"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
+      <button class="rem-del" data-rvw="${w}">认识</button></div>`).join('');
+    box.querySelectorAll('[data-rvw]').forEach((b) => b.addEventListener('click', () => {
+      delete rState().vocab[b.dataset.rvw];
+      saveState(); renderWrongVocab();
+    }));
+  }
+
+  function bind() {
+    const card = $('#reading-card');
+    if (card) card.addEventListener('click', () => nav('reading'));
+    const btn = $('#btn-reading-start');
+    if (btn) btn.addEventListener('click', start);
+  }
+
+  return { ensure, renderHome, renderPage, renderWrongVocab, bind, start, stats };
 })();
 
 /* ================= 提醒（Web Push） ================= */
@@ -1249,6 +1438,8 @@ async function boot() {
   migrateTodo();
   bindTodo();
   renderTodoRemBar();
+  Reading.bind();
+  Reading.renderHome();
 
   // 从通知点进来：?view=todo 直达待办清单
   try {
