@@ -8,7 +8,13 @@
  *   POST /api/test              { id }  -> 立即发送测试通知
  *   GET  /api/health            -> { ok: true }（探测用）
  *
- * 定时：Deno.cron 每 5 分钟检查（北京时间换算）；同一提醒当天幂等（不重复推送）。
+ * 待办清单（settings.todo）：[{ id, text, type:'once'|'daily'|'weekly', date?, time, wd?, done?, todayDone? }]
+ *   once   -> date+time 到点推一次（错过 12h 内补推，超过视为过期不再推）
+ *   daily  -> 每天 time 到点推（当天幂等；todayDone=当天日期 则今天跳过）
+ *   weekly -> wd(0-6, 周日=0) 那天 time 到点推
+ * 旧版 settings.custom（一次性）兼容读取。
+ *
+ * 定时：Deno.cron 每 5 分钟检查（北京时间换算）。
  */
 import webpush from "npm:web-push@3.6.7";
 
@@ -72,6 +78,76 @@ function isPushSub(x: unknown): x is { endpoint: string } {
   return !!x && typeof x === "object" && typeof (x as { endpoint?: string }).endpoint === "string";
 }
 
+// ---------- 待办清单 ----------
+type TodoItem = {
+  id: string;
+  text: string;
+  type: "once" | "daily" | "weekly";
+  date?: string; // once: YYYY-MM-DD（北京时间）
+  time: string;  // HH:MM
+  wd?: number;   // weekly: 0-6（周日=0）
+  done?: boolean;      // once：完成不再推
+  todayDone?: string;  // daily/weekly：勾"今天不再提醒"
+};
+type Payload = { title: string; body: string; tag: string; url: string };
+
+const TODO_URL = "./?view=todo";
+const CATCHUP_MS = 12 * 3600 * 1000; // 错过补发窗口
+
+/** 计算一条待办"计划触发时刻"（北京时间毫秒）；null=今天不适用 */
+function plannedAt(item: TodoItem, now: Date, today: string): number | null {
+  const m = minutesOf(item.time);
+  const dayStart = (day: string) => new Date(`${day}T00:00:00Z`).getTime() - TZ; // 北京当天零点的 UTC 毫秒
+  if (item.type === "once") {
+    if (!item.date) return null;
+    return dayStart(item.date) + m * 60_000;
+  }
+  if (item.type === "daily") {
+    return dayStart(today) + m * 60_000;
+  }
+  if (item.type === "weekly") {
+    if (item.wd == null || item.wd !== now.getUTCDay()) return null;
+    return dayStart(today) + m * 60_000;
+  }
+  return null;
+}
+
+/** 收集该订阅当前应推送的待办，返回 (payload, 幂等键) 列表 */
+async function dueTodos(id: string, st: Record<string, unknown>, now: Date, today: string): Promise<Array<[Payload, string]>> {
+  const out: Array<[Payload, string]> = [];
+  let items: TodoItem[] = Array.isArray(st.todo) ? (st.todo as TodoItem[]) : [];
+  // 旧版 custom（一次性 when）兼容：转成 todo 项参与判断
+  if (!items.length && Array.isArray(st.custom)) {
+    items = (st.custom as Array<{ id?: string; text?: string; when?: string }>)
+      .filter((x) => x && x.when)
+      .map((x, i) => {
+        const [d, t] = String(x.when).split("T");
+        return { id: String(x.id ?? "c" + i), text: String(x.text ?? ""), type: "once" as const, date: d, time: t || "09:00" };
+      });
+  }
+  for (const item of items) {
+    if (!item || !item.text || !item.time) continue;
+    if (item.type === "once" && item.done) continue;
+    if (item.todayDone === today) continue; // 用户勾了"今天不再提醒"
+    const plan = plannedAt(item, now, today);
+    if (plan == null) continue;
+    const late = Date.now() - plan;
+    if (late < 0 || late > CATCHUP_MS) continue; // 还没到 / 过期超过 12h
+    const key = ["sent", id, item.id, item.type === "once" ? `${item.date}T${item.time}` : `${today}T${item.time}`];
+    const dup = await kv.get(key);
+    if (dup.value) continue;
+    const whenTxt = item.type === "once"
+      ? `${(item.date || "").slice(5)} ${item.time}`
+      : item.type === "weekly" ? `每周${"日一二三四五六"[item.wd ?? 0]} ${item.time}`
+      : `每天 ${item.time}`;
+    out.push([
+      { title: "⏰ 待办提醒", body: `${item.text}（${whenTxt}）`, tag: "todo-" + item.id, url: TODO_URL },
+      JSON.stringify(key),
+    ]);
+  }
+  return out;
+}
+
 // ---------- HTTP ----------
 Deno.serve(async (req) => {
   const url = new URL(req.url);
@@ -106,7 +182,10 @@ Deno.serve(async (req) => {
         rec.lastActive = body.lastActive;
         if (body.learnedTotal != null) rec.learnedTotal = body.learnedTotal;
       } else {
-        rec.settings = Object.assign({}, rec.settings, body.settings || {});
+        const inc = body.settings || {};
+        // 客户端已升级为待办清单（带 todo 字段）时，旧 custom 作废，防止清空待办后旧事项复活
+        if (Object.prototype.hasOwnProperty.call(inc, "todo")) delete rec.settings.custom;
+        rec.settings = Object.assign({}, rec.settings, inc);
       }
       await kv.set(key, rec);
       return json({ ok: true });
@@ -119,7 +198,7 @@ Deno.serve(async (req) => {
       await getVapid();
       await webpush.sendNotification(
         rec.subscription as Parameters<typeof webpush.sendNotification>[0],
-        JSON.stringify({ title: "🌸 测试通知", body: "提醒功能已就绪，之后到点会像这样提醒你", tag: "test" }),
+        JSON.stringify({ title: "🌸 测试通知", body: "提醒功能已就绪，之后到点会像这样提醒你", tag: "test", url: TODO_URL }),
       );
       return json({ ok: true });
     }
@@ -144,29 +223,12 @@ Deno.cron("reminder-check", "*/5 * * * *", async () => {
     if (!isPushSub(rec.subscription)) continue;
     const st = rec.settings || {};
     if (st.enabled === false) continue;
-    const payloads: Array<{ title: string; body: string; tag: string }> = [];
+    const payloads: Payload[] = [];
 
-    // 自定义事项（到点发一次）
-    const custom = Array.isArray(st.custom)
-      ? (st.custom as Array<{ id?: string; text?: string; when?: string }>).filter((x) => x && x.when)
-      : [];
-    const fired: string[] = [];
-    for (const item of custom) {
-      const [dpart, tpart] = String(item.when).split("T");
-      if (dpart === today && inWindow(tpart, now)) {
-        const key = `sent:${id}:c:${item.id ?? dpart + tpart}`;
-        const dup = await kv.get([key]);
-        if (!dup.value) {
-          payloads.push({ title: "⏰ 提醒", body: String(item.text ?? ""), tag: "custom-" + (item.id ?? "") });
-          await kv.set([key], true, { expireIn: 86400_000 * 2 });
-          fired.push(String(item.id ?? ""));
-        }
-      }
-    }
-    if (fired.length) {
-      st.custom = custom.filter((x) => !fired.includes(String(x.id ?? "")));
-      rec.settings = st;
-      await kv.set(["sub", id], rec);
+    // 待办清单（含旧版 custom 兼容）
+    for (const [p, keyStr] of await dueTodos(id, st, now, today)) {
+      payloads.push(p);
+      await kv.set(JSON.parse(keyStr) as Deno.KvKey, true, { expireIn: 86400_000 * 2 });
     }
 
     // 每日背单词提醒（智能模式：今天已学则跳过；当天幂等）
@@ -178,7 +240,7 @@ Deno.cron("reminder-check", "*/5 * * * *", async () => {
         const dup = await kv.get(sentKey);
         if (!dup.value) {
           const total = rec.learnedTotal != null ? `已学 ${rec.learnedTotal} 词` : "今天也该刷一组了";
-          payloads.push({ title: "🌸 该背单词了", body: `${total} · 点开闪过背单词继续`, tag: "daily" });
+          payloads.push({ title: "🌸 该背单词了", body: `${total} · 点开闪过背单词继续`, tag: "daily", url: "./" });
           await kv.set(sentKey, true, { expireIn: 86400_000 * 2 });
         }
       }
