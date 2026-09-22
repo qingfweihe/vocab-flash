@@ -26,6 +26,14 @@
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
+    <button id="todo-card" class="todo-card">
+      <div class="todo-card-ico">📌</div>
+      <div class="todo-card-main">
+        <div class="todo-card-title">待办清单</div>
+        <div class="todo-card-sub" id="todo-card-sub">点这里添加提醒事项</div>
+      </div>
+      <div class="todo-card-badge hidden" id="todo-card-badge">0</div>
+    </button>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -91,6 +99,38 @@
     </div>
   </section>
 
+  <!-- 视图：待办清单 -->
+  <section id="view-todo" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 返回</button>
+      <div class="subhead-title">待办清单</div>
+      <button class="test-btn" id="btn-todo-new">＋ 新建</button>
+    </div>
+    <div id="todo-form" class="todo-form hidden">
+      <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
+      <div class="todo-type-row" id="todo-type-row">
+        <button class="todo-type active" data-type="once">一次性</button>
+        <button class="todo-type" data-type="daily">每天</button>
+        <button class="todo-type" data-type="weekly">每周</button>
+      </div>
+      <div class="todo-when-row">
+        <input type="datetime-local" id="todo-when-once">
+        <input type="time" id="todo-when-daily" value="20:00" class="hidden">
+        <div id="todo-when-weekly" class="hidden">
+          <select id="todo-wd">
+            <option value="1">周一</option><option value="2">周二</option><option value="3">周三</option>
+            <option value="4">周四</option><option value="5">周五</option><option value="6">周六</option>
+            <option value="0">周日</option>
+          </select>
+          <input type="time" id="todo-when-weekly-time" value="20:00">
+        </div>
+      </div>
+      <button class="primary-btn" id="todo-save">保存待办</button>
+      <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
+    </div>
+    <div id="todo-list"></div>
+  </section>
+
   <!-- 视图：收藏夹 -->
   <section id="view-favorites" class="view hidden">
     <div class="subhead no-back">
@@ -132,17 +172,11 @@
       </div>
       <div id="rem-status" class="set-note"></div>
 
-      <div class="set-section-title" style="margin-top:14px">📌 自定义事项</div>
-      <div class="rem-custom-input">
-        <input type="text" id="rem-custom-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
-        <input type="datetime-local" id="rem-custom-when">
-        <button class="mini-btn" id="rem-custom-add" style="padding:9px 14px">添加</button>
-      </div>
-      <div id="rem-custom-list"></div>
+      <button class="ghost-btn" id="btn-goto-todo" style="margin-top:8px">📌 管理待办清单（自定义提醒）</button>
       <button class="ghost-btn" id="rem-test" style="margin-top:8px">发送测试通知</button>
       <div class="set-item" style="border-bottom:none">
         <div class="set-label">后端地址<div class="set-hint">提醒服务，一般不用改</div></div>
-        <input type="text" id="rem-api" style="width:56%;font-size:12px" placeholder="https://vocab-flash.deno.dev">
+        <input type="text" id="rem-api" style="width:56%;font-size:12px" placeholder="https://vocab-flash-qf.qingfweihe.deno.net">
       </div>
       <div class="set-note">
         提醒需要 iPhone 把本应用「添加到主屏幕」后使用；首次开启会弹出「允许通知」请点允许。
