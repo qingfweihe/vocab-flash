@@ -346,39 +346,6 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .empty-tip { text-align: center; color: var(--ink-3); font-size: 14px; padding: 40px 0; }
 
 
-/* ---------- 待办清单 ---------- */
-.todo-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  border: 1.5px solid var(--line);
-  background: #fff;
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin: 0 0 12px;
-  cursor: pointer;
-  text-align: left;
-}
-.todo-card-ico { font-size: 22px; flex: none; }
-.todo-card-main { flex: 1; min-width: 0; }
-.todo-card-title { font-size: 15px; font-weight: 700; color: var(--ink); }
-.todo-card-sub { font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.todo-card-badge {
-  flex: none;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--pink-deep);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .todo-form { background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; }
 .todo-form input[type="text"] {
   width: 100%; border: 1.5px solid var(--line); border-radius: 10px;
@@ -425,3 +392,21 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .todo-item .t-when .t-expired { color: #d84c4c; font-weight: 700; }
 .todo-item .t-del { border: none; background: none; color: #d84c4c; font-size: 13px; cursor: pointer; flex: none; }
 .todo-empty { text-align: center; color: var(--ink-2); font-size: 13px; padding: 26px 0; }
+
+/* ---------- 待办页 · 推送提醒状态条 ---------- */
+.todo-rem-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.todo-rem-bar .trb-main { flex: 1; min-width: 0; }
+.todo-rem-bar .trb-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.todo-rem-bar .trb-state { font-weight: 400; font-size: 13px; }
+.todo-rem-bar .trb-on { color: #2e9e5b; }
+.todo-rem-bar .trb-off { color: #d84c4c; }
+.todo-rem-bar .trb-sub { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
