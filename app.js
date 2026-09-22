@@ -1108,17 +1108,9 @@ const Reading = (() => {
 
   function pick(it, letter) {
     const r = rState();
-    if (r.done[it.id] && r.done[it.id].ts === undefined) { /* 不可达 */ }
     const ok = letter === it.q.answer;
     // 记录（重做覆盖）
     r.done[it.id] = { pick: letter, ok, ts: Date.now() };
-    // 错题联动：生词收进错词本
-    let added = 0;
-    if (!ok) {
-      for (const v of (it.vocab || [])) {
-        if (!r.vocab[v.w]) { r.vocab[v.w] = { cn: v.cn, ts: Date.now() }; added++; }
-      }
-    }
     saveState();
     // 渲染结果
     document.querySelectorAll('#reading-quiz .rd-opt').forEach((b) => {
@@ -1128,11 +1120,50 @@ const Reading = (() => {
     });
     const res = $('#rd-result');
     res.classList.remove('hidden');
+    const vocabHtml = (it.vocab || []).length ? `
+      <div class="rd-vocab-sec">
+        <div class="rd-vhead"><b>本篇生词 · 点词翻面背诵</b><button class="rd-reveal" id="rd-vocab-reveal">全部显示</button></div>
+        <div class="rd-vwords">${it.vocab.map((v) => {
+          const faved = !!r.vocab[v.w];
+          return `<div class="rd-vword" data-w="${v.w}">
+            <button class="vw-main" data-w="${v.w}"><span class="vw-face">${v.w}</span><span class="vw-back hidden">${v.cn}</span></button>
+            <button class="vw-fav ${faved ? 'on' : ''}" data-w="${v.w}" data-cn="${v.cn}" title="收藏到错词本">${faved ? '★' : '☆'}</button>
+          </div>`;
+        }).join('')}</div>
+      </div>` : '';
+    const cnHtml = it.cn ? `
+      <button class="ghost-btn rd-cn-toggle" id="rd-cn-toggle">查看全文翻译</button>
+      <div class="rd-cn hidden" id="rd-cn">${it.cn}</div>` : '';
     res.innerHTML = `
       <div class="rd-verdict ${ok ? 'ok' : 'no'}">${ok ? '✓ 答对了' : `✗ 答错了，正确答案 ${it.q.answer}`}</div>
       <div class="rd-explain">${it.q.explain}</div>
-      ${(it.vocab || []).length ? `<div class="rd-vocab"><b>本篇核心词</b>${it.vocab.map((v) => `<span class="rd-vw" data-vw="${v.w}" data-cn="${v.cn}">${v.w} <i>${v.cn}</i></span>`).join('')}</div>` : ''}
-      ${!ok && added ? `<div class="rd-note">已把 ${added} 个生词收进错词本的「阅读生词」</div>` : ''}`;
+      ${vocabHtml}
+      ${cnHtml}`;
+    // 生词交互：翻面+发音；全部显示；收藏
+    res.querySelectorAll('.vw-main').forEach((b) => b.addEventListener('click', () => {
+      const back = b.querySelector('.vw-back');
+      back.classList.toggle('hidden');
+      if (!back.classList.contains('hidden')) speak(b.dataset.w);
+    }));
+    const reveal = $('#rd-vocab-reveal');
+    if (reveal) reveal.addEventListener('click', () => {
+      const backs = res.querySelectorAll('.vw-back');
+      const show = res.querySelectorAll('.vw-back:not(.hidden)').length < backs.length; // 未全显示→全显示
+      backs.forEach((s) => s.classList.toggle('hidden', !show));
+      reveal.textContent = show ? '全部遮住' : '全部显示';
+    });
+    res.querySelectorAll('.vw-fav').forEach((b) => b.addEventListener('click', () => {
+      const w = b.dataset.w;
+      if (r.vocab[w]) { delete r.vocab[w]; b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
+      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; b.classList.add('on'); b.textContent = '★'; toast('已收藏到错词本·阅读生词'); }
+      saveState();
+    }));
+    const cnT = $('#rd-cn-toggle');
+    if (cnT) cnT.addEventListener('click', () => {
+      const box = $('#rd-cn');
+      box.classList.toggle('hidden');
+      cnT.textContent = box.classList.contains('hidden') ? '查看全文翻译' : '收起翻译';
+    });
     $('#rd-actions').classList.remove('hidden');
     renderHome();
   }
