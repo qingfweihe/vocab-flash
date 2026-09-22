@@ -1,5 +1,5 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机） */
-const CACHE = 'sgwd-20260922-233657';
+const CACHE = 'sgwd-20260922-234132';
 const ASSETS = [
   './',
   './index.html',
@@ -47,7 +47,8 @@ self.addEventListener('push', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  const target = new URL(e.notification.data && e.notification.data.url || './', self.location.origin).href;
+  // 以 SW scope（/vocab-flash/）为 base 解析；用 origin 会丢子路径导致 404
+  const target = new URL(e.notification.data && e.notification.data.url || './', self.registration.scope).href;
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       for (const c of list) {
