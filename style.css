@@ -444,3 +444,19 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .rd-item.no .rd-mark { color: #d84c4c; }
 .rd-item .rd-src { flex: 1; min-width: 0; font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rd-item .rd-pick { flex: none; font-size: 11px; color: var(--ink-2); }
+
+/* ---------- 生词背诵环节 ---------- */
+.rd-vocab-sec { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+.rd-vhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.rd-vhead b { font-size: 13px; color: var(--ink); }
+.rd-reveal { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--pink-deep); cursor: pointer; }
+.rd-vwords { display: flex; flex-wrap: wrap; gap: 8px; }
+.rd-vword { display: flex; align-items: stretch; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.rd-vword .vw-main { border: none; background: #fff; padding: 7px 10px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--ink); }
+.rd-vword .vw-face { font-weight: 600; }
+.rd-vword .vw-back { color: var(--pink-deep); font-size: 12px; }
+.rd-vword .vw-back.hidden { display: none; }
+.rd-vword .vw-fav { border: none; border-left: 1.5px solid var(--line); background: #fff; padding: 0 9px; font-size: 15px; cursor: pointer; color: #b8b8b8; flex: none; }
+.rd-vword .vw-fav.on { color: var(--pink-deep); }
+.rd-cn-toggle { margin-bottom: 8px; }
+.rd-cn { background: #fff; border: 1.5px dashed var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.8; color: var(--ink-2); margin-bottom: 10px; }
