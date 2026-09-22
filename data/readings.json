@@ -1,0 +1,1841 @@
+{
+ "v": 1,
+ "items": [
+  {
+   "id": "rd2023061O46",
+   "src": "2023年6月 六级真题第1套 第46题",
+   "title": "2023年6月 六级真题第1套 · One",
+   "text": "Technology is never a neutral tool for achieving human ends. Technological innovations reshape people as they use these innovations to control their environment. Artificial intelligence, for example, is altering humanity.\nWhile the term AI conjures up anxieties about killer robots or catastrophic levels of unemployment, there are other, deeper implications. As AI increasingly shapes the human experience, how does this change what it means to be human?Central to the problem is a person's capacity to make choices, particularly judgments that have moral implications.\nAristotle argued that the capacity for making practical judgments depends on regularly making them — on habit and practice. We see the emergence of machines as substitute judges in a variety of everyday contexts as a potential threat to people learning how to effectively exercise judgment themselves.",
+   "words": 130,
+   "q": {
+    "stem": "What do we learn about the deeper implications of AI?",
+    "options": [
+     "It is causing catastrophic levels of unemployment.",
+     "It is doing physical harm to human operators.",
+     "It is altering moral judgments.",
+     "It is reshaping humanity."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文中段（第 2/9 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "technology",
+     "cn": "技术；科技；工艺"
+    },
+    {
+     "w": "technological",
+     "cn": "—"
+    },
+    {
+     "w": "environment",
+     "cn": "环境；自然环境"
+    },
+    {
+     "w": "artificial",
+     "cn": "人造的；人工的；虚假的"
+    },
+    {
+     "w": "intelligence",
+     "cn": "智力；智能；情报"
+    },
+    {
+     "w": "humanity",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061O47",
+   "src": "2023年6月 六级真题第1套 第47题",
+   "title": "2023年6月 六级真题第1套 · One",
+   "text": "Aristotle argued that the capacity for making practical judgments depends on regularly making them — on habit and practice. We see the emergence of machines as substitute judges in a variety of everyday contexts as a potential threat to people learning how to effectively exercise judgment themselves.\nIn the workplace, managers routinely make decisions about who to hire or fire and which loan to approve, to name a few. These are areas where _algorithmic_ (算法的) prescription is replacing human judgment, and so people who might have had the chance to develop practical judgment in these areas no longer will.\nRecommendation engines, which are increasingly prevalent intermediaries in people's consumption of culture, may serve to constrain choice and minimize luck. By presenting consumers with algorithmically selected choices of what to watch, read, stream and visit next, companies are replacing human taste with machine taste. In one sense, this is helpful. After all, machines can survey a wider range of choices than any individual is likely to have the time or energy to do on their own.",
+   "words": 175,
+   "q": {
+    "stem": "What is the consequence of algorithmic prescription replacing human judgment?",
+    "options": [
+     "People lose the chance to cultivate the ability to make practical judgments.",
+     "People are prevented from participating in making major decisions in the workplace.",
+     "Managers no longer have the chance to decide which loan to approve.",
+     "Managers do not need to take the trouble to determine who to hire or fire."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 4/9 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "capacity",
+     "cn": "—"
+    },
+    {
+     "w": "practical",
+     "cn": "—"
+    },
+    {
+     "w": "potential",
+     "cn": "潜力；潜在的；可能性"
+    },
+    {
+     "w": "workplace",
+     "cn": "—"
+    },
+    {
+     "w": "chance",
+     "cn": "—"
+    },
+    {
+     "w": "develop",
+     "cn": "发展；开发；培养"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061O48",
+   "src": "2023年6月 六级真题第1套 第48题",
+   "title": "2023年6月 六级真题第1套 · One",
+   "text": "Recommendation engines, which are increasingly prevalent intermediaries in people's consumption of culture, may serve to constrain choice and minimize luck. By presenting consumers with algorithmically selected choices of what to watch, read, stream and visit next, companies are replacing human taste with machine taste. In one sense, this is helpful. After all, machines can survey a wider range of choices than any individual is likely to have the time or energy to do on their own.\nAt the same time, though, this selection is optimizing for what people are likely to prefer based on what they've preferred in the past. We think there is some risk that people's options will be constrained by their past in a new and unanticipated way.",
+   "words": 121,
+   "q": {
+    "stem": "What may result from increasing application of recommendation engines in our consumption of culture?",
+    "options": [
+     "Consumers will have much limited choice.",
+     "Consumers will actually enjoy better luck.",
+     "It will be easier to decide on what to enjoy.",
+     "Humans will develop tastes similar to machines'."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 5/9 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "helpful",
+     "cn": "—"
+    },
+    {
+     "w": "survey",
+     "cn": "—"
+    },
+    {
+     "w": "individual",
+     "cn": "个人的；个体的"
+    },
+    {
+     "w": "energy",
+     "cn": "—"
+    },
+    {
+     "w": "prefer",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061O49",
+   "src": "2023年6月 六级真题第1套 第49题",
+   "title": "2023年6月 六级真题第1套 · One",
+   "text": "At the same time, though, this selection is optimizing for what people are likely to prefer based on what they've preferred in the past. We think there is some risk that people's options will be constrained by their past in a new and unanticipated way.\nAs machine learning algorithms improve and as they train on more extensive data sets, larger parts of everyday life are likely to become utterly predictable. The predictions are going to get better and better, and they will ultimately make common experiences more efficient and pleasant.\nAlgorithms could soon — if they don't already-have a better idea about which show you'd like to watch next and which job candidate you should hire than you do. One day, humans may even find a way for machines to make these decisions without some of the biases that humans typically display.",
+   "words": 142,
+   "q": {
+    "stem": "What is likely to happen to larger parts of our daily life as machine learning algorithms improve?",
+    "options": [
+     "They will turn out to be more pleasant.",
+     "They will repeat our past experience.",
+     "They can be completely anticipated.",
+     "They may become better and better."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 7/9 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "prefer",
+     "cn": "—"
+    },
+    {
+     "w": "become",
+     "cn": "—"
+    },
+    {
+     "w": "efficient",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061O50",
+   "src": "2023年6月 六级真题第1套 第50题",
+   "title": "2023年6月 六级真题第1套 · One",
+   "text": "As machine learning algorithms improve and as they train on more extensive data sets, larger parts of everyday life are likely to become utterly predictable. The predictions are going to get better and better, and they will ultimately make common experiences more efficient and pleasant.\nAlgorithms could soon — if they don't already-have a better idea about which show you'd like to watch next and which job candidate you should hire than you do. One day, humans may even find a way for machines to make these decisions without some of the biases that humans typically display.\nBut to the extent that unpredictability is part of how people understand themselves and part of what people like about themselves, humanity is in the process of losing something significant. As they become more and more predictable, the creatures inhabiting the increasingly AI-mediated world will become less and less like us.",
+   "words": 148,
+   "q": {
+    "stem": "Why does the author say the creatures living in the more and more AI-mediated world will become increasingly unlike us?",
+    "options": [
+     "They will have lost the most significant human element of being intelligent.",
+     "They will no longer possess the human characteristic of being unpredictable.",
+     "They will not be able to understand themselves as we can do today.",
+     "They will be deprived of what their predecessors were proud of about themselves."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文末尾（第 9/9 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "improve",
+     "cn": "改善；提高；改进"
+    },
+    {
+     "w": "efficient",
+     "cn": "—"
+    },
+    {
+     "w": "understand",
+     "cn": "理解；了解；懂得"
+    },
+    {
+     "w": "humanity",
+     "cn": "—"
+    },
+    {
+     "w": "process",
+     "cn": "过程；流程；处理"
+    },
+    {
+     "w": "significant",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061T52",
+   "src": "2023年6月 六级真题第1套 第52题",
+   "title": "2023年6月 六级真题第1套 · Two",
+   "text": "America is stuck in a debate about teaching children to read that has been going on for decades. Some advocate teaching symbol-sound relationships (the sound k can be spelled as c, k, ck, or ch), known as phonics. Others support an immersive approach (using pictures of a cat to learn the word cat), known as “whole language . Most teachers today, almost three out of four according to a survey by the EdWeek Research Centre in 2019, use a mix called \"balanced literacy\". This combination of methods is ineffective. \"You can't sprinkle in a little phonics, says Tenette Smith, executive director of elementary education and reading at Mississippi's education department. “It has to be systematic and explicitly taught.\"\nMississippi, often behind in social policy, has set an example here. In a state once notorious for its low reading scores, the Mississippi state legislature passed new literacy standards in 2013. Since then Mississippi has seen remarkable gains. Its fourth graders have moved from 49th (out of 50 states) to 29th on the National Assessment of Educational Progress, a nationwide exam. In 2019 it was the only state to improve its scores. For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.",
+   "words": 211,
+   "q": {
+    "stem": "What has America been witnessing for decades?",
+    "options": [
+     "An obsession with innovating teaching methodologies of reading.",
+     "An enduring debate over the approach to teaching children to read.",
+     "An increasing concern with many children's inadequacy in literacy.",
+     "An ever-forceful advocacy of a combined method for teaching reading."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 3/6 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "debate",
+     "cn": "—"
+    },
+    {
+     "w": "advocate",
+     "cn": "主张；提倡；拥护"
+    },
+    {
+     "w": "support",
+     "cn": "支持；支撑；证实"
+    },
+    {
+     "w": "approach",
+     "cn": "方法；途径；接近"
+    },
+    {
+     "w": "survey",
+     "cn": "—"
+    },
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061T53",
+   "src": "2023年6月 六级真题第1套 第53题",
+   "title": "2023年6月 六级真题第1套 · Two",
+   "text": "Mississippi, often behind in social policy, has set an example here. In a state once notorious for its low reading scores, the Mississippi state legislature passed new literacy standards in 2013. Since then Mississippi has seen remarkable gains. Its fourth graders have moved from 49th (out of 50 states) to 29th on the National Assessment of Educational Progress, a nationwide exam. In 2019 it was the only state to improve its scores. For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.\nMississippi's success is attributed to implementing reading methods supported by a body of research known as the science of reading. In 1997 Congress requested the National Institute of Child Health and Human Development and the Department of Education to convene a National Reading Panel to end the “reading wars and synthesize the evidence. The panel found that phonics, along with explicit instruction in _phonemic_ (音位的) awareness, fluency and comprehension, worked best.",
+   "words": 164,
+   "q": {
+    "stem": "Why does Tenette Smith think a combination of teaching methods is ineffective?",
+    "options": [
+     "Elementary school children will be frustrated when taught with several methods combined.",
+     "Phonics has to be systematically applied and clearly taught to achieve the desired effect.",
+     "Sprinkling in a little phonics deters the progress of even adequately motivated children.",
+     "Balanced literacy fails to sustain children's interest in developing a good reading habit."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 4/6 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "policy",
+     "cn": "政策；方针；保险单"
+    },
+    {
+     "w": "progress",
+     "cn": "—"
+    },
+    {
+     "w": "improve",
+     "cn": "改善；提高；改进"
+    },
+    {
+     "w": "average",
+     "cn": "—"
+    },
+    {
+     "w": "achievement",
+     "cn": "—"
+    },
+    {
+     "w": "success",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023061T54",
+   "src": "2023年6月 六级真题第1套 第54题",
+   "title": "2023年6月 六级真题第1套 · Two",
+   "text": "Mississippi, often behind in social policy, has set an example here. In a state once notorious for its low reading scores, the Mississippi state legislature passed new literacy standards in 2013. Since then Mississippi has seen remarkable gains. Its fourth graders have moved from 49th (out of 50 states) to 29th on the National Assessment of Educational Progress, a nationwide exam. In 2019 it was the only state to improve its scores. For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.\nMississippi's success is attributed to implementing reading methods supported by a body of research known as the science of reading. In 1997 Congress requested the National Institute of Child Health and Human Development and the Department of Education to convene a National Reading Panel to end the “reading wars and synthesize the evidence. The panel found that phonics, along with explicit instruction in _phonemic_ (音位的) awareness, fluency and comprehension, worked best.",
+   "words": 164,
+   "q": {
+    "stem": "What does the author say Mississippi's success is attributed to?",
+    "options": [
+     "Convening a National Reading Panel to synthesize research evidence.",
+     "Placing sufficient emphasis upon both fluency and comprehension.",
+     "Adopting scientifically grounded approaches to teaching reading.",
+     "Obtaining support from Congress to upgrade teaching methods."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 5/6 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "policy",
+     "cn": "政策；方针；保险单"
+    },
+    {
+     "w": "progress",
+     "cn": "—"
+    },
+    {
+     "w": "improve",
+     "cn": "改善；提高；改进"
+    },
+    {
+     "w": "average",
+     "cn": "—"
+    },
+    {
+     "w": "achievement",
+     "cn": "—"
+    },
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062O46",
+   "src": "2023年6月 六级真题第2套 第46题",
+   "title": "2023年6月 六级真题第2套 · One",
+   "text": "How on earth did we come to this? We protect our children obsessively from every harm; we scrutinize every carer, teacher or doctor with whom they come into contact. Yet despite all this, one group, which in no way has their best interests at heart, has almost unconstrained access.\nWe seem to take it for granted that advertisers and marketers are allowed to condition even the youngest children. Before children have even developed a proper sense of their own identity, or learned to handle money, they're encouraged to associate status and self-worth with stuff, and to look to external things such as fame and wealth for validation. We're turning out little consumers rather than young citizens who will value themselves for what they contribute to the society in which they live.",
+   "words": 131,
+   "q": {
+    "stem": "Which group of people does the author say has almost unrestricted access to children?",
+    "options": [
+     "Advertisers.",
+     "Carers.",
+     "Teachers.",
+     "Doctors."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文开头（第 1/8 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "protect",
+     "cn": "—"
+    },
+    {
+     "w": "condition",
+     "cn": "条件；状况；环境"
+    },
+    {
+     "w": "proper",
+     "cn": "—"
+    },
+    {
+     "w": "identity",
+     "cn": "—"
+    },
+    {
+     "w": "contribute",
+     "cn": "贡献；促成；导致"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062O47",
+   "src": "2023年6月 六级真题第2套 第47题",
+   "title": "2023年6月 六级真题第2套 · One",
+   "text": "We seem to take it for granted that advertisers and marketers are allowed to condition even the youngest children. Before children have even developed a proper sense of their own identity, or learned to handle money, they're encouraged to associate status and self-worth with stuff, and to look to external things such as fame and wealth for validation. We're turning out little consumers rather than young citizens who will value themselves for what they contribute to the society in which they live.\nWe've reached this point so gradually that many of us have never questioned it. It's crept up on us in the 60 years since advertisers started to target the young and found that they could recruit them to a commercial assault on their parents. We've come to know it as“pester power\"or the ability of children to pressure parents to make certain purchases.",
+   "words": 144,
+   "q": {
+    "stem": "What kind of people should we enable children to become according to the author?",
+    "options": [
+     "Those who look to fame and wealth for external and ultimate validation.",
+     "Those who value themselves because of their contribution to society.",
+     "Those who associate self-worth with the ability to handle money.",
+     "Those who have developed a proper sense of their own identity."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "condition",
+     "cn": "条件；状况；环境"
+    },
+    {
+     "w": "proper",
+     "cn": "—"
+    },
+    {
+     "w": "identity",
+     "cn": "—"
+    },
+    {
+     "w": "contribute",
+     "cn": "贡献；促成；导致"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062O49",
+   "src": "2023年6月 六级真题第2套 第49题",
+   "title": "2023年6月 六级真题第2套 · One",
+   "text": "Not all psychologists agree. There're plenty working hand in glove with a f12bn-a-year industry that has turned the manipulation of adult emotions and desires into an art form — often literally. It's also one that's forever developing new ways to persuade our children to desire material possessions, and because of advertisements'viral effect they only need to infect a few to reach the many. Advertising and marketing can serve a useful purpose for children. Marketing may help socialize children as consumers, inform them about products, and help them carve out unique identities as they reach adulthood.\nThen, should we ban all advertising aimed at young children? I say yes.\nOf course there'll be plenty of objections to an outright ban on advertising to the under-11s. There'll be those who argue that would be a breach of freedom of speech and infringe the rights of corporations to brainwash little children into demanding their products.",
+   "words": 152,
+   "q": {
+    "stem": "What does the author imply about the impact of advertising?",
+    "options": [
+     "It is actually infectious to many rather than a few.",
+     "It is rooted in our desire for material possessions.",
+     "It is comparable to that of virus.",
+     "It is literally limited to children."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 5/8 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "industry",
+     "cn": "—"
+    },
+    {
+     "w": "desire",
+     "cn": "—"
+    },
+    {
+     "w": "material",
+     "cn": "—"
+    },
+    {
+     "w": "effect",
+     "cn": "效果；影响；作用"
+    },
+    {
+     "w": "useful",
+     "cn": "—"
+    },
+    {
+     "w": "unique",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062O50",
+   "src": "2023年6月 六级真题第2套 第50题",
+   "title": "2023年6月 六级真题第2套 · One",
+   "text": "Then, should we ban all advertising aimed at young children? I say yes.\nOf course there'll be plenty of objections to an outright ban on advertising to the under-11s. There'll be those who argue that would be a breach of freedom of speech and infringe the rights of corporations to brainwash little children into demanding their products.\nMost parents hate what advertising does to their children, but we do have the power to end it and let our children grow up free from many of the pressures of consumerism until they're old enough to make their own decisions. And though advertising is only part of an _all-pervasive_ (无处不在的) marketing culture we need to make a start somewhere. Let's ban all advertising targeting children of primary school age and younger now.",
+   "words": 130,
+   "q": {
+    "stem": "What is the opponents'argument against a complete ban on advertising to young children?",
+    "options": [
+     "It would deprive them of the chance to learn about products.",
+     "It would render them unable to carve out unique identities.",
+     "It would breach their freedom as would-be consumers.",
+     "It would violate the rights endowed upon advertisers."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文末尾（第 8/8 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "course",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062T51",
+   "src": "2023年6月 六级真题第2套 第51题",
+   "title": "2023年6月 六级真题第2套 · Two",
+   "text": "Many oppose workplace surveillance, because of the inherent dehumanizing effect it has and the relentless pressure it brings. But it's on the rise around the world as firms look to become more efficient by squeezing more productivity from their workers. More than half of companies with over $750m in annual revenue used “non-traditional”monitoring techniques on staff last year.\nMonitoring employee performance gives firms the ability to assess how their staff are performing and interacting, which can be good for both the firm and employees themselves. A growing number of analytics companies offer this service. They gather“data exhaust”left by employees'email and instant messaging apps, and use name badges equipped with radio-frequency identification devices and microphones. These can check how much time you spend talking, your volume and tone of voice, even if you do not dominate conversations. While this may sound intrusive, exponents argue that it can also protect employees against bullying and sexual harassment.",
+   "words": 154,
+   "q": {
+    "stem": "Why are many people opposed to monitoring employee performance?",
+    "options": [
+     "It puts workers under constant pressure.",
+     "It is universally deemed anti-human by nature.",
+     "It does both mental and physical harm to employees monitored.",
+     "It enables firms to squeeze maximal productivity from employees."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文开头（第 1/7 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "workplace",
+     "cn": "—"
+    },
+    {
+     "w": "effect",
+     "cn": "效果；影响；作用"
+    },
+    {
+     "w": "become",
+     "cn": "—"
+    },
+    {
+     "w": "efficient",
+     "cn": "—"
+    },
+    {
+     "w": "productivity",
+     "cn": "—"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062T53",
+   "src": "2023年6月 六级真题第2套 第53题",
+   "title": "2023年6月 六级真题第2套 · Two",
+   "text": "Some of this data analysis can produce unexpected results. For example, it was found that people who sat at 12-person lunch tables tended to interact, share ideas more and outperform those who regularly sat at four-person tables, a fact that would probably have gone undetected without such data analysis.\nOver the last few years a Stockholm co-working space called Epicenter has gone much further and holds popular“chipping parties”, where people can have microchips implanted in their hands. They can use the implants to access electronically-controlled doors, or monitor how typing speed correlates with heart rate. Implanted chips may seem extreme, but it is a relatively small step from ID cards and biometrics to such devices.\nAs long as such schemes are voluntary, there will probably be a growing number of convenience-oriented uses so that a substantial number of workers would opt to have a chip inserted. But if implanted chips are used to reduce slack time or rest breaks, that could prove to be detrimental. And if surveillance tools take away autonomy, that's when they prove most unpopular. A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.",
+   "words": 196,
+   "q": {
+    "stem": "What does the author want to show by the example of different numbers of people interacting at lunch tables?",
+    "options": [
+     "Data analysis is key to the successful implementation of workplace surveillance.",
+     "Analyzing data gathered from workers can yield something unexpected.",
+     "More workmates sitting at a lunch table tend to facilitate interaction and idea sharing.",
+     "It is hard to decide on how many people to sit at a lunch table without data analysis."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 4/7 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "produce",
+     "cn": "—"
+    },
+    {
+     "w": "interact",
+     "cn": "—"
+    },
+    {
+     "w": "popular",
+     "cn": "—"
+    },
+    {
+     "w": "access",
+     "cn": "进入；获取；访问"
+    },
+    {
+     "w": "substantial",
+     "cn": "大量的；实质性的；重大的"
+    },
+    {
+     "w": "reduce",
+     "cn": "减少；降低；缩减"
+    }
+   ]
+  },
+  {
+   "id": "rd2023062T54",
+   "src": "2023年6月 六级真题第2套 第54题",
+   "title": "2023年6月 六级真题第2套 · Two",
+   "text": "As long as such schemes are voluntary, there will probably be a growing number of convenience-oriented uses so that a substantial number of workers would opt to have a chip inserted. But if implanted chips are used to reduce slack time or rest breaks, that could prove to be detrimental. And if surveillance tools take away autonomy, that's when they prove most unpopular. A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.\nIf bosses don't communicate effectively, employees assume the worst. But if they're open about the information they're collecting and what they're doing with it, research suggests 46%of employees are generally okay with it. Although many such monitoring schemes use anonymised data and participation is voluntary, many staffers remain skeptical and fear an erosion of their civil liberties.",
+   "words": 138,
+   "q": {
+    "stem": "What does much of the positive effect of monitoring initiatives depend on?",
+    "options": [
+     "How frequently employees are to be monitored.",
+     "What specific personal information is being excluded.",
+     "What steps are taken to minimize their detrimental impact.",
+     "How well bosses make known their purpose of monitoring."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 5/7 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "substantial",
+     "cn": "大量的；实质性的；重大的"
+    },
+    {
+     "w": "reduce",
+     "cn": "减少；降低；缩减"
+    },
+    {
+     "w": "detrimental",
+     "cn": "有害的；不利的"
+    },
+    {
+     "w": "prevent",
+     "cn": "阻止；预防；防止"
+    },
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    },
+    {
+     "w": "remain",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063O46",
+   "src": "2023年6月 六级真题第3套 第46题",
+   "title": "2023年6月 六级真题第3套 · One",
+   "text": "If you're someone who has turned to snacking on junk food more in the _pandemic_ (大流行病), you're not alone. Investigative reporter Michael Moss says processed food is engineered to hook you, not unlike alcohol, cigarettes, or other harmful substances. His 2013 book, Salt Sugar Fat, explored food companies'aggressive marketing of those products and their impact on our health. In his new book, Hooked, Moss updates the food giants'efforts to keep us eating what they serve, and how they're responding to complaints from consumers and health advocates.\nProcessed food is inexpensive, it's legal, and it's everywhere. Companies'advertising is cueing us to remember those products and we want those products constantly. So the food environment is one of those key things that makes food even more problematic for so many people. Memory, _nostalgia_ (怀旧) in particular, plays a big role in the foods we crave. Soda companies discovered that if they put a soda in the hands of a child when they're at a ball game with their parents, that soda will forever be associated with that joyous moment. Later in life, when that child wants to experience a joyous moment, they're going to think of soda. Many people seek comfort in the snacks they remember from childhood.",
+   "words": 206,
+   "q": {
+    "stem": "In what way does Michael Moss think processed food is comparable to alcohol and cigarettes?",
+    "options": [
+     "They are all addictive.",
+     "They are all necessary evils.",
+     "They are all engineered to be enjoyed.",
+     "They are all in increasingly great demand."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文开头（第 1/5 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "harmful",
+     "cn": "—"
+    },
+    {
+     "w": "impact",
+     "cn": "重大影响；冲击；撞击"
+    },
+    {
+     "w": "remember",
+     "cn": "—"
+    },
+    {
+     "w": "environment",
+     "cn": "环境；自然环境"
+    },
+    {
+     "w": "experience",
+     "cn": "经验；体验；经历"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063O47",
+   "src": "2023年6月 六级真题第3套 第47题",
+   "title": "2023年6月 六级真题第3套 · One",
+   "text": "Processed food is inexpensive, it's legal, and it's everywhere. Companies'advertising is cueing us to remember those products and we want those products constantly. So the food environment is one of those key things that makes food even more problematic for so many people. Memory, _nostalgia_ (怀旧) in particular, plays a big role in the foods we crave. Soda companies discovered that if they put a soda in the hands of a child when they're at a ball game with their parents, that soda will forever be associated with that joyous moment. Later in life, when that child wants to experience a joyous moment, they're going to think of soda. Many people seek comfort in the snacks they remember from childhood.",
+   "words": 120,
+   "q": {
+    "stem": "What does the author say plays a key role in the foods we crave?",
+    "options": [
+     "The food environment.",
+     "Aggressive marketing.",
+     "Convenience.",
+     "Memory."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文中段（第 2/5 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "remember",
+     "cn": "—"
+    },
+    {
+     "w": "environment",
+     "cn": "环境；自然环境"
+    },
+    {
+     "w": "experience",
+     "cn": "经验；体验；经历"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063O48",
+   "src": "2023年6月 六级真题第3套 第48题",
+   "title": "2023年6月 六级真题第3套 · One",
+   "text": "One of the reasons I came to think that some of these food products are even more powerful, more troublesome than drugs can be is memory. What we eat is all about memory. And we begin forming memories for food at a really early age. And we keep those memories for a lifetime. Knowing this, the food industry spends lots of time trying to shape the memories that we have for their products. One of the features of addiction that scientists studying drug addiction discovered back in the 1990s was that the faster a substance hits the brain, the more apt we are as a result to act impulsively. There's nothing faster than food in its ability to hit the brain. For Moss, this puts the notion of “fast food” in an entirely new light as this isn't limited to fast food chains — almost 90% of food products in grocery stores are processed foods. Everything in the industry is about speed, from manufacturing to packaging.",
+   "words": 166,
+   "q": {
+    "stem": "What do food companies do to capitalize on consumers'association with their food products?",
+    "options": [
+     "They strive to influence how consumers remember their products.",
+     "They attempt to use consumers'long-term memories to promote addiction.",
+     "They try to exploit consumers'memories for their products as early as possible.",
+     "They endeavor to find what consumers remember about their products."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 4/5 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "powerful",
+     "cn": "—"
+    },
+    {
+     "w": "industry",
+     "cn": "—"
+    },
+    {
+     "w": "result",
+     "cn": "结果；成果；导致"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063O50",
+   "src": "2023年6月 六级真题第3套 第50题",
+   "title": "2023年6月 六级真题第3套 · One",
+   "text": "One of the reasons I came to think that some of these food products are even more powerful, more troublesome than drugs can be is memory. What we eat is all about memory. And we begin forming memories for food at a really early age. And we keep those memories for a lifetime. Knowing this, the food industry spends lots of time trying to shape the memories that we have for their products. One of the features of addiction that scientists studying drug addiction discovered back in the 1990s was that the faster a substance hits the brain, the more apt we are as a result to act impulsively. There's nothing faster than food in its ability to hit the brain. For Moss, this puts the notion of “fast food” in an entirely new light as this isn't limited to fast food chains — almost 90% of food products in grocery stores are processed foods. Everything in the industry is about speed, from manufacturing to packaging.\nOverall, Moss outlines the industry's dependence on making their products inexpensive, super delicious, and incredibly convenient for consumers. Now that more and more people care about what they put in their bodies and are wanting to eat healthier, these companies are finding it really difficult to meet that new demand because of their own addiction to making these convenience foods.",
+   "words": 226,
+   "q": {
+    "stem": "Why are companies finding it difficult to satisfy consumers'demand for healthier food products?",
+    "options": [
+     "They think speed of production outweighs consumers'health.",
+     "They believe their industry would perish without fast foods.",
+     "They have to strike a balance between taste and nutrition.",
+     "They are hooked on manufacturing convenience foods."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文末尾（第 5/5 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "powerful",
+     "cn": "—"
+    },
+    {
+     "w": "industry",
+     "cn": "—"
+    },
+    {
+     "w": "result",
+     "cn": "结果；成果；导致"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    },
+    {
+     "w": "demand",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063T51",
+   "src": "2023年6月 六级真题第3套 第51题",
+   "title": "2023年6月 六级真题第3套 · Two",
+   "text": "_Chimpanzees_ (黑猩猩), human beings'closest animal relatives, share up to 98% of our genes. Yet humans and chimpanzees lead very different lives. Fewer than 300, 000 wild chimpanzees live in a few forested corners of Africa today, while humans have colonized every corner of the globe. At more than 7 billion, human population dwarfs that of nearly all other mammals — despite our physical weaknesses.\nWhat could account for our species'incredible evolutionary successes?\nOne obvious answer is our big brains. It could be that our raw intelligence gave us an unprecedented ability to think outside the box, innovating solutions to thorny problems as people migrated across the globe.\nBut a growing number of cognitive scientists and _anthropologists_ (人类学家) are rejecting that explanation. They think that, rather than making our living as innovators, we survive and thrive precisely because we don't think for ourselves. Instead, people cope with challenging climates and ecological contexts by carefully copying others.",
+   "words": 155,
+   "q": {
+    "stem": "What might explain humans'having the largest population of almost all mammals?",
+    "options": [
+     "They are equipped with raw strength for solving the most challenging problems.",
+     "They cope with the outside world more effectively than their animal relatives.",
+     "They possess the most outstanding ability to think.",
+     "They know how to survive everywhere on earth."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文开头（第 1/11 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "physical",
+     "cn": "身体的；物理的；物质的"
+    },
+    {
+     "w": "account",
+     "cn": "—"
+    },
+    {
+     "w": "intelligence",
+     "cn": "智力；智能；情报"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    },
+    {
+     "w": "cognitive",
+     "cn": "认知的"
+    },
+    {
+     "w": "survive",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063T52",
+   "src": "2023年6月 六级真题第3套 第52题",
+   "title": "2023年6月 六级真题第3套 · Two",
+   "text": "One obvious answer is our big brains. It could be that our raw intelligence gave us an unprecedented ability to think outside the box, innovating solutions to thorny problems as people migrated across the globe.\nBut a growing number of cognitive scientists and _anthropologists_ (人类学家) are rejecting that explanation. They think that, rather than making our living as innovators, we survive and thrive precisely because we don't think for ourselves. Instead, people cope with challenging climates and ecological contexts by carefully copying others.\nIn a famous study, psychologists Victoria Horner and Andrew Whiten showed two groups of test subjects-children and chimpanzees — a mechanical box with a treat inside. In one condition, the box was opaque, while in the other it was transparent. The experimenters demonstrated how to open the box to retrieve the treat, but they also included the irrelevant step of tapping on the box with a stick.",
+   "words": 151,
+   "q": {
+    "stem": "What accounts for humans'evolutionary successes according to a growing number of cognitive scientists and anthropologists?",
+    "options": [
+     "They are better at innovating solutions.",
+     "They thrive through creative strategies.",
+     "They are naturally adaptive to ecological contexts.",
+     "They meet challenges by imitating others carefully."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文中段（第 4/11 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "intelligence",
+     "cn": "智力；智能；情报"
+    },
+    {
+     "w": "ability",
+     "cn": "能力；才能；本领"
+    },
+    {
+     "w": "survive",
+     "cn": "—"
+    },
+    {
+     "w": "thrive",
+     "cn": "—"
+    },
+    {
+     "w": "condition",
+     "cn": "条件；状况；环境"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063T53",
+   "src": "2023年6月 六级真题第3套 第53题",
+   "title": "2023年6月 六级真题第3套 · Two",
+   "text": "In a famous study, psychologists Victoria Horner and Andrew Whiten showed two groups of test subjects-children and chimpanzees — a mechanical box with a treat inside. In one condition, the box was opaque, while in the other it was transparent. The experimenters demonstrated how to open the box to retrieve the treat, but they also included the irrelevant step of tapping on the box with a stick.\nOddly, the children carefully copied all the steps to open the box, even when they could see that the stick had no practical effect. That is, they copied irrationally:Instead of doing only what was necessary to get their reward, children slavishly imitated every action they'd witnessed.\nOf course, that study only included three-and four-year-olds. But additional research has shown that older children and adults are even more likely to mindlessly copy others'actions, and infants are less likely to over-imitate — that is, to precisely copy even impractical actions.",
+   "words": 157,
+   "q": {
+    "stem": "What does the author think is odd about the findings of the study by Victoria Horner and Andrew Whiten?",
+    "options": [
+     "Children irrationally imitated every action of the experimenters.",
+     "Chimpanzees could tell the transparent box from the opaque one.",
+     "Chimpanzees could retrieve the treat more quickly than children did.",
+     "Children omitted the step of tapping on the box with a stick to open it."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 6/11 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "condition",
+     "cn": "条件；状况；环境"
+    },
+    {
+     "w": "practical",
+     "cn": "—"
+    },
+    {
+     "w": "effect",
+     "cn": "效果；影响；作用"
+    },
+    {
+     "w": "reward",
+     "cn": "—"
+    },
+    {
+     "w": "action",
+     "cn": "行动；动作；作用"
+    },
+    {
+     "w": "course",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023063T55",
+   "src": "2023年6月 六级真题第3套 第55题",
+   "title": "2023年6月 六级真题第3套 · Two",
+   "text": "By contrast, chimpanzees in the study only over-imitated in the opaque condition. In the transparent condition — where they saw that the stick was mechanically useless — they ignored that step entirely. Other research has since supported these findings.\nWhen it comes to copying, chimpanzees are more rational than human children or adults.\nWhere does the seemingly irrational human preference for over-imitation come from?Anthropologist Joseph Henrich points out that people around the world rely on technologies that are often so complex that no one can learn them rationally. Instead, people must learn them step by step, trusting in the wisdom of more experienced elders and peers.\nSo the next time you hear someone arguing passionately that everyone should embrace nonconformity and avoid imitating others, you might laugh a little bit. We're not chimpanzees, after all.",
+   "words": 135,
+   "q": {
+    "stem": "What point does the author want to emphasize when he says “We're not chimpanzees”?",
+    "options": [
+     "It is arguable whether everyone should avoid imitation.",
+     "It is characteristic of human beings to copy others.",
+     "It is desirable to trust in more knowledgeable peers.",
+     "It is naive to laugh at someone embracing nonconformity."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 10/11 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "condition",
+     "cn": "条件；状况；环境"
+    },
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    },
+    {
+     "w": "rational",
+     "cn": "理性的；合理的"
+    },
+    {
+     "w": "preference",
+     "cn": "—"
+    },
+    {
+     "w": "complex",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121O46",
+   "src": "2023年12月 六级真题第1套 第46题",
+   "title": "2023年12月 六级真题第1套 · One",
+   "text": "One of the great successes of the Republican Party in recent decades is the relentless propagation of a simple formula for economic growth: tax cuts.\nThe formula doesn't work, but that has not affected its popularity. And while the cult of tax cuts has attracted many critics, it lacks for obvious rivals.\nDemocratic politicians have tended to campaign on helping people left behind by economic growth. When Democrats do talk about encouraging economic growth, they often sound like Republicans.\nThis is not just a political problem for Democrats; it is an economic problem for the United States. The nation needs a better story about the drivers of economic growth. The painful lessons of recent decades point to a promising candidate: higher wages.",
+   "words": 122,
+   "q": {
+    "stem": "Why does the formula of tax cuts remain popular though ineffective?",
+    "options": [
+     "Its critics' voice has not been heard throughout the country.",
+     "There seem to be no other options available to replace it.",
+     "The cult of tax cuts has been relentlessly propagated by all policymakers.",
+     "There appears to be a misunderstanding of the formula among the public."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文中段（第 3/12 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "economic",
+     "cn": "经济的；经济学的；有利可图的"
+    },
+    {
+     "w": "growth",
+     "cn": "—"
+    },
+    {
+     "w": "popularity",
+     "cn": "—"
+    },
+    {
+     "w": "political",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121O47",
+   "src": "2023年12月 六级真题第1套 第47题",
+   "title": "2023年12月 六级真题第1套 · One",
+   "text": "This is not just a political problem for Democrats; it is an economic problem for the United States. The nation needs a better story about the drivers of economic growth. The painful lessons of recent decades point to a promising candidate: higher wages.\nRaising the wages of American workers ought to be the priority of economic policymakers. We'd all be better off paying less attention to quarterly updates on the growth of the nation's gross domestic product (GDP) and focusing instead on the growth of workers' paychecks.\nSet aside, for the moment, the familiar argument for higher wages: fairness. The argument here is that higher wages can fuel the engine of economic growth.\nPerhaps the most famous illustration of the benefits is the story of Henry Ford's decision in 1914 to pay $5 a day to workers on his Model T assembly lines. He did it to increase production — he was paying a premium to maintain a reliable workforce. The unexpected benefit was that Ford's factory workers became Ford customers, too.",
+   "words": 172,
+   "q": {
+    "stem": "What does the author think is a more effective measure for driving economic growth in the U.S.?",
+    "options": [
+     "Aiding people left behind by economic growth.",
+     "Prioritizing the growth of the nation's GDP.",
+     "Increasing the compensation for labor.",
+     "Introducing even more extensive tax cuts."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 5/12 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "political",
+     "cn": "—"
+    },
+    {
+     "w": "priority",
+     "cn": "优先；重点；优先事项"
+    },
+    {
+     "w": "attention",
+     "cn": "注意力；关注；关心"
+    },
+    {
+     "w": "argument",
+     "cn": "争论；论据；论点"
+    },
+    {
+     "w": "decision",
+     "cn": "决定；决策；抉择"
+    },
+    {
+     "w": "increase",
+     "cn": "增加；提高；增长"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121O48",
+   "src": "2023年12月 六级真题第1套 第48题",
+   "title": "2023年12月 六级真题第1套 · One",
+   "text": "Set aside, for the moment, the familiar argument for higher wages: fairness. The argument here is that higher wages can fuel the engine of economic growth.\nPerhaps the most famous illustration of the benefits is the story of Henry Ford's decision in 1914 to pay $5 a day to workers on his Model T assembly lines. He did it to increase production — he was paying a premium to maintain a reliable workforce. The unexpected benefit was that Ford's factory workers became Ford customers, too.\nThe same logic still holds: Consumption drives the American economy, and workers who are paid more can spend more.\nMainstream economists insist that it is impossible to order up a sustainable increase in wages because compensation levels reflect the unerring judgment of market forces. The conventional wisdom held that productivity growth was the only route to higher wages. Through that lens, efforts to negotiate higher wages were counterproductive. Minimum-wage laws would raise unemployment because there was only so much money in the wage pool, and if some people got more, others would get none.",
+   "words": 179,
+   "q": {
+    "stem": "What is the logic underlying the author's viewpoint?",
+    "options": [
+     "The growth of workers' paychecks ultimately boosts the nation's economy.",
+     "Paying a premium to maintain a reliable workforce attracts more customers.",
+     "Consumption stimulates the desire for higher wages.",
+     "Familiar arguments for higher wages are outdated."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 7/12 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "argument",
+     "cn": "争论；论据；论点"
+    },
+    {
+     "w": "economic",
+     "cn": "经济的；经济学的；有利可图的"
+    },
+    {
+     "w": "growth",
+     "cn": "—"
+    },
+    {
+     "w": "decision",
+     "cn": "决定；决策；抉择"
+    },
+    {
+     "w": "increase",
+     "cn": "增加；提高；增长"
+    },
+    {
+     "w": "production",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121O50",
+   "src": "2023年12月 六级真题第1套 第50题",
+   "title": "2023年12月 六级真题第1套 · One",
+   "text": "Mainstream economists insist that it is impossible to order up a sustainable increase in wages because compensation levels reflect the unerring judgment of market forces. The conventional wisdom held that productivity growth was the only route to higher wages. Through that lens, efforts to negotiate higher wages were counterproductive. Minimum-wage laws would raise unemployment because there was only so much money in the wage pool, and if some people got more, others would get none.\nIt was in the context of this worldview that it became popular to argue that tax cuts would drive prosperity. Rich people would invest, productivity would increase, wages would rise.\nIn the real world, things are more complicated. Wages are influenced by a tug of war between employers and workers, and employers have been winning. One clear piece of evidence is the widening gap between productivity growth and wage growth since roughly 1970. Productivity has more than doubled; wages have lagged far behind.\nA focus on wage growth would provide an _antidote_ (矫正方法) to the attractive simplicity of the belief in the magical power of tax cuts.",
+   "words": 182,
+   "q": {
+    "stem": "What do we learn about things in the real world in America for the past 50 years or so?",
+    "options": [
+     "People have failed to see a corresponding increase in wages and in productivity.",
+     "People have been disheartened by the widening gap between the haves and have-nots.",
+     "People have witnessed a tug of war between Republicans and Democrats over tax cuts.",
+     "People have seen the link disappearing between productivity and workers' well-being."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 11/12 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "impossible",
+     "cn": "—"
+    },
+    {
+     "w": "sustainable",
+     "cn": "可持续的；能长期维持的"
+    },
+    {
+     "w": "increase",
+     "cn": "增加；提高；增长"
+    },
+    {
+     "w": "reflect",
+     "cn": "反映；反思；体现"
+    },
+    {
+     "w": "judgment",
+     "cn": "—"
+    },
+    {
+     "w": "productivity",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121T52",
+   "src": "2023年12月 六级真题第1套 第52题",
+   "title": "2023年12月 六级真题第1套 · Two",
+   "text": "Unfortunately, a new study in Nature Neuroscience makes for disheartening reading. The team finds that the majority of editors in top psychology and neuroscience journals are male and based in the United States: a situation that may be amplifying existing gender inequalities in the field and influencing the kind of research that gets published.\nMen were found to account for 60% of the editors of psychology journals. There were significantly more male than female editors at each level of seniority, and men made up the majority of editors in over three quarters of the journals. Crucially, the proportion of female editors was significantly lower than the overall proportion of women psychology researchers.\nThe differences were even starker in the neuroscience journals: 70% of editors were male, and men held the majority of editorial positions in 88% of journals. In this case, the proportion of female editors was not significantly lower than the proportion of female researchers working in neuroscience — a finding that reveals enduring gender disparities in the field more broadly.",
+   "words": 172,
+   "q": {
+    "stem": "What do we learn from the findings of a new study in Nature Neuroscience?",
+    "options": [
+     "The majority of top psychology and neuroscience journals reflect a variety of voices, experiences, and identities.",
+     "The editorial boards of most psychology and neuroscience journals do influence the direction their field takes.",
+     "The editorial boards of the most important journals in psychology and neuroscience are male-dominated.",
+     "The majority of editors in top psychology and neuroscience journals have relevant backgrounds."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "majority",
+     "cn": "—"
+    },
+    {
+     "w": "situation",
+     "cn": "—"
+    },
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    },
+    {
+     "w": "account",
+     "cn": "—"
+    },
+    {
+     "w": "proportion",
+     "cn": "比例；部分"
+    }
+   ]
+  },
+  {
+   "id": "rd2023121T53",
+   "src": "2023年12月 六级真题第1套 第53题",
+   "title": "2023年12月 六级真题第1套 · Two",
+   "text": "Men were found to account for 60% of the editors of psychology journals. There were significantly more male than female editors at each level of seniority, and men made up the majority of editors in over three quarters of the journals. Crucially, the proportion of female editors was significantly lower than the overall proportion of women psychology researchers.\nThe differences were even starker in the neuroscience journals: 70% of editors were male, and men held the majority of editorial positions in 88% of journals. In this case, the proportion of female editors was not significantly lower than the proportion of female researchers working in neuroscience — a finding that reveals enduring gender disparities in the field more broadly.\nBased on their results, the team concludes that “the ideas, values, and decision-making biases of men are overrepresented in the editorial positions of the most recognized academic journals in psychology and neuroscience.”",
+   "words": 150,
+   "q": {
+    "stem": "What fact does the author highlight concerning the gender differences in editors of psychology journals?",
+    "options": [
+     "There were quite a few female editors who also distinguished themselves as influential psychology researchers.",
+     "The number of female editors was simply disproportionate to that of women engaged in psychology research.",
+     "The proportion of female editors was increasingly lower at senior levels.",
+     "There were few female editors who could move up to senior positions."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 4/8 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "account",
+     "cn": "—"
+    },
+    {
+     "w": "majority",
+     "cn": "—"
+    },
+    {
+     "w": "proportion",
+     "cn": "比例；部分"
+    },
+    {
+     "w": "academic",
+     "cn": "学术的；学院的；理论的"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122O46",
+   "src": "2023年12月 六级真题第2套 第46题",
+   "title": "2023年12月 六级真题第2套 · One",
+   "text": "Could you get by without using the internet for four and a half years? That's exactly what singer and actress Selena Gomez has done in a bid to improve her mental health.\nShe has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016. “Taking a break from social media was the best decision that I've ever made for my mental health”, says she. “The unnecessary hate and comparisons went away once I put my phone down.”\nDitching the web at large, however, is a far more subtle and complicated prospect. The increasing digitisation of our society means that everything from paying a gas bill to plotting a route to a friend's house and even making a phone call is at the mercy of your internet connection. Actively opting out of using the internet becomes a matter of privilege.",
+   "words": 157,
+   "q": {
+    "stem": "What do we learn about singer and actress Selena Gomez in the past four and a half years?",
+    "options": [
+     "She has had worsening mental problems.",
+     "She has won Instagram's most followers.",
+     "She has refrained from using social media.",
+     "She has succeeded in a bid on the internet"
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 2/8 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "improve",
+     "cn": "改善；提高；改进"
+    },
+    {
+     "w": "mental",
+     "cn": "精神的；心理的；智力的"
+    },
+    {
+     "w": "spoken",
+     "cn": "—"
+    },
+    {
+     "w": "relationship",
+     "cn": "关系；联系；关联"
+    },
+    {
+     "w": "decision",
+     "cn": "决定；决策；抉择"
+    },
+    {
+     "w": "increasing",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122O47",
+   "src": "2023年12月 六级真题第2套 第47题",
+   "title": "2023年12月 六级真题第2套 · One",
+   "text": "She has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016. “Taking a break from social media was the best decision that I've ever made for my mental health”, says she. “The unnecessary hate and comparisons went away once I put my phone down.”\nDitching the web at large, however, is a far more subtle and complicated prospect. The increasing digitisation of our society means that everything from paying a gas bill to plotting a route to a friend's house and even making a phone call is at the mercy of your internet connection. Actively opting out of using the internet becomes a matter of privilege.",
+   "words": 125,
+   "q": {
+    "stem": "Why does actively opting out of using the internet become a matter of privilege?",
+    "options": [
+     "Most people find it subtle and complicated to give up using the internet.",
+     "Most people can hardly ditch the web while avoiding hate and comparisons.",
+     "Most people can hardly get by without the internet due to growing digitisation.",
+     "Most people have been seriously addicted to the web without being aware of it."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "spoken",
+     "cn": "—"
+    },
+    {
+     "w": "relationship",
+     "cn": "关系；联系；关联"
+    },
+    {
+     "w": "mental",
+     "cn": "精神的；心理的；智力的"
+    },
+    {
+     "w": "decision",
+     "cn": "决定；决策；抉择"
+    },
+    {
+     "w": "increasing",
+     "cn": "—"
+    },
+    {
+     "w": "connection",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122O48",
+   "src": "2023年12月 六级真题第2套 第48题",
+   "title": "2023年12月 六级真题第2套 · One",
+   "text": "Ms Gomez's multi-millionaire status has allowed her to take the “social” out of social media, so she can continue to leverage her enormous fame while keeping the _trolls_ (恶意挑衅的帖子) at bay. The fact that she's still the second most-followed woman on Instagram suggests it's entirely possible to maintain a significant web profile to promote various projects - by way of a dedicated team - without being exposed to the cruel comments, hate mail, and rape or death threats.\nIt goes without saying that this is fundamentally different from how the rest of us without beauty deals and films to publicise use the likes of Instagram, TikTok, and Twitter, but even the concept of a digital _detox_ (戒瘾) requires having a device and connectivity to choose to disconnect from.",
+   "words": 128,
+   "q": {
+    "stem": "Why does the author say “witnessing companies...feels particularly irritating” (Lines 2-4, Para. 6)?",
+    "options": [
+     "The UK digital divide would further worsen due to the metaverse.",
+     "The concept of the metaverse is believed to be still quite illusory.",
+     "School children would be drawn farther away from the real world.",
+     "Most families in the UK do not have stable broadband connections."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 4/8 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "continue",
+     "cn": "—"
+    },
+    {
+     "w": "maintain",
+     "cn": "维持；保持；维护"
+    },
+    {
+     "w": "significant",
+     "cn": "—"
+    },
+    {
+     "w": "promote",
+     "cn": "促进；推广；提升"
+    },
+    {
+     "w": "beauty",
+     "cn": "—"
+    },
+    {
+     "w": "concept",
+     "cn": "概念；观念"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122O49",
+   "src": "2023年12月 六级真题第2套 第49题",
+   "title": "2023年12月 六级真题第2套 · One",
+   "text": "It goes without saying that this is fundamentally different from how the rest of us without beauty deals and films to publicise use the likes of Instagram, TikTok, and Twitter, but even the concept of a digital _detox_ (戒瘾) requires having a device and connectivity to choose to disconnect from.\nThe UK's digital divide has worsened over the past two years, leaving poorer families without broadband connections in their homes. Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.\nConsequently, it's worth bearing in mind that while deleting all social media accounts will undoubtedly make some feel infinitely better, many other people benefit from the strong sense of community that sharing platforms can breed.",
+   "words": 143,
+   "q": {
+    "stem": "What is worth bearing in mind concerning social media platforms?",
+    "options": [
+     "They are conducive to promoting societal equality.",
+     "They help many people feel connected with others.",
+     "They provide a necessary device for a digital detox.",
+     "They create a virtual community on the internet."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 6/8 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "beauty",
+     "cn": "—"
+    },
+    {
+     "w": "concept",
+     "cn": "概念；观念"
+    },
+    {
+     "w": "digital",
+     "cn": "数字的；数码的"
+    },
+    {
+     "w": "benefit",
+     "cn": "好处；利益；有益于"
+    },
+    {
+     "w": "strong",
+     "cn": "—"
+    },
+    {
+     "w": "community",
+     "cn": "社区；团体；社会"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122O50",
+   "src": "2023年12月 六级真题第2套 第50题",
+   "title": "2023年12月 六级真题第2套 · One",
+   "text": "The UK's digital divide has worsened over the past two years, leaving poorer families without broadband connections in their homes. Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.\nConsequently, it's worth bearing in mind that while deleting all social media accounts will undoubtedly make some feel infinitely better, many other people benefit from the strong sense of community that sharing platforms can breed.\nInternet access will continue to grow in importance as we edge further towards web 3.0, and greater resources and initiatives are needed to provide the underprivileged with the connectivity they desperately need to learn, work, and live. It's crucial that people who feel that social media is having a detrimental effect on their mental health are allowed to switch off and for those living in digital exclusion to be able to switch on in the first place.",
+   "words": 170,
+   "q": {
+    "stem": "What does the author think is really important for those living in digital exclusion?",
+    "options": [
+     "Having access to the internet.",
+     "Edging further towards web 3.0.",
+     "Getting more educational resources.",
+     "Opening more social media accounts."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文末尾（第 8/8 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "benefit",
+     "cn": "好处；利益；有益于"
+    },
+    {
+     "w": "strong",
+     "cn": "—"
+    },
+    {
+     "w": "community",
+     "cn": "社区；团体；社会"
+    },
+    {
+     "w": "access",
+     "cn": "进入；获取；访问"
+    },
+    {
+     "w": "continue",
+     "cn": "—"
+    },
+    {
+     "w": "importance",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122T51",
+   "src": "2023年12月 六级真题第2套 第51题",
+   "title": "2023年12月 六级真题第2套 · Two",
+   "text": "Psychologically speaking, competition has been seen as an inevitable consequence of human drives. According to Sigmund Freud, humans are born screaming for attention and full of organic drives for fulfillment in various areas. Initially, we compete for the attention of our parents. Thereafter, we are at the mercy of a battle between our base impulses for self-fulfillment and social and cultural norms which prohibit pure indulgence.\nCurrent work in _anthropology_ (人类学) has suggested, however, that this view of the role of competition in human behavior may be incorrect. Thomas Hobbes, one of the great philosophers of the seventeenth century, is perhaps best remembered for his characterization of the “natural world,” that is, the world before the imposition of the will of humanity, as being “nasty, brutish, and short.” This image of the pre-rational world is still widely held, reinforced by Charles Darwin's highly influential work, _The Origin of Species_, which established the doctrine of natural selection. This doctrine, which takes for granted that those species best able to adapt to and master the natural environment in which they live will survive, has suggested that the struggle for survival is an inherent human trait which determines a person's success. Darwin's theory has even been summarized as “survival of the fittest” — a phrase Darwin himself never used — further highlighting competition's role in success.",
+   "words": 223,
+   "q": {
+    "stem": "What does the author think is easy to see in many areas of contemporary life?",
+    "options": [
+     "The disagreement on the inevitability of competition.",
+     "The consequence of psychological investigation.",
+     "The effect of human drives.",
+     "The impact of competition."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 2/5 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "competition",
+     "cn": "竞争；比赛；竞赛"
+    },
+    {
+     "w": "consequence",
+     "cn": "后果；影响；重要性"
+    },
+    {
+     "w": "attention",
+     "cn": "注意力；关注；关心"
+    },
+    {
+     "w": "cultural",
+     "cn": "文化的；人文的；教养的"
+    },
+    {
+     "w": "behavior",
+     "cn": "行为；表现；态度"
+    },
+    {
+     "w": "century",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122T53",
+   "src": "2023年12月 六级真题第2套 第53题",
+   "title": "2023年12月 六级真题第2套 · Two",
+   "text": "Current work in _anthropology_ (人类学) has suggested, however, that this view of the role of competition in human behavior may be incorrect. Thomas Hobbes, one of the great philosophers of the seventeenth century, is perhaps best remembered for his characterization of the “natural world,” that is, the world before the imposition of the will of humanity, as being “nasty, brutish, and short.” This image of the pre-rational world is still widely held, reinforced by Charles Darwin's highly influential work, _The Origin of Species_, which established the doctrine of natural selection. This doctrine, which takes for granted that those species best able to adapt to and master the natural environment in which they live will survive, has suggested that the struggle for survival is an inherent human trait which determines a person's success. Darwin's theory has even been summarized as “survival of the fittest” — a phrase Darwin himself never used — further highlighting competition's role in success.",
+   "words": 157,
+   "q": {
+    "stem": "What do we learn about the “natural world” characterized by Thomas Hobbes?",
+    "options": [
+     "It gets misrepresented by philosophers and anthropologists.",
+     "It gets distorted in Darwin's _The Origin of Species_.",
+     "It is free from the rational intervention of humans.",
+     "It is the pre-rational world rarely appreciated nowadays."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 3/5 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "competition",
+     "cn": "竞争；比赛；竞赛"
+    },
+    {
+     "w": "behavior",
+     "cn": "行为；表现；态度"
+    },
+    {
+     "w": "century",
+     "cn": "—"
+    },
+    {
+     "w": "humanity",
+     "cn": "—"
+    },
+    {
+     "w": "environment",
+     "cn": "环境；自然环境"
+    },
+    {
+     "w": "survive",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122T54",
+   "src": "2023年12月 六级真题第2套 第54题",
+   "title": "2023年12月 六级真题第2套 · Two",
+   "text": "Current work in _anthropology_ (人类学) has suggested, however, that this view of the role of competition in human behavior may be incorrect. Thomas Hobbes, one of the great philosophers of the seventeenth century, is perhaps best remembered for his characterization of the “natural world,” that is, the world before the imposition of the will of humanity, as being “nasty, brutish, and short.” This image of the pre-rational world is still widely held, reinforced by Charles Darwin's highly influential work, _The Origin of Species_, which established the doctrine of natural selection. This doctrine, which takes for granted that those species best able to adapt to and master the natural environment in which they live will survive, has suggested that the struggle for survival is an inherent human trait which determines a person's success. Darwin's theory has even been summarized as “survival of the fittest” — a phrase Darwin himself never used — further highlighting competition's role in success.\nAs it has often been pointed out, however, there is nothing in the concept of natural selection that suggests that competition is the most successful strategy for survival of the fittest. Darwin asserted in _The Origin of Species_ that the struggles he was describing should be viewed as metaphors and could easily include dependence and cooperation.",
+   "words": 213,
+   "q": {
+    "stem": "What can we conclude from Darwin's assertion in _The Origin of Species_?",
+    "options": [
+     "All species inherently depend on others for survival.",
+     "Struggles for survival do not exclude mutual support.",
+     "Competition weighs as much as cooperation as a survival strategy.",
+     "The strongest species proves to be the fittest in natural selection."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 4/5 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "competition",
+     "cn": "竞争；比赛；竞赛"
+    },
+    {
+     "w": "behavior",
+     "cn": "行为；表现；态度"
+    },
+    {
+     "w": "century",
+     "cn": "—"
+    },
+    {
+     "w": "humanity",
+     "cn": "—"
+    },
+    {
+     "w": "environment",
+     "cn": "环境；自然环境"
+    },
+    {
+     "w": "survive",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023122T55",
+   "src": "2023年12月 六级真题第2套 第55题",
+   "title": "2023年12月 六级真题第2套 · Two",
+   "text": "Many studies have been conducted to test the importance placed on competition as opposed to other values, such as cooperation — by various cultures, and generally conclude that Americans uniquely praise competition as natural, inevitable, and desirable. In 1937, the world-renowned anthropologist Margaret Mead published _Cooperation and Competition among Primitive Peoples_, based on her studies of several societies that did not prize competition, and, in fact, seemed at times to place a negative value on it. One such society was the Zuni Indians of Arizona, and they, Mead found, valued cooperation far more than competition. After studying dozens of such cultures, Mead's final conclusion was that competitiveness is a culturally created aspect of human behavior, and that its prevalence in a particular society is relative to how that society values it.",
+   "words": 131,
+   "q": {
+    "stem": "What conclusion did Margaret Mead reach after studying dozens of different cultures?",
+    "options": [
+     "It is characteristic of humans to be competitive.",
+     "Americans are uniquely opposed to cooperation.",
+     "Competition is relatively more prevalent in Western societies.",
+     "People's attitude towards competition is actually culture-bound."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文末尾（第 5/5 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "importance",
+     "cn": "—"
+    },
+    {
+     "w": "competition",
+     "cn": "竞争；比赛；竞赛"
+    },
+    {
+     "w": "cooperation",
+     "cn": "—"
+    },
+    {
+     "w": "negative",
+     "cn": "消极的；否定的；负面的"
+    },
+    {
+     "w": "aspect",
+     "cn": "方面；层面"
+    },
+    {
+     "w": "behavior",
+     "cn": "行为；表现；态度"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123O47",
+   "src": "2023年12月 六级真题第3套 第47题",
+   "title": "2023年12月 六级真题第3套 · One",
+   "text": "Many researchers seem to be content with sharing the results of their studies in academic journals or at conferences. But few journals allow everybody to read the findings. Even articles freely available are usually written in academic language incomprehensible to the average reader.\nFor researchers in the tenure-track system, their main goal is winning tenure, which in part can be achieved by getting a number of papers published in prominent journals. Pressures like this mean community-level outreach is not prioritized.\nMany researchers lack the writing skills to describe their results to a general audience. They may also worry about whether the public will understand their findings, or about findings being used to influence controversial policies. These concerns cause some researchers to shy away from communicating their findings outside the academic community.",
+   "words": 131,
+   "q": {
+    "stem": "Why do ordinary readers find it difficult to access the results of researchers' studies?",
+    "options": [
+     "They cannot understand the academic language used for reporting these results.",
+     "They feel intimidated by the jargon researchers use to describe their findings.",
+     "They do not attend conferences where these results are freely available.",
+     "They have few chances to locate the journals that publish these findings."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 4/12 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "academic",
+     "cn": "学术的；学院的；理论的"
+    },
+    {
+     "w": "average",
+     "cn": "—"
+    },
+    {
+     "w": "reader",
+     "cn": "—"
+    },
+    {
+     "w": "audience",
+     "cn": "观众；听众；读者"
+    },
+    {
+     "w": "understand",
+     "cn": "理解；了解；懂得"
+    },
+    {
+     "w": "influence",
+     "cn": "影响；左右；对…起作用"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123O49",
+   "src": "2023年12月 六级真题第3套 第49题",
+   "title": "2023年12月 六级真题第3套 · One",
+   "text": "The benefits of sharing findings flow both ways. Engaging with other researchers and the public can lead to unexpected new connections and new ideas that could suggest fruitful new directions for research.\nTo benefit both researchers and the communities, the need to find innovative, accessible ways to share the work cannot be overstated.\nInstitutions and funding organizations should support more researchers to publish in open access journals so that the public doesn't have to pay to read them. Institutions and researchers should invest in partnerships that expand capacity for sharing results more broadly.\nFurthermore, ethics committees should make it mandatory for researchers to share their results with the public. Every research participant should opt in or out of receiving results, as part of the process of giving informed consent.",
+   "words": 129,
+   "q": {
+    "stem": "How can sharing findings benefit researchers themselves?",
+    "options": [
+     "By helping them to identify new research directions.",
+     "By enabling them to understand crises plaguing society.",
+     "By enabling them to effectively address social discrepancies.",
+     "By helping them to forge ties with government agencies."
+    ],
+    "answer": "A",
+    "explain": "依据定位：短文中段（第 9/12 段）。正确答案 A。"
+   },
+   "vocab": [
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    },
+    {
+     "w": "support",
+     "cn": "支持；支撑；证实"
+    },
+    {
+     "w": "publish",
+     "cn": "—"
+    },
+    {
+     "w": "access",
+     "cn": "进入；获取；访问"
+    },
+    {
+     "w": "invest",
+     "cn": "—"
+    },
+    {
+     "w": "capacity",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123O50",
+   "src": "2023年12月 六级真题第3套 第50题",
+   "title": "2023年12月 六级真题第3套 · One",
+   "text": "Furthermore, ethics committees should make it mandatory for researchers to share their results with the public. Every research participant should opt in or out of receiving results, as part of the process of giving informed consent.\nThere could be misunderstanding of the findings presented by the researcher because of technical terms. But this can be resolved by researchers engaging the services of professional writers or communication officers to help with translating their study into more accessible language and share it widely with media outlets and the public.\nSharing results with the people who are most affected by them makes us better researchers and ensures that our work can be used to improve people's lives. Institutions and collaborators must recognize the value of doing so.",
+   "words": 124,
+   "q": {
+    "stem": "Why are researchers advised to engage the services of professional writers or communication officers?",
+    "options": [
+     "To satisfy ethics committees' mandatory requirements of researchers.",
+     "To translate their study into languages accessible to readers overseas.",
+     "To make their publications correctly understood by the public.",
+     "To render their findings acceptable by prominent journals."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 11/12 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "research",
+     "cn": "研究；调查；探索"
+    },
+    {
+     "w": "participant",
+     "cn": "—"
+    },
+    {
+     "w": "process",
+     "cn": "过程；流程；处理"
+    },
+    {
+     "w": "researcher",
+     "cn": "研究人员；调查者"
+    },
+    {
+     "w": "improve",
+     "cn": "改善；提高；改进"
+    },
+    {
+     "w": "recognize",
+     "cn": "认识到；承认；认出"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123T53",
+   "src": "2023年12月 六级真题第3套 第53题",
+   "title": "2023年12月 六级真题第3套 · Two",
+   "text": "Does this perhaps explain, in part, the lack of data about how spiders are faring in our age of ecological crisis? British butterflies are the most studied group of insects in the world, due to the long tradition of collecting and observing them. But spider conservationists point out that it was only in the 1980s that the classification of house spiders was properly sorted out. And while information about insect populations is gathered by experiments that measure the numbers hitting windscreens or traps, there have been few attempts to count spiders.\nThe huge reductions in the numbers of flying insects can only mean a reduction in spiders' food supply. A recent landmark study identified a 75% fall in insect populations between 1989 and 2016, with pesticide use thought to be to blame along with the destruction of wild areas for development. This means the overall picture for spiders is worrying, as it is for most creatures. But conservationists are most concerned about those varieties that are threatened due to habitat loss and fragmentation, which makes it impossible for them to migrate.",
+   "words": 181,
+   "q": {
+    "stem": "What partly accounts for the reduction in spiders' food supply?",
+    "options": [
+     "The long tradition of collecting insects.",
+     "Fast reproduction of their competitors.",
+     "Chemicals used for killing insects.",
+     "The extinction of a lot of wildlife."
+    ],
+    "answer": "C",
+    "explain": "依据定位：短文中段（第 3/6 段）。正确答案 C。"
+   },
+   "vocab": [
+    {
+     "w": "tradition",
+     "cn": "传统；惯例；风俗"
+    },
+    {
+     "w": "measure",
+     "cn": "—"
+    },
+    {
+     "w": "destruction",
+     "cn": "—"
+    },
+    {
+     "w": "development",
+     "cn": "发展；开发；进展"
+    },
+    {
+     "w": "picture",
+     "cn": "—"
+    },
+    {
+     "w": "impossible",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123T54",
+   "src": "2023年12月 六级真题第3套 第54题",
+   "title": "2023年12月 六级真题第3套 · Two",
+   "text": "The huge reductions in the numbers of flying insects can only mean a reduction in spiders' food supply. A recent landmark study identified a 75% fall in insect populations between 1989 and 2016, with pesticide use thought to be to blame along with the destruction of wild areas for development. This means the overall picture for spiders is worrying, as it is for most creatures. But conservationists are most concerned about those varieties that are threatened due to habitat loss and fragmentation, which makes it impossible for them to migrate.\nOf around 650 spider species regularly recorded in the UK, the majority thrive in marshes and wasteland. Conservation efforts, often led by determined individuals, have helped some species to recover by reintroducing them to new areas. With rewilding now firmly on the environmental policy agenda, the hope is that in future, spiders will be enabled to migrate by themselves, adapting to climate change by moving along wildlife corridors.",
+   "words": 158,
+   "q": {
+    "stem": "What does the passage say is conservationists' biggest worry?",
+    "options": [
+     "A variety of spiders are threatened due to pollution of marshes and wasteland.",
+     "Certain species of spiders are endangered due to loss of their natural homes.",
+     "An increasing number of spiders are being killed by deadly pesticides.",
+     "More and more spider species are found losing their ability to migrate."
+    ],
+    "answer": "B",
+    "explain": "依据定位：短文中段（第 4/6 段）。正确答案 B。"
+   },
+   "vocab": [
+    {
+     "w": "reduction",
+     "cn": "—"
+    },
+    {
+     "w": "destruction",
+     "cn": "—"
+    },
+    {
+     "w": "development",
+     "cn": "发展；开发；进展"
+    },
+    {
+     "w": "picture",
+     "cn": "—"
+    },
+    {
+     "w": "impossible",
+     "cn": "—"
+    },
+    {
+     "w": "majority",
+     "cn": "—"
+    }
+   ]
+  },
+  {
+   "id": "rd2023123T55",
+   "src": "2023年12月 六级真题第3套 第55题",
+   "title": "2023年12月 六级真题第3套 · Two",
+   "text": "Of around 650 spider species regularly recorded in the UK, the majority thrive in marshes and wasteland. Conservation efforts, often led by determined individuals, have helped some species to recover by reintroducing them to new areas. With rewilding now firmly on the environmental policy agenda, the hope is that in future, spiders will be enabled to migrate by themselves, adapting to climate change by moving along wildlife corridors.\nIt seems unlikely that spiders will ever attract the same level of human enthusiasm as bees, birds, or butterflies, in spite of their unique status as nature's spinners. But as they reveal themselves in all their splendour this autumn, it would be a good thing if more animal lovers recognised the ways in which spiders are simply terrific.",
+   "words": 126,
+   "q": {
+    "stem": "What wish does the author express close to the end of the passage?",
+    "options": [
+     "More people would recognise spiders' unique status in the ecosystem.",
+     "People would show greater enthusiasm for spiders than for butterflies.",
+     "There would be sufficient corridors for spiders to move along.",
+     "There would be more people appreciating spiders' splendour."
+    ],
+    "answer": "D",
+    "explain": "依据定位：短文末尾（第 6/6 段）。正确答案 D。"
+   },
+   "vocab": [
+    {
+     "w": "majority",
+     "cn": "—"
+    },
+    {
+     "w": "thrive",
+     "cn": "—"
+    },
+    {
+     "w": "conservation",
+     "cn": "保护；保存；节约"
+    },
+    {
+     "w": "environmental",
+     "cn": "环境的；与自然相关的"
+    },
+    {
+     "w": "policy",
+     "cn": "政策；方针；保险单"
+    },
+    {
+     "w": "climate",
+     "cn": "气候；风气；氛围"
+    }
+   ]
+  }
+ ]
+}
