@@ -9,6 +9,7 @@ const LS_KEY = 'sgwd_progress_v1';
 const DEFAULT_STATE = {
   learned: {},   // unitId(str) -> {wordKey: true} 已标记掌握
   wrong: {},     // unitId(str) -> {wordKey: true} 错词
+  favorites: {}, // unitId(str) -> {wordKey: true} 收藏（以后再复习）
   stats: { tested: 0, correct: 0 },
   settings: { rate: 0.9, fontSize: 17, sakura: true },
   scrolls: {},   // unitId(str) -> 学习页滚动位置
@@ -29,6 +30,7 @@ function loadState() {
     return {
       learned: s.learned || {},
       wrong: s.wrong || {},
+      favorites: s.favorites || {},
       stats: s.stats || { tested: 0, correct: 0 },
       settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
       scrolls: s.scrolls || {},
@@ -66,6 +68,10 @@ function isLearned(id, w) { return !!learnedMap(id)[wordKey(w)]; }
 function isWrong(id, w) { return !!wrongMap(id)[wordKey(w)]; }
 function setLearned(id, w, v) { const m = learnedMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
 function setWrong(id, w, v) { const m = wrongMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+/* 收藏 */
+function favMap(id) { return state.favorites[String(id)] || (state.favorites[String(id)] = {}); }
+function isFav(id, w) { return !!favMap(id)[wordKey(w)]; }
+function setFav(id, w, v) { const m = favMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
 function countKeys(store, id) {
   const v = store[String(id)];
   if (!v) return 0;
@@ -77,7 +83,7 @@ function migrateProgress() {
   let changed = false;
   for (const u of DATA.units) {
     const uid = String(u.id);
-    for (const store of [state.learned, state.wrong]) {
+    for (const store of [state.learned, state.wrong, state.favorites]) {
       const v = store[uid];
       if (Array.isArray(v)) {
         const m = {};
@@ -114,7 +120,7 @@ function speak(word) {
 
 /* ================= 视图路由 ================= */
 let currentView = 'units';
-const TAB_VIEWS = ['units', 'wrong', 'settings'];
+const TAB_VIEWS = ['units', 'favorites', 'wrong', 'settings'];
 
 function nav(view) {
   currentView = view;
@@ -127,6 +133,7 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'wrong') renderWrongList();
+  if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
 }
 
 document.addEventListener('click', (e) => {
@@ -277,6 +284,7 @@ function renderWordList() {
           <div class="wc-word-row">
             <span class="wc-word">${w.w}${isWrong(studyUnitId, w.w) ? ' <span style="color:#d84c4c;font-size:.7em">错词</span>' : ''}</span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
+            <button class="fav-btn${isFav(studyUnitId, w.w) ? ' on' : ''}" data-fav="${idx}" aria-label="收藏">${isFav(studyUnitId, w.w) ? '★' : '☆'}</button>
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
           <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${defsHtml}</div>
@@ -308,6 +316,15 @@ function renderWordList() {
       if (on) setWrong(studyUnitId, w.w, false); // 学会后从错词本移除
       saveState();
       renderUnits();
+    });
+    card.querySelector('[data-fav]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const on = !isFav(studyUnitId, w.w);
+      setFav(studyUnitId, w.w, on);
+      saveState();
+      ev.target.classList.toggle('on', on);
+      ev.target.textContent = on ? '★' : '☆';
+      toast(on ? '已收藏 ⭐ 之后可在「收藏」里复习' : '已取消收藏');
     });
 
     box.appendChild(card);
@@ -452,6 +469,68 @@ $('#btn-test-wrong').addEventListener('click', () => {
   startTest(buildQueueWrong(), '检验错词本');
 });
 
+/* ================= 收藏夹 ================= */
+function renderFavorites() {
+  const box = $('#fav-list');
+  if (!box) return;
+  box.innerHTML = '';
+  let count = 0;
+  DATA.units.forEach((u) => {
+    const m = state.favorites[String(u.id)] || {};
+    const keys = Array.isArray(m) ? null : Object.keys(m);
+    if (!keys || !keys.length) return;
+    const words = keys.map((k) => u.words.find((x) => wordKey(x.w) === k)).filter(Boolean);
+    words.forEach((w) => {
+      count++;
+      const card = document.createElement('div');
+      card.className = 'word-card';
+      card.innerHTML = `
+        <div class="wc-head">
+          <div class="wc-main">
+            <div class="wc-word-row">
+              <span class="wc-word">${w.w}</span>
+              <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
+            </div>
+            ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
+            <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
+          </div>
+          <div class="wc-actions">
+            <button class="speak-btn">🔊</button>
+            <button class="mini-btn" data-unfav>取消收藏</button>
+          </div>
+        </div>`;
+      card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
+      card.querySelector('[data-unfav]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        setFav(u.id, w.w, false);
+        saveState(); renderFavorites();
+        toast('已取消收藏');
+      });
+      box.appendChild(card);
+    });
+  });
+  if (!count) box.innerHTML = '<div class="empty-tip">收藏夹是空的 ⭐<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
+}
+
+function buildQueueFavorites() {
+  const q = [];
+  DATA.units.forEach((u) => {
+    const m = state.favorites[String(u.id)] || {};
+    const keys = Array.isArray(m) ? null : Object.keys(m);
+    if (!keys) return;
+    keys.forEach((k) => {
+      const idx = u.words.findIndex((w) => wordKey(w.w) === k);
+      if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
+    });
+  });
+  shuffle(q);
+  return q;
+}
+
+$('#btn-test-fav').addEventListener('click', () => {
+  startTest(buildQueueFavorites(), '检验收藏');
+});
+
 /* ================= 错词本 ================= */
 function renderWrongList() {
   const box = $('#wrong-list');
@@ -534,6 +613,7 @@ $('#file-import').addEventListener('change', (e) => {
       const s = JSON.parse(r.result);
       state = {
         learned: s.learned || {}, wrong: s.wrong || {},
+        favorites: s.favorites || {},
         stats: s.stats || { tested: 0, correct: 0 },
         settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
         scrolls: s.scrolls || {},
