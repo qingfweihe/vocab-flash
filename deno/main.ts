@@ -66,12 +66,9 @@ function minutesOf(hhmm: string): number {
   const [h, m] = String(hhmm || "").split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 }
-function inWindow(targetHm: string, now: Date): boolean {
-  if (!targetHm) return false;
-  const cur = now.getUTCHours() * 60 + now.getUTCMinutes();
-  let d = cur - minutesOf(targetHm);
-  if (d < 0) d += 1440;
-  return d >= 0 && d < 5;
+/** 北京时间某天 00:00 对应的 UTC 毫秒（day: YYYY-MM-DD） */
+function beijingDayStart(day: string): number {
+  return new Date(`${day}T00:00:00Z`).getTime() - TZ;
 }
 
 function isPushSub(x: unknown): x is { endpoint: string } {
@@ -97,17 +94,16 @@ const CATCHUP_MS = 12 * 3600 * 1000; // 错过补发窗口
 /** 计算一条待办"计划触发时刻"（北京时间毫秒）；null=今天不适用 */
 function plannedAt(item: TodoItem, now: Date, today: string): number | null {
   const m = minutesOf(item.time);
-  const dayStart = (day: string) => new Date(`${day}T00:00:00Z`).getTime() - TZ; // 北京当天零点的 UTC 毫秒
   if (item.type === "once") {
     if (!item.date) return null;
-    return dayStart(item.date) + m * 60_000;
+    return beijingDayStart(item.date) + m * 60_000;
   }
   if (item.type === "daily") {
-    return dayStart(today) + m * 60_000;
+    return beijingDayStart(today) + m * 60_000;
   }
   if (item.type === "weekly") {
     if (item.wd == null || item.wd !== now.getUTCDay()) return null;
-    return dayStart(today) + m * 60_000;
+    return beijingDayStart(today) + m * 60_000;
   }
   return null;
 }
@@ -231,8 +227,10 @@ Deno.cron("reminder-check", "*/5 * * * *", async () => {
       await kv.set(JSON.parse(keyStr) as Deno.KvKey, true, { expireIn: 86400_000 * 2 });
     }
 
-    // 每日背单词提醒（智能模式：今天已学则跳过；当天幂等）
-    if (st.time && inWindow(String(st.time), now)) {
+    // 每日背单词提醒（智能模式：今天已学则跳过；当天幂等；到点后 12h 内补发，cron 抖动不漏推）
+    const dailyPlan = st.time ? beijingDayStart(today) + minutesOf(String(st.time)) * 60_000 : 0;
+    const dailyLate = Date.now() - dailyPlan;
+    if (st.time && dailyLate >= 0 && dailyLate <= CATCHUP_MS) {
       const activeToday = rec.lastActive && localDateStr(new Date(rec.lastActive + TZ)) === today;
       const smart = st.smart !== false;
       if (!(smart && activeToday)) {
