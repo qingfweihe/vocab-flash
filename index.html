@@ -26,14 +26,6 @@
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
-    <button id="todo-card" class="todo-card">
-      <div class="todo-card-ico">📌</div>
-      <div class="todo-card-main">
-        <div class="todo-card-title">待办清单</div>
-        <div class="todo-card-sub" id="todo-card-sub">点这里添加提醒事项</div>
-      </div>
-      <div class="todo-card-badge hidden" id="todo-card-badge">0</div>
-    </button>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -101,11 +93,18 @@
 
   <!-- 视图：待办清单 -->
   <section id="view-todo" class="view hidden">
-    <div class="subhead">
-      <button class="back-btn" data-nav="units">‹ 返回</button>
+    <div class="subhead no-back">
       <div class="subhead-title">待办清单</div>
       <button class="test-btn" id="btn-todo-new">＋ 新建</button>
     </div>
+    <div class="todo-rem-bar">
+      <div class="trb-main">
+        <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
+        <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
+    </div>
+    <button class="ghost-btn" id="todo-rem-test">发送测试通知</button>
     <div id="todo-form" class="todo-form hidden">
       <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
       <div class="todo-type-row" id="todo-type-row">
@@ -172,7 +171,6 @@
       </div>
       <div id="rem-status" class="set-note"></div>
 
-      <button class="ghost-btn" id="btn-goto-todo" style="margin-top:8px">📌 管理待办清单（自定义提醒）</button>
       <button class="ghost-btn" id="rem-test" style="margin-top:8px">发送测试通知</button>
       <div class="set-item" style="border-bottom:none">
         <div class="set-label">后端地址<div class="set-hint">提醒服务，一般不用改</div></div>
@@ -215,7 +213,8 @@
 <nav id="tabbar">
   <button class="tab active" data-nav="units"><span class="tab-ico">📖</span><span>单词</span></button>
   <button class="tab" data-nav="favorites"><span class="tab-ico">⭐</span><span>收藏</span></button>
-  <button class="tab" data-nav="wrong"><span class="tab-ico">📌</span><span>错词本</span></button>
+  <button class="tab" data-nav="todo"><span class="tab-ico">📌</span><span>待办</span></button>
+  <button class="tab" data-nav="wrong"><span class="tab-ico">📝</span><span>错词本</span></button>
   <button class="tab" data-nav="settings"><span class="tab-ico">⚙️</span><span>设置</span></button>
 </nav>
 
