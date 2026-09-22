@@ -159,22 +159,27 @@ function todoNextFire(it) {
   return Infinity;
 }
 
-function renderTodoCard() {
-  const card = $('#todo-card');
-  if (!card) return;
-  const items = state.todo || [];
-  const pending = items.filter((it) => !(it.type === 'once' && it.done));
-  const badge = $('#todo-card-badge');
-  const sub = $('#todo-card-sub');
-  badge.textContent = String(pending.length);
-  badge.classList.toggle('hidden', !pending.length);
-  if (!items.length) {
-    sub.textContent = '点这里添加提醒事项';
+/** 待办页顶部的推送提醒状态条 */
+function renderTodoRemBar() {
+  const sw = $('#todo-rem-switch');
+  if (!sw) return;
+  const r = state.reminder || {};
+  const on = !!r.enabled;
+  sw.checked = on;
+  const st = $('#todo-rem-state');
+  const sub = $('#todo-rem-sub');
+  if (!Reminder.pushSupported()) {
+    st.textContent = '不支持'; st.className = 'trb-off';
+    sub.textContent = '当前浏览器不支持通知（需 iOS 16.4+）';
+  } else if (!Reminder.isStandalone()) {
+    st.textContent = '待主屏'; st.className = 'trb-off';
+    sub.textContent = '先把应用「添加到主屏幕」再开启';
+  } else if (on) {
+    st.textContent = '已开启 ✓'; st.className = 'trb-on';
+    sub.textContent = `每日背单词 ${r.time || '20:00'} + 待办到点推送`;
   } else {
-    const next = pending
-      .filter((it) => !todoExpired(it))
-      .sort((a, b) => todoNextFire(a) - todoNextFire(b))[0];
-    sub.textContent = next ? `最近：${next.text}（${todoLabel(next)}）` : '暂无进行中的待办';
+    st.textContent = '未开启'; st.className = 'trb-off';
+    sub.textContent = '开启后待办到点会推送通知';
   }
 }
 
@@ -188,7 +193,6 @@ function renderTodo() {
   });
   if (!items.length) {
     box.innerHTML = '<div class="todo-empty">还没有待办。点右上角「＋ 新建」添加一条，到点会推送通知提醒你。</div>';
-    renderTodoCard();
     return;
   }
   const today = bjToday();
@@ -207,7 +211,6 @@ function renderTodo() {
         <button class="t-del" data-del="${it.id}">删除</button>
       </div>`;
   }).join('');
-  renderTodoCard();
 }
 
 let todoFormType = 'once';
@@ -232,10 +235,28 @@ function setTodoType(t) {
 }
 
 function bindTodo() {
-  const card = $('#todo-card');
-  if (card) card.addEventListener('click', () => nav('todo'));
-  const goto = $('#btn-goto-todo');
-  if (goto) goto.addEventListener('click', () => nav('todo'));
+  // 推送提醒状态条：开关 + 测试通知（与设置页的开关控制同一状态）
+  const remSw = $('#todo-rem-switch');
+  if (remSw) {
+    remSw.addEventListener('change', async () => {
+      if (remSw.checked) {
+        const ok = await Reminder.enable();
+        if (!ok) remSw.checked = !!state.reminder.enabled;
+      } else {
+        await Reminder.disable();
+      }
+      renderTodoRemBar();
+    });
+  }
+  const remTest = $('#todo-rem-test');
+  if (remTest) remTest.addEventListener('click', async () => {
+    if (!state.reminder.enabled || !state.reminder.id) { toast('先开启推送提醒'); return; }
+    toast('正在发送测试通知…');
+    try {
+      await Reminder.sendTest();
+    } catch (e) { /* Reminder 内部已提示 */ }
+    renderTodoRemBar();
+  });
 
   $('#btn-todo-new').addEventListener('click', () => showTodoForm($('#todo-form').classList.contains('hidden')));
   $('#todo-type-row').addEventListener('click', (e) => {
@@ -307,7 +328,7 @@ function speak(word) {
 /* ================= 视图路由 ================= */
 let currentView = 'units';
 let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据此回到学习页而非列表
-const TAB_VIEWS = ['units', 'favorites', 'wrong', 'settings'];
+const TAB_VIEWS = ['units', 'favorites', 'todo', 'wrong', 'settings'];
 
 function nav(view) {
   if (currentView === 'study' && view !== 'study') {
@@ -321,12 +342,11 @@ function nav(view) {
   $$('#tabbar .tab').forEach((b) => {
     b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
   });
-  if (TAB_VIEWS.includes(view) || view === 'todo') window.scrollTo({ top: 0 });
+  if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
-  if (view === 'units') renderTodoCard();
   if (view === 'wrong') renderWrongList();
   if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
-  if (view === 'todo') renderTodo();
+  if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
 }
 
 document.addEventListener('click', (e) => {
@@ -975,9 +995,13 @@ const Reminder = (() => {
 
   function setStatus(msg, cls) {
     const el = $('#rem-status');
-    if (!el) return;
-    el.textContent = msg;
-    el.className = 'set-note' + (cls ? ' ' + cls : '');
+    if (el) {
+      el.textContent = msg;
+      el.className = 'set-note' + (cls ? ' ' + cls : '');
+    }
+    // 待办页状态条同步显示（该页操作时设置页不可见）
+    const sub2 = $('#todo-rem-sub');
+    if (sub2) sub2.textContent = msg;
   }
 
   async function api(path, opts) {
@@ -1029,6 +1053,8 @@ const Reminder = (() => {
       rem().id = r.id;
       rem().enabled = true;
       saveState();
+      const enEl = $('#rem-enabled');
+      if (enEl) enEl.checked = true;
       setStatus('提醒已开启 ✓ 到点会推送通知', 'ok');
       sync(true);
       return true;
@@ -1041,6 +1067,8 @@ const Reminder = (() => {
   async function disable() {
     rem().enabled = false;
     saveState();
+    const enEl = $('#rem-enabled');
+    if (enEl) enEl.checked = false;
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -1123,7 +1151,7 @@ const Reminder = (() => {
     else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
   }
 
-  return { init, ping, sync, isStandalone };
+  return { init, ping, sync, isStandalone, pushSupported, enable, disable, sendTest };
 })();
 
 /* ================= Service Worker（https 环境下离线可用；http 下静默跳过） ================= */
@@ -1220,7 +1248,7 @@ async function boot() {
   Reminder.init();
   migrateTodo();
   bindTodo();
-  renderTodoCard();
+  renderTodoRemBar();
 
   // 从通知点进来：?view=todo 直达待办清单
   try {
