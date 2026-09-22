@@ -410,3 +410,37 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .todo-rem-bar .trb-on { color: #2e9e5b; }
 .todo-rem-bar .trb-off { color: #d84c4c; }
 .todo-rem-bar .trb-sub { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+
+/* ---------- 阅读随手练 ---------- */
+.reading-pct { flex: none; font-size: 13px; font-weight: 700; color: var(--pink-deep); background: #fff0f5; border-radius: 999px; padding: 4px 10px; }
+.reading-stats { display: flex; gap: 8px; margin-bottom: 12px; }
+.reading-stats .rs-item { flex: 1; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 4px; text-align: center; }
+.reading-stats .rs-item b { display: block; font-size: 17px; color: var(--pink-deep); }
+.reading-stats .rs-item span { font-size: 11px; color: var(--ink-2); }
+.rd-src-line { font-size: 12px; color: var(--ink-2); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.rd-speak { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.rd-text { background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px; font-size: 15px; line-height: 1.75; color: var(--ink); margin-bottom: 12px; }
+.rd-text .rd-p { margin-bottom: 8px; }
+.rd-q { font-size: 15px; font-weight: 700; margin: 4px 0 10px; }
+.rd-opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.rd-opt { text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 11px 12px; font-size: 14px; color: var(--ink); cursor: pointer; line-height: 1.5; }
+.rd-opt b { color: var(--pink-deep); margin-right: 4px; }
+.rd-opt.right { border-color: #2e9e5b; background: #f0faf3; }
+.rd-opt.wrong { border-color: #d84c4c; background: #fdf1f1; }
+.rd-opt:disabled { cursor: default; }
+.rd-verdict { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.rd-verdict.ok { color: #2e9e5b; }
+.rd-verdict.no { color: #d84c4c; }
+.rd-explain { font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
+.rd-vocab { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
+.rd-vocab b { display: block; margin-bottom: 6px; color: var(--ink); }
+.rd-vw { display: inline-block; margin: 0 8px 6px 0; background: #fff0f5; border-radius: 8px; padding: 3px 8px; color: var(--ink); }
+.rd-vw i { font-style: normal; color: var(--ink-2); font-size: 12px; }
+.rd-note { font-size: 12px; color: var(--pink-deep); margin-bottom: 10px; }
+.rd-actions .ghost-btn { margin-bottom: 0; }
+.rd-item { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+.rd-item .rd-mark { font-weight: 700; flex: none; }
+.rd-item.ok .rd-mark { color: #2e9e5b; }
+.rd-item.no .rd-mark { color: #d84c4c; }
+.rd-item .rd-src { flex: 1; min-width: 0; font-size: 13px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rd-item .rd-pick { flex: none; font-size: 11px; color: var(--ink-2); }
