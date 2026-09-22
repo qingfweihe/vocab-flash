@@ -14,7 +14,8 @@ const DEFAULT_STATE = {
   settings: { rate: 0.9, fontSize: 17, sakura: true },
   scrolls: {},   // unitId(str) -> 学习页滚动位置
   lastUnit: null,
-  reminder: { id: '', enabled: false, time: '20:00', smart: true, custom: [] },  // 推送提醒
+  reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
+  todo: [],      // 待办清单 [{id,text,type:'once'|'daily'|'weekly',date?,time,wd?,done?,todayDone?,createdAt}]
 };
 
 let DATA = { meta: {}, units: [] };
@@ -36,6 +37,7 @@ function loadState() {
       scrolls: s.scrolls || {},
       lastUnit: s.lastUnit || null,
       reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
+      todo: Array.isArray(s.todo) ? s.todo : [],
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -96,6 +98,190 @@ function migrateProgress() {
   if (changed) saveState();
 }
 
+/* 旧"自定义事项"（reminder.custom）迁移为待办清单；不依赖词库，启动即可跑 */
+function migrateTodo() {
+  const old = state.reminder && state.reminder.custom;
+  if (!Array.isArray(old) || !old.length) return;
+  state.todo = state.todo || [];
+  old.forEach((x, i) => {
+    if (!x || !x.when) return;
+    const [d, t] = String(x.when).split('T');
+    const exists = state.todo.some((it) => it.type === 'once' && it.date === d && (it.time || '') === (t || '') && it.text === x.text);
+    if (!exists) {
+      state.todo.push({ id: String(x.id || 't' + Date.now() + i), text: String(x.text || ''), type: 'once', date: d, time: t || '09:00', done: false, createdAt: Date.now() });
+    }
+  });
+  delete state.reminder.custom;
+  saveState();
+}
+
+/* ================= 待办清单 ================= */
+const TODO_LIMIT = 50;
+const bjToday = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10); // 北京时间今天
+
+function todoLabel(it) {
+  const wd = '日一二三四五六';
+  if (it.type === 'daily') return `每天 ${it.time}`;
+  if (it.type === 'weekly') return `每周${wd[Number(it.wd) || 0]} ${it.time}`;
+  return `${String(it.date || '').replace(/-/g, '/').slice(5)} ${it.time}`;
+}
+function todoExpired(it) {
+  if (it.type !== 'once' || it.done) return false;
+  const plan = new Date(`${it.date}T${it.time}:00`).getTime();
+  return Date.now() - plan > 12 * 3600e3;
+}
+/** 下一次触发时刻（本地毫秒）；永不触发返回 Infinity */
+function todoNextFire(it) {
+  const min = (d) => {
+    const [h, m] = String(d).split(':').map(Number);
+    return (h || 0) * 3600e3 + (m || 0) * 60e3;
+  };
+  if (it.type === 'once') {
+    const t = new Date(`${it.date}T${it.time}:00`).getTime();
+    return isNaN(t) ? Infinity : t;
+  }
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (it.type === 'daily') {
+    let t = today0 + min(it.time);
+    if (t <= now.getTime()) t += 86400e3;
+    return t;
+  }
+  // weekly：未来 7 天内最近的 wd+time
+  const target = Number(it.wd);
+  if (isNaN(target)) return Infinity;
+  for (let i = 0; i < 8; i++) {
+    const day0 = today0 + i * 86400e3;
+    if (new Date(day0).getDay() !== target) continue;
+    const t = day0 + min(it.time);
+    if (t > now.getTime()) return t;
+  }
+  return Infinity;
+}
+
+function renderTodoCard() {
+  const card = $('#todo-card');
+  if (!card) return;
+  const items = state.todo || [];
+  const pending = items.filter((it) => !(it.type === 'once' && it.done));
+  const badge = $('#todo-card-badge');
+  const sub = $('#todo-card-sub');
+  badge.textContent = String(pending.length);
+  badge.classList.toggle('hidden', !pending.length);
+  if (!items.length) {
+    sub.textContent = '点这里添加提醒事项';
+  } else {
+    const next = pending
+      .filter((it) => !todoExpired(it))
+      .sort((a, b) => todoNextFire(a) - todoNextFire(b))[0];
+    sub.textContent = next ? `最近：${next.text}（${todoLabel(next)}）` : '暂无进行中的待办';
+  }
+}
+
+function renderTodo() {
+  const box = $('#todo-list');
+  if (!box) return;
+  const items = (state.todo || []).slice().sort((a, b) => {
+    const ka = a.type === 'once' ? `0${a.date}T${a.time}` : `1${a.time}`;
+    const kb = b.type === 'once' ? `0${b.date}T${b.time}` : `1${b.time}`;
+    return ka.localeCompare(kb);
+  });
+  if (!items.length) {
+    box.innerHTML = '<div class="todo-empty">还没有待办。点右上角「＋ 新建」添加一条，到点会推送通知提醒你。</div>';
+    renderTodoCard();
+    return;
+  }
+  const today = bjToday();
+  box.innerHTML = items.map((it) => {
+    const exp = todoExpired(it);
+    const cls = (it.type === 'once' && it.done ? 'done' : '') + (exp ? ' expired' : '');
+    const checked = (it.type === 'once' && it.done) || (it.todayDone === today);
+    const whenHtml = exp ? `<span class="t-expired">已过期</span> · ${todoLabel(it)}` : todoLabel(it);
+    return `
+      <div class="todo-item ${cls}" data-id="${it.id}">
+        <button class="tk ${checked ? 'on' : ''}" data-tk="${it.id}">${checked ? '✓' : ''}</button>
+        <div class="t-main">
+          <div class="t-text">${it.text}</div>
+          <div class="t-when">${whenHtml}${it.type === 'daily' || it.type === 'weekly' ? ` · 勾选=今天不再提醒` : ''}</div>
+        </div>
+        <button class="t-del" data-del="${it.id}">删除</button>
+      </div>`;
+  }).join('');
+  renderTodoCard();
+}
+
+let todoFormType = 'once';
+function showTodoForm(show) {
+  const f = $('#todo-form');
+  if (!f) return;
+  f.classList.toggle('hidden', !show);
+  if (show) {
+    // 预填一次性时间：当前 +1 小时（datetime-local 按设备本地时区，iPhone 通常就是北京时间）
+    const local = new Date(Date.now() + 3600e3);
+    const pad = (n) => String(n).padStart(2, '0');
+    $('#todo-when-once').value = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
+    $('#todo-text').focus();
+  }
+}
+function setTodoType(t) {
+  todoFormType = t;
+  $$('#todo-type-row .todo-type').forEach((b) => b.classList.toggle('active', b.dataset.type === t));
+  $('#todo-when-once').classList.toggle('hidden', t !== 'once');
+  $('#todo-when-daily').classList.toggle('hidden', t !== 'daily');
+  $('#todo-when-weekly').classList.toggle('hidden', t !== 'weekly');
+}
+
+function bindTodo() {
+  const card = $('#todo-card');
+  if (card) card.addEventListener('click', () => nav('todo'));
+  const goto = $('#btn-goto-todo');
+  if (goto) goto.addEventListener('click', () => nav('todo'));
+
+  $('#btn-todo-new').addEventListener('click', () => showTodoForm($('#todo-form').classList.contains('hidden')));
+  $('#todo-type-row').addEventListener('click', (e) => {
+    const b = e.target.closest('.todo-type');
+    if (b) setTodoType(b.dataset.type);
+  });
+  $('#todo-save').addEventListener('click', () => {
+    const text = $('#todo-text').value.trim();
+    if (!text) { toast('先写一下要提醒的事'); return; }
+    if ((state.todo || []).length >= TODO_LIMIT) { toast(`最多 ${TODO_LIMIT} 条，先删几条吧`); return; }
+    let item = null;
+    if (todoFormType === 'once') {
+      const when = $('#todo-when-once').value;
+      if (!when) { toast('请选择日期时间'); return; }
+      const [d, t] = when.split('T');
+      item = { id: 't' + Date.now(), text, type: 'once', date: d, time: t, done: false, createdAt: Date.now() };
+    } else if (todoFormType === 'daily') {
+      item = { id: 't' + Date.now(), text, type: 'daily', time: $('#todo-when-daily').value || '20:00', createdAt: Date.now() };
+    } else {
+      item = { id: 't' + Date.now(), text, type: 'weekly', wd: Number($('#todo-wd').value), time: $('#todo-when-weekly-time').value || '20:00', createdAt: Date.now() };
+    }
+    state.todo.push(item);
+    $('#todo-text').value = '';
+    saveState(); renderTodo(); Reminder.sync(true);
+    showTodoForm(false);
+    toast('已添加，到点会推送通知 ✓');
+  });
+  $('#todo-list').addEventListener('click', (e) => {
+    const tk = e.target.closest('[data-tk]');
+    const del = e.target.closest('[data-del]');
+    if (tk) {
+      const it = state.todo.find((x) => x.id === tk.dataset.tk);
+      if (!it) return;
+      if (it.type === 'once') {
+        it.done = !it.done;
+      } else {
+        it.todayDone = it.todayDone === bjToday() ? '' : bjToday();
+      }
+      saveState(); renderTodo(); Reminder.sync(true);
+    } else if (del) {
+      state.todo = state.todo.filter((x) => x.id !== del.dataset.del);
+      saveState(); renderTodo(); Reminder.sync(true);
+    }
+  });
+}
+
 /* ================= 发音 ================= */
 let enVoice = null;
 function pickVoice() {
@@ -135,10 +321,12 @@ function nav(view) {
   $$('#tabbar .tab').forEach((b) => {
     b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
   });
-  if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
+  if (TAB_VIEWS.includes(view) || view === 'todo') window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
+  if (view === 'units') renderTodoCard();
   if (view === 'wrong') renderWrongList();
   if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
+  if (view === 'todo') renderTodo();
 }
 
 document.addEventListener('click', (e) => {
@@ -900,24 +1088,6 @@ const Reminder = (() => {
     }
   }
 
-  /** 渲染自定义事项列表 */
-  function renderCustom() {
-    const box = $('#rem-custom-list');
-    if (!box) return;
-    const items = (rem().custom || []).slice().sort((a, b) => String(a.when).localeCompare(String(b.when)));
-    box.innerHTML = items.length
-      ? items.map((x) => `
-        <div class="rem-item">
-          <div><div>${x.text}</div><div class="rem-when">${String(x.when).replace('T', ' ')}</div></div>
-          <button class="rem-del" data-del="${x.id}">删除</button>
-        </div>`).join('')
-      : '<div class="set-note">还没有自定义提醒。上面填内容+选时间→添加，到点会推送给你。</div>';
-    box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => {
-      rem().custom = (rem().custom || []).filter((x) => x.id !== b.dataset.del);
-      saveState(); renderCustom(); sync();
-    }));
-  }
-
   /** 初始化 UI 事件（设置页加载后调用） */
   function init() {
     const r = rem();
@@ -948,17 +1118,6 @@ const Reminder = (() => {
         setStatus('后端地址已更新为 ' + v, 'ok');
       });
     }
-    $('#rem-custom-add').addEventListener('click', () => {
-      const text = $('#rem-custom-text').value.trim();
-      const when = $('#rem-custom-when').value;
-      if (!text || !when) { setStatus('请填写内容和时间', 'warn'); return; }
-      rem().custom = rem().custom || [];
-      rem().custom.push({ id: 'c' + Date.now(), text, when });
-      $('#rem-custom-text').value = '';
-      saveState(); renderCustom(); sync();
-      setStatus('已添加，到点会推送 ✓', 'ok');
-    });
-    renderCustom();
 
     if (r.enabled && r.id) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
     else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
@@ -1059,6 +1218,14 @@ async function boot() {
   renderWrongList();
   nav('units');
   Reminder.init();
+  migrateTodo();
+  bindTodo();
+  renderTodoCard();
+
+  // 从通知点进来：?view=todo 直达待办清单
+  try {
+    if (new URLSearchParams(location.search).get('view') === 'todo') nav('todo');
+  } catch (e) { /* ignore */ }
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）
   const ok = await ensureData();
