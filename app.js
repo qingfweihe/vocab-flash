@@ -120,15 +120,20 @@ function speak(word) {
 
 /* ================= 视图路由 ================= */
 let currentView = 'units';
+let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据此回到学习页而非列表
 const TAB_VIEWS = ['units', 'favorites', 'wrong', 'settings'];
 
 function nav(view) {
+  if (currentView === 'study' && view !== 'study') {
+    saveStudyPos();                    // 离开学习页前保存精确位置（词级）
+    if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
+  }
   currentView = view;
   $$('.view').forEach((v) => v.classList.add('hidden'));
   const el = $('#view-' + view);
   if (el) el.classList.remove('hidden');
   $$('#tabbar .tab').forEach((b) => {
-    b.classList.toggle('active', b.dataset.nav === view);
+    b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
@@ -138,7 +143,16 @@ function nav(view) {
 
 document.addEventListener('click', (e) => {
   const navBtn = e.target.closest('[data-nav]');
-  if (navBtn) { nav(navBtn.dataset.nav); }
+  if (!navBtn) return;
+  let v = navBtn.dataset.nav;
+  // 底部「单词」tab：若正在学习中，切回学习页（保持原地）；页内「‹ 返回」则真回列表
+  if (v === 'units' && inStudy && studyUnitId != null && navBtn.closest('#tabbar')) {
+    nav('study');
+    const u = unitById(studyUnitId);
+    if (u) setTimeout(() => restorePos(u), 60);
+    return;
+  }
+  nav(v);
 });
 
 /* ================= 渲染：单元列表 & 总进度 ================= */
@@ -221,15 +235,15 @@ function openStudy(id, then, skipRestore) {
   }
   studyUnitId = id;
   state.lastUnit = id;
+  inStudy = true;
   saveState();
   $('#study-title').textContent = `${u.name} · ${u.words.length} 词`;
   renderWordList();
   nav('study');
   if (!skipRestore) {
-    const y = (state.scrolls && state.scrolls[String(id)]) || 0;
-    requestAnimationFrame(() => window.scrollTo({ top: y }));
+    setTimeout(() => restorePos(u), 60);
   }
-  if (then) requestAnimationFrame(then);
+  if (then) setTimeout(then, 80);
 }
 
 function gotoWord(unitId, idx) {
@@ -244,16 +258,58 @@ function gotoWord(unitId, idx) {
   }, true);
 }
 
-/* 学习页滚动位置记忆 */
+/* ---------- 精确书签：记住"停在哪一个词" ---------- */
+/** 当前视口内第一个可见词卡（顶部留 80px 给吸顶栏）所对应的词键 */
+function currentTopWordKey() {
+  const u = unitById(studyUnitId);
+  if (!u) return '';
+  const cards = document.querySelectorAll('#word-list .word-card');
+  for (const c of cards) {
+    const r = c.getBoundingClientRect();
+    if (r.bottom > 80) {
+      const idx = Number(c.dataset.idx);
+      if (u.words[idx]) return wordKey(u.words[idx].w);
+      break;
+    }
+  }
+  return '';
+}
+
+function saveStudyPos() {
+  if (studyUnitId == null) return;
+  const u = unitById(studyUnitId);
+  if (!u) return;
+  state.scrolls = state.scrolls || {};
+  state.scrolls[String(studyUnitId)] = { w: currentTopWordKey(), y: window.scrollY };
+  saveState();
+}
+
+/** 恢复：优先按词精确滚动并高亮提示；兼容旧的纯像素记录 */
+function restorePos(u) {
+  const rec = state.scrolls && state.scrolls[String(u.id)];
+  if (rec && typeof rec === 'object' && rec.w) {
+    const idx = u.words.findIndex((x) => wordKey(x.w) === rec.w);
+    if (idx >= 0) {
+      const card = document.querySelector(`#word-list .word-card[data-idx="${idx}"]`);
+      if (card) {
+        card.scrollIntoView({ block: 'start' });
+        window.scrollBy(0, -72); // 让出吸顶头部空间
+        card.classList.add('locate');
+        setTimeout(() => card.classList.remove('locate'), 2300);
+        return;
+      }
+    }
+  }
+  const y = (rec && typeof rec === 'object' ? rec.y : rec) || 0; // 兼容旧数字格式
+  window.scrollTo({ top: y });
+}
+
+/* 学习页滚动位置记忆（节流保存，词级） */
 let scrollTimer = null;
 window.addEventListener('scroll', () => {
   if (currentView !== 'study' || studyUnitId == null) return;
   clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(() => {
-    state.scrolls = state.scrolls || {};
-    state.scrolls[String(studyUnitId)] = window.scrollY;
-    saveState();
-  }, 250);
+  scrollTimer = setTimeout(saveStudyPos, 250);
 }, { passive: true });
 
 function renderWordList() {
@@ -961,8 +1017,14 @@ function renderContinue() {
   const b = $('#btn-continue');
   const u = state.lastUnit && unitById(state.lastUnit);
   if (u) {
-    const l = (state.learned[String(u.id)] || []).length;
-    b.textContent = `继续学习 · ${u.name}（${l}/${u.words.length}）`;
+    const l = countKeys(state.learned, u.id);
+    const rec = state.scrolls && state.scrolls[String(u.id)];
+    let pos = '';
+    if (rec && typeof rec === 'object' && rec.w) {
+      const idx = u.words.findIndex((x) => wordKey(x.w) === rec.w);
+      if (idx > 0) pos = ` · 第 ${idx + 1} 词`;
+    }
+    b.textContent = `继续学习 · ${u.name}${pos}（已学 ${l}/${u.words.length}）`;
     b.classList.remove('hidden');
   } else {
     b.classList.add('hidden');
@@ -994,4 +1056,9 @@ async function boot() {
     $('#unit-list').innerHTML = '<div class="empty-tip">词库加载失败，请联网后重开一次</div>';
   }
 }
+/* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存 */
+setInterval(() => {
+  if (currentView === 'study' && studyUnitId != null) saveStudyPos();
+}, 3000);
+
 boot();
