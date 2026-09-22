@@ -771,7 +771,7 @@ const Sakura = (() => {
 
 /* ================= 提醒（Web Push） ================= */
 const Reminder = (() => {
-  const DEFAULT_API = 'https://vocab-flash.deno.dev';
+  const DEFAULT_API = 'https://vocab-flash-qf.qingfweihe.deno.net';
   let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('deno.dev') ? '' : DEFAULT_API);
   let subId = (state.reminder && state.reminder.id) || '';
   let pingTimer = null;
