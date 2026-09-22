@@ -771,8 +771,8 @@ const Sakura = (() => {
 
 /* ================= 提醒（Web Push） ================= */
 const Reminder = (() => {
-  const DEFAULT_API = 'https://vocab-flash.netlify.app';
-  let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('netlify.app') ? '' : DEFAULT_API);
+  const DEFAULT_API = 'https://vocab-flash.deno.dev';
+  let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('deno.dev') ? '' : DEFAULT_API);
   let subId = (state.reminder && state.reminder.id) || '';
   let pingTimer = null;
 
@@ -938,6 +938,16 @@ const Reminder = (() => {
     $('#rem-time').addEventListener('change', (e) => { rem().time = e.target.value || '20:00'; saveState(); sync(); });
     $('#rem-smart').addEventListener('change', (e) => { rem().smart = e.target.checked; saveState(); sync(); });
     $('#rem-test').addEventListener('click', sendTest);
+    const apiInput = $('#rem-api');
+    if (apiInput) {
+      apiInput.value = API;
+      apiInput.addEventListener('change', (e) => {
+        const v = e.target.value.trim().replace(/\/+$/, '');
+        API = v;
+        localStorage.setItem('sgwd_api', v);
+        setStatus('后端地址已更新为 ' + v, 'ok');
+      });
+    }
     $('#rem-custom-add').addEventListener('click', () => {
       const text = $('#rem-custom-text').value.trim();
       const when = $('#rem-custom-when').value;
