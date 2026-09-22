@@ -16,7 +16,7 @@
      "It is reshaping humanity."
     ],
     "answer": "D",
-    "explain": "依据定位：短文中段（第 2/9 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「While the term AI conjures up anxieties about killer robots or catastrophic levels of unemployment, there are other, deeper implications.」"
    },
    "vocab": [
     {
@@ -43,7 +43,8 @@
      "w": "humanity",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "技术从来不是实现人类目的的中性工具。技术创新在人们利用它们控制环境的过程中重塑着人本身。例如，人工智能正在改变人类。虽然「人工智能」一词让人联想到杀人机器人或灾难性失业，但它还有其他更深层的含义。当 AI 越来越多地塑造人类体验时，这如何改变「作为人类」的意义？问题的核心在于人做出选择的能力，尤其是具有道德影响的判断。亚里士多德认为，做出实践判断的能力依赖于经常性地做出判断——依赖习惯与练习。我们把机器在各种日常场景中充当替代裁判的现象，视为对人们学习如何有效行使自身判断力的潜在威胁。"
   },
   {
    "id": "rd2023061O47",
@@ -60,7 +61,7 @@
      "Managers do not need to take the trouble to determine who to hire or fire."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 4/9 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「These are areas where _algorithmic_ (算法的) prescription is replacing human judgment, and so people who might have had the chance to develop practical judgment in these areas no longer will.」"
    },
    "vocab": [
     {
@@ -87,7 +88,8 @@
      "w": "develop",
      "cn": "发展；开发；培养"
     }
-   ]
+   ],
+   "cn": "亚里士多德认为，做出实践判断的能力依赖于经常性地做出判断——依赖习惯与练习。我们把机器在各种日常场景中充当替代裁判的现象，视为对人们学习如何有效行使自身判断力的潜在威胁。在职场上，经理们例行公事地决定聘用或解雇谁、批准哪笔贷款等等。这些正是算法处方正在取代人类判断的领域，因此那些本有机会在这些领域培养实践判断力的人，将不再有机会。推荐引擎作为人们文化消费中日益普遍的中介，可能起到限制选择、减少偶然性的作用。通过向消费者呈现算法挑选好的下一步看什么、读什么、听什么、去哪里的内容，公司正在用机器品味取代人类品味。从某种意义上说，这有帮助。毕竟，机器能考察的选择范围，是任何个人都没时间没精力做到的。"
   },
   {
    "id": "rd2023061O48",
@@ -104,7 +106,7 @@
      "Humans will develop tastes similar to machines'."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 5/9 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Recommendation engines, which are increasingly prevalent intermediaries in people's consumption of culture, may serve to constrain choice and minimize luck.」"
    },
    "vocab": [
     {
@@ -127,7 +129,8 @@
      "w": "prefer",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "推荐引擎作为人们文化消费中日益普遍的中介，可能起到限制选择、减少偶然性的作用。通过向消费者呈现算法挑选好的下一步看什么、读什么、听什么、去哪里的内容，公司正在用机器品味取代人类品味。从某种意义上说，这有帮助。毕竟，机器能考察的选择范围，是任何个人都没时间没精力做到的。然而与此同时，这种筛选是按照人们过去偏好的轨迹来优化其未来可能喜好的东西。我们认为存在这样一种风险：人们的选择将以一种前所未有的、未被预料的方式被自己的过去所束缚。"
   },
   {
    "id": "rd2023061O49",
@@ -144,7 +147,7 @@
      "They may become better and better."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 7/9 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「As machine learning algorithms improve and as they train on more extensive data sets, larger parts of everyday life are likely to become utterly predictable.」"
    },
    "vocab": [
     {
@@ -159,7 +162,8 @@
      "w": "efficient",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "然而与此同时，这种筛选是按照人们过去偏好的轨迹来优化其未来可能喜好的东西。我们认为存在这样一种风险：人们的选择将以一种前所未有的、未被预料的方式被自己的过去所束缚。随着机器学习算法的改进和训练数据集的扩大，日常生活的很大一部分可能变得完全可预测。预测会越来越好，并最终让常见的体验更高效、更愉悦。算法可能很快——如果现在还不是的话——比你自己更清楚你想看的下一部剧、你该录用的求职者。有朝一日，人类甚至可能找到办法，让机器在没有人类典型偏见的情况下做出这些决定。"
   },
   {
    "id": "rd2023061O50",
@@ -176,7 +180,7 @@
      "They will be deprived of what their predecessors were proud of about themselves."
     ],
     "answer": "B",
-    "explain": "依据定位：短文末尾（第 9/9 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「As they become more and more predictable, the creatures inhabiting the increasingly AI-mediated world will become less and less like us.」"
    },
    "vocab": [
     {
@@ -203,7 +207,8 @@
      "w": "significant",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "随着机器学习算法的改进和训练数据集的扩大，日常生活的很大一部分可能变得完全可预测。预测会越来越好，并最终让常见的体验更高效、更愉悦。算法可能很快——如果现在还不是的话——比你自己更清楚你想看的下一部剧、你该录用的求职者。有朝一日，人类甚至可能找到办法，让机器在没有人类典型偏见的情况下做出这些决定。但只要不可预测性仍是人们理解自我的一部分、是人们自我欣赏的一部分，人类就正在失去某种重要的东西。当它们变得越来越可预测时，居住在这个日益由 AI 介导的世界里的生灵，将越来越不像我们。"
   },
   {
    "id": "rd2023061T52",
@@ -220,7 +225,7 @@
      "An ever-forceful advocacy of a combined method for teaching reading."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 3/6 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「America is stuck in a debate about teaching children to read that has been going on for decades.」"
    },
    "vocab": [
     {
@@ -247,7 +252,8 @@
      "w": "research",
      "cn": "研究；调查；探索"
     }
-   ]
+   ],
+   "cn": "美国陷入了一场持续数十年的关于如何教孩子阅读的争论。一些人主张教授符号与声音的对应关系（音素启蒙法：k 的音可以拼写作 c、k、ck 或 ch），另一些人支持沉浸式方法（用猫的图片来学习 cat 这个词），即「整体语言法」。如今大多数教师——据教育周刊研究中心 2019 年的调查，约四分之三——使用一种称为「平衡读写法」的混合方式。这种方法的组合是无效的。「你不能只撒一点音素启蒙的佐料，」密西西比州教育部基础教育与阅读事务执行主任特妮特·史密斯说，「它必须系统性地、明确地教授。」在社会政策上常常落后的密西西比州，这次却树立了榜样。在这个曾因阅读成绩低下而臭名昭著的州，州议会在 2013 年通过了新的读写能力标准。从那以后，密西西比州取得了显著进步。该州四年级学生在全国教育进展评估（一项全国性考试）中的排名从第 49 名（共 50 个州）升至第 29 名。2019 年，它是唯一成绩提高的州。自开始测评以来，密西西比州的小学生首次达到了平均阅读水平——在这样一个贫困的州，这是了不起的成就。"
   },
   {
    "id": "rd2023061T53",
@@ -264,7 +270,7 @@
      "Balanced literacy fails to sustain children's interest in developing a good reading habit."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 4/6 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.」"
    },
    "vocab": [
     {
@@ -291,7 +297,8 @@
      "w": "success",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "在社会政策上常常落后的密西西比州，这次却树立了榜样。在这个曾因阅读成绩低下而臭名昭著的州，州议会在 2013 年通过了新的读写能力标准。从那以后，密西西比州取得了显著进步。该州四年级学生在全国教育进展评估（一项全国性考试）中的排名从第 49 名（共 50 个州）升至第 29 名。2019 年，它是唯一成绩提高的州。自开始测评以来，密西西比州的小学生首次达到了平均阅读水平——在这样一个贫困的州，这是了不起的成就。密西西比州的成功归功于推行了一套有「阅读科学」这一研究体系支撑的教学方法。1997 年，国会要求国家儿童健康与人类发展研究所和教育部召集一个国家阅读委员会，以结束「阅读战争」并综合相关证据。该委员会发现，音素启蒙法，辅以对音位意识、流畅度和理解力的明确训练，效果最好。"
   },
   {
    "id": "rd2023061T54",
@@ -308,7 +315,7 @@
      "Obtaining support from Congress to upgrade teaching methods."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 5/6 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「Mississippi's success is attributed to implementing reading methods supported by a body of research known as the science of reading.」"
    },
    "vocab": [
     {
@@ -335,7 +342,8 @@
      "w": "research",
      "cn": "研究；调查；探索"
     }
-   ]
+   ],
+   "cn": "在社会政策上常常落后的密西西比州，这次却树立了榜样。在这个曾因阅读成绩低下而臭名昭著的州，州议会在 2013 年通过了新的读写能力标准。从那以后，密西西比州取得了显著进步。该州四年级学生在全国教育进展评估（一项全国性考试）中的排名从第 49 名（共 50 个州）升至第 29 名。2019 年，它是唯一成绩提高的州。自开始测评以来，密西西比州的小学生首次达到了平均阅读水平——在这样一个贫困的州，这是了不起的成就。密西西比州的成功归功于推行了一套有「阅读科学」这一研究体系支撑的教学方法。1997 年，国会要求国家儿童健康与人类发展研究所和教育部召集一个国家阅读委员会，以结束「阅读战争」并综合相关证据。该委员会发现，音素启蒙法，辅以对音位意识、流畅度和理解力的明确训练，效果最好。"
   },
   {
    "id": "rd2023062O46",
@@ -352,7 +360,7 @@
      "Doctors."
     ],
     "answer": "A",
-    "explain": "依据定位：短文开头（第 1/8 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Yet despite all this, one group, which in no way has their best interests at heart, has almost unconstrained access.」"
    },
    "vocab": [
     {
@@ -375,7 +383,8 @@
      "w": "contribute",
      "cn": "贡献；促成；导致"
     }
-   ]
+   ],
+   "cn": "我们到底是怎么走到这一步的？我们强迫症般地保护孩子免受一切伤害；我们审查孩子接触的每一位看护者、教师和医生。然而尽管如此，有一个群体——压根不把孩子的最大利益放在心上——却几乎不受限制地接触他们。我们似乎理所当然地接受广告商和营销人员被允许 conditioning（驯化）哪怕是最小的孩子。在孩子们还没有形成适当的自我认同、还没学会驾驭金钱之前，他们就被引导把地位和自我价值与物质挂钩，向名望和财富等外部事物寻求认可。我们正在制造小消费者，而不是会因为自己对所处社会的贡献而重视自己的年轻公民。"
   },
   {
    "id": "rd2023062O47",
@@ -392,7 +401,7 @@
      "Those who have developed a proper sense of their own identity."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「We've come to know it as“pester power\"or the ability of children to pressure parents to make certain purchases.」"
    },
    "vocab": [
     {
@@ -415,7 +424,8 @@
      "w": "ability",
      "cn": "能力；才能；本领"
     }
-   ]
+   ],
+   "cn": "我们似乎理所当然地接受广告商和营销人员被允许驯化哪怕是最小的孩子。在孩子们还没有形成适当的自我认同、还没学会驾驭金钱之前，他们就被引导把地位和自我价值与物质挂钩，向名望和财富等外部事物寻求认可。我们正在制造小消费者，而不是会因为自己对所处社会的贡献而重视自己的年轻公民。我们如此缓慢地走到这一步，以至于许多人从未质疑过它。自广告商开始瞄准年轻人以来的 60 年里，这种情况悄悄逼近我们——他们发现可以把孩子招募为对父母商业攻势的生力军。我们把这种现象称为「纠缠力」，即孩子逼迫父母购买特定商品的能力。"
   },
   {
    "id": "rd2023062O49",
@@ -432,7 +442,7 @@
      "It is literally limited to children."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 5/8 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「It's also one that's forever developing new ways to persuade our children to desire material possessions, and because of advertisements'viral effect they only need to infect a few to reach the many.」"
    },
    "vocab": [
     {
@@ -459,7 +469,8 @@
      "w": "unique",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "并非所有心理学家都同意（禁令）。有很多人与一个年收入 120 亿英镑的行业密切合作——这个行业把操纵成年人的情感和欲望变成了一门艺术，往往字面意义上的艺术。它还在不断开发新方法劝诱我们的孩子渴望物质财富，而由于广告的病毒式传播效应，它们只需感染少数人就能触及大众。广告和营销对儿童也可能有用。营销可能帮助孩子们作为消费者完成社会化，让他们了解产品，并帮助他们在步入成年时塑造独特的自我认同。那么，我们应该禁止所有针对幼儿的广告吗？我的回答是：应该。当然，对 11 岁以下儿童广告的全面禁令会有很多反对意见。会有人辩称这将侵犯言论自由，侵犯企业给小孩子洗脑、让他们吵着要产品的权利。"
   },
   {
    "id": "rd2023062O50",
@@ -476,14 +487,15 @@
      "It would violate the rights endowed upon advertisers."
     ],
     "answer": "D",
-    "explain": "依据定位：短文末尾（第 8/8 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「Let's ban all advertising targeting children of primary school age and younger now.」"
    },
    "vocab": [
     {
      "w": "course",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "那么，我们应该禁止所有针对幼儿的广告吗？我的回答是：应该。当然，对 11 岁以下儿童广告的全面禁令会有很多反对意见。会有人辩称这将侵犯言论自由，侵犯企业给小孩子洗脑、让他们吵着要产品的权利。大多数父母都痛恨广告对自己孩子的影响，而我们确实有能力终结它，让我们的孩子在长大到能自己做决定之前，免受消费主义的诸多压力成长。尽管广告只是无处不在的营销文化的一部分，但我们总得从某处着手。让我们现在就禁止所有针对小学及以下年龄段儿童的广告吧。"
   },
   {
    "id": "rd2023062T51",
@@ -500,7 +512,7 @@
      "It enables firms to squeeze maximal productivity from employees."
     ],
     "answer": "B",
-    "explain": "依据定位：短文开头（第 1/7 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Many oppose workplace surveillance, because of the inherent dehumanizing effect it has and the relentless pressure it brings.」"
    },
    "vocab": [
     {
@@ -527,7 +539,8 @@
      "w": "ability",
      "cn": "能力；才能；本领"
     }
-   ]
+   ],
+   "cn": "许多人反对职场监控，因为它具有固有的非人化效应和随之而来的无情压力。但随着企业希望通过压榨员工获得更多生产力来提高效率，职场监控正在全球范围内兴起。去年，年收入超过 7.5 亿美元的公司中，超过一半对员工使用了「非传统」监控技术。监控员工表现让企业能够评估员工的工作和互动情况，这对公司和员工本人都可能有好处。越来越多的分析公司提供这项服务。它们收集员工电子邮件和即时通讯应用留下的「数据废气」，使用配备射频识别装置和麦克风的名牌。这些设备可以检查你说话的时间长短、音量和语气，甚至你是否垄断了对话。虽然这听起来有侵扰性，但支持者辩称，它也可以保护员工免受职场霸凌和性骚扰。"
   },
   {
    "id": "rd2023062T53",
@@ -544,7 +557,7 @@
      "It is hard to decide on how many people to sit at a lunch table without data analysis."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 4/7 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「Over the last few years a Stockholm co-working space called Epicenter has gone much further and holds popular“chipping parties”, where people can have microchips implanted in their hands.」"
    },
    "vocab": [
     {
@@ -571,7 +584,8 @@
      "w": "reduce",
      "cn": "减少；降低；缩减"
     }
-   ]
+   ],
+   "cn": "这类数据分析有些能产生意想不到的结果。例如，研究发现，坐 12 人餐桌的人往往比常坐 4 人餐桌的人互动更多、分享想法更多、表现更好——若没有这样的数据分析，这一事实可能永远不被发现。过去几年，斯德哥尔摩一个名为 Epicenter 的联合办公空间走得更远，举办流行的「芯片派对」，人们可以在手上植入微芯片。他们可以用植入物开启电控门，或监测打字速度与心率的关系。植入芯片看似极端，但从身份证和生物识别技术到这类设备，其实只有一小步。只要这类方案是自愿的，便利导向的用途可能会越来越多，相当多的员工会选择植入芯片。但如果植入芯片被用来压缩摸鱼时间或休息时间，那可能就有害了。如果监控工具剥夺了自主权，那才是它们最不受欢迎的时候。很大程度上取决于这类监控举措如何沟通传达，而这可以避免可能发生的抵触。"
   },
   {
    "id": "rd2023062T54",
@@ -588,7 +602,7 @@
      "How well bosses make known their purpose of monitoring."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 5/7 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.」"
    },
    "vocab": [
     {
@@ -615,7 +629,8 @@
      "w": "remain",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "只要这类方案是自愿的，便利导向的用途可能会越来越多，相当多的员工会选择植入芯片。但如果植入芯片被用来压缩摸鱼时间或休息时间，那可能就有害了。如果监控工具剥夺了自主权，那才是它们最不受欢迎的时候。很大程度上取决于这类监控举措如何沟通传达，而这可以避免可能发生的抵触。如果老板不进行有效沟通，员工会往最坏处想。但如果他们对收集什么信息、用这些信息做什么保持公开，研究表明 46% 的员工总体上可以接受。尽管许多监控方案使用匿名数据且参与自愿，许多员工仍持怀疑态度，担心公民自由受到侵蚀。"
   },
   {
    "id": "rd2023063O46",
@@ -632,7 +647,7 @@
      "They are all in increasingly great demand."
     ],
     "answer": "A",
-    "explain": "依据定位：短文开头（第 1/5 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Investigative reporter Michael Moss says processed food is engineered to hook you, not unlike alcohol, cigarettes, or other harmful substances.」"
    },
    "vocab": [
     {
@@ -655,7 +670,8 @@
      "w": "experience",
      "cn": "经验；体验；经历"
     }
-   ]
+   ],
+   "cn": "如果你在疫情期间更多地转向垃圾零食，你不是一个人。调查记者迈克尔·莫斯说，加工食品是被精心设计来让你上钩的，与酒精、香烟或其他有害物质并无二致。他 2013 年的著作《盐糖脂》探讨了食品公司对这些产品的激进营销及其对我们健康的影响。在新书《上钩》中，莫斯更新了食品巨头让我们不断吃他们产品的种种手段，以及他们如何应对消费者和健康倡导者的投诉。加工食品便宜、合法、无处不在。公司的广告不断提示我们记住那些产品，让我们时刻想要那些产品。因此，食品环境是让食品对这么多人成为问题的关键因素之一。记忆，尤其是怀旧，在我们渴望的食物中扮演重要角色。汽水公司发现，如果他们在孩子和父母看球赛时把一瓶汽水递到孩子手里，那瓶汽水就会永远与那个快乐的时刻联系在一起。日后当那个孩子想重温快乐时刻时，就会想起汽水。许多人在童年记忆的零食中寻求安慰。"
   },
   {
    "id": "rd2023063O47",
@@ -672,7 +688,7 @@
      "Memory."
     ],
     "answer": "D",
-    "explain": "依据定位：短文中段（第 2/5 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「Memory, _nostalgia_ (怀旧) in particular, plays a big role in the foods we crave.」"
    },
    "vocab": [
     {
@@ -687,7 +703,8 @@
      "w": "experience",
      "cn": "经验；体验；经历"
     }
-   ]
+   ],
+   "cn": "加工食品便宜、合法、无处不在。公司的广告不断提示我们记住那些产品，让我们时刻想要那些产品。因此，食品环境是让食品对这么多人成为问题的关键因素之一。记忆，尤其是怀旧，在我们渴望的食物中扮演重要角色。汽水公司发现，如果他们在孩子和父母看球赛时把一瓶汽水递到孩子手里，那瓶汽水就会永远与那个快乐的时刻联系在一起。日后当那个孩子想重温快乐时刻时，就会想起汽水。许多人在童年记忆的零食中寻求安慰。"
   },
   {
    "id": "rd2023063O48",
@@ -704,7 +721,7 @@
      "They endeavor to find what consumers remember about their products."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 4/5 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「One of the reasons I came to think that some of these food products are even more powerful, more troublesome than drugs can be is memory.」"
    },
    "vocab": [
     {
@@ -723,7 +740,8 @@
      "w": "ability",
      "cn": "能力；才能；本领"
     }
-   ]
+   ],
+   "cn": "我之所以开始认为某些食品甚至比毒品更强势、更麻烦，原因之一就是记忆。我们吃什么完全关乎记忆。我们从很小的时候就开始形成对食物的记忆，并且终生保留这些记忆。明知如此，食品行业花费大量时间试图塑造我们对其产品的记忆。研究毒瘾的科学家在上世纪 90 年代发现，成瘾的一个特征是：物质到达大脑的速度越快，我们就越容易冲动行事。没有什么比食物刺激大脑更快的了。在莫斯看来，这让「快餐」的概念焕然一新——因为这不限于快餐连锁店，杂货店里几乎 90% 的食品都是加工食品。整个行业的一切都关乎速度，从制造到包装。"
   },
   {
    "id": "rd2023063O50",
@@ -740,7 +758,7 @@
      "They are hooked on manufacturing convenience foods."
     ],
     "answer": "D",
-    "explain": "依据定位：短文末尾（第 5/5 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「Now that more and more people care about what they put in their bodies and are wanting to eat healthier, these companies are finding it really difficult to meet that new demand because of their own addiction to making these convenience foods.」"
    },
    "vocab": [
     {
@@ -763,7 +781,8 @@
      "w": "demand",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "我之所以开始认为某些食品甚至比毒品更强势、更麻烦，原因之一就是记忆。我们吃什么完全关乎记忆。我们从很小的时候就开始形成对食物的记忆，并且终生保留这些记忆。明知如此，食品行业花费大量时间试图塑造我们对其产品的记忆。研究毒瘾的科学家在上世纪 90 年代发现，成瘾的一个特征是：物质到达大脑的速度越快，我们就越容易冲动行事。没有什么比食物刺激大脑更快的了。在莫斯看来，这让「快餐」的概念焕然一新——因为这不限于快餐连锁店，杂货店里几乎 90% 的食品都是加工食品。整个行业的一切都关乎速度，从制造到包装。总体而言，莫斯勾勒了这个行业的依赖路径：让产品便宜、超好吃、对消费者来说无比方便。如今越来越多的人关心自己吃进身体的东西、想吃得更健康，这些公司却发现很难满足这种新需求——因为它们自己也 addiction（成瘾）于制造这些便利食品。"
   },
   {
    "id": "rd2023063T51",
@@ -780,7 +799,7 @@
      "They know how to survive everywhere on earth."
     ],
     "answer": "C",
-    "explain": "依据定位：短文开头（第 1/11 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「At more than 7 billion, human population dwarfs that of nearly all other mammals — despite our physical weaknesses.」"
    },
    "vocab": [
     {
@@ -807,7 +826,8 @@
      "w": "survive",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "黑猩猩是人类最近的动物亲属，与我们共享多达 98% 的基因。然而人类和黑猩猩却过着截然不同的生活。如今生活在非洲几处森林角落的野生黑猩猩不足 30 万只，而人类已经殖民了地球的每个角落。超过 70 亿的人口规模让几乎所有其他哺乳动物相形见绌——尽管我们身体孱弱。是什么造就了我们这个物种令人难以置信的演化成功？一个显而易见的答案是我们的大脑。可能是我们天然的智力给了我们前所未有的跳出框架思考的能力，在人类向全球迁徙的过程中创新出解决棘手问题的方案。但越来越多的认知科学家和人类学家正在拒绝这种解释。他们认为，我们生存和繁衍，恰恰不是因为我们独立创新，而正是因为我们不独立思考。相反，人们通过仔细模仿他人来应对具有挑战性的气候和生态环境。"
   },
   {
    "id": "rd2023063T52",
@@ -824,7 +844,7 @@
      "They meet challenges by imitating others carefully."
     ],
     "answer": "D",
-    "explain": "依据定位：短文中段（第 4/11 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「But a growing number of cognitive scientists and _anthropologists_ (人类学家) are rejecting that explanation.」"
    },
    "vocab": [
     {
@@ -847,7 +867,8 @@
      "w": "condition",
      "cn": "条件；状况；环境"
     }
-   ]
+   ],
+   "cn": "一个显而易见的答案是我们的大脑。可能是我们天然的智力给了我们前所未有的跳出框架思考的能力，在人类向全球迁徙的过程中创新出解决棘手问题的方案。但越来越多的认知科学家和人类学家正在拒绝这种解释。他们认为，我们生存和繁衍，恰恰不是因为我们独立创新，而正是因为我们不独立思考。相反，人们通过仔细模仿他人来应对具有挑战性的气候和生态环境。在一项著名研究中，心理学家维多利亚·霍纳和安德鲁·怀滕向两组受试者——儿童和黑猩猩——展示了一个内藏奖励的机械盒子。一种条件下盒子不透明，另一种条件下透明。实验者演示了如何打开盒子取出奖励，但也加入了一个无关步骤：用棍子敲盒子。"
   },
   {
    "id": "rd2023063T53",
@@ -864,7 +885,7 @@
      "Children omitted the step of tapping on the box with a stick to open it."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 6/11 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「That is, they copied irrationally:Instead of doing only what was necessary to get their reward, children slavishly imitated every action they'd witnessed.」"
    },
    "vocab": [
     {
@@ -891,7 +912,8 @@
      "w": "course",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "在一项著名研究中，心理学家维多利亚·霍纳和安德鲁·怀滕向两组受试者——儿童和黑猩猩——展示了一个内藏奖励的机械盒子。一种条件下盒子不透明，另一种条件下透明。实验者演示了如何打开盒子取出奖励，但也加入了一个无关步骤：用棍子敲盒子。奇怪的是，孩子们一丝不苟地复制了开盒的所有步骤，即使他们看得出来敲棍子没有任何实际作用。也就是说，他们非理性地模仿：孩子们没有只做拿到奖励所必需的动作，而是盲从地复制了他们目睹的每一个动作。当然，那项研究只涉及三四岁的孩子。但更多研究表明，年龄更大的孩子和成人甚至更倾向于无脑模仿他人的行为，而婴儿反而不太会过度模仿——即精确复制连不实用的动作。"
   },
   {
    "id": "rd2023063T55",
@@ -908,7 +930,7 @@
      "It is naive to laugh at someone embracing nonconformity."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 10/11 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Where does the seemingly irrational human preference for over-imitation come from?Anthropologist Joseph Henrich points out that people around the world rely on technologies that are often so complex that no one can learn them rationally.」"
    },
    "vocab": [
     {
@@ -931,7 +953,8 @@
      "w": "complex",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "相比之下，研究中的黑猩猩只在不透明条件下过度模仿。在透明条件下——它们看得到棍子毫无机械作用——它们完全忽略了这个步骤。此后其他研究也支持了这些发现。说到模仿，黑猩猩比人类儿童或成人更理性。人类这种看似非理性的过度模仿偏好从何而来？人类学家约瑟夫·亨里奇指出，世界各地的人们所依赖的技术往往复杂到没有人能理性地学会。相反，人们必须一步一步地学习，信任经验更丰富的长者和同伴的智慧。所以下次听到有人激情澎湃地论证人人都应特立独行、避免模仿他人时，你不妨一笑置之。毕竟，我们不是黑猩猩。"
   },
   {
    "id": "rd2023121O46",
@@ -948,7 +971,7 @@
      "There appears to be a misunderstanding of the formula among the public."
     ],
     "answer": "D",
-    "explain": "依据定位：短文中段（第 3/12 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「When Democrats do talk about encouraging economic growth, they often sound like Republicans.」"
    },
    "vocab": [
     {
@@ -967,7 +990,8 @@
      "w": "political",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "近几十年来，共和党最大的成功之一，是不知疲倦地推销一个简单的经济增长公式：减税。这个公式并不灵验，但这丝毫没有影响它的受欢迎程度。尽管减税崇拜招致许多批评者，它却明显缺乏对手。民主党政客竞选时往往聚焦于帮助被经济增长抛下的人。而当民主党人真的谈起促进经济增长时，听起来常常和共和党人如出一辙。这不仅是民主党的政治问题，也是美国的经济问题。这个国家需要一个关于经济增长驱动力的更好叙事。近几十年惨痛的教训指向了一个有希望的候选者：更高的工资。"
   },
   {
    "id": "rd2023121O47",
@@ -984,7 +1008,7 @@
      "Introducing even more extensive tax cuts."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 5/12 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Raising the wages of American workers ought to be the priority of economic policymakers.」"
    },
    "vocab": [
     {
@@ -1011,7 +1035,8 @@
      "w": "increase",
      "cn": "增加；提高；增长"
     }
-   ]
+   ],
+   "cn": "这不仅是民主党的政治问题，也是美国的经济问题。这个国家需要一个关于经济增长驱动力的更好叙事。近几十年惨痛的教训指向了一个有希望的候选者：更高的工资。提高美国工人的工资理应成为经济决策者的优先事项。如果我们少关注国内生产总值（GDP）增长的季度数据，多关注工薪阶层工资单的增长，我们所有人都会过得更好。先把提高工资最耳熟能详的理由——公平——放在一边。这里的论点是：更高的工资能为经济增长的引擎添加燃料。关于这种好处，最著名的例证莫过于亨利·福特 1914 年的决定：给 T 型车装配线的工人每天 5 美元工资。他这样做是为了提高产量——他支付溢价是为了维持一支可靠的劳动队伍。意想不到的收获是，福特的工厂工人也成了福特汽车的顾客。"
   },
   {
    "id": "rd2023121O48",
@@ -1028,7 +1053,7 @@
      "Familiar arguments for higher wages are outdated."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 7/12 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「He did it to increase production — he was paying a premium to maintain a reliable workforce.」"
    },
    "vocab": [
     {
@@ -1055,7 +1080,8 @@
      "w": "production",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "先把提高工资最耳熟能详的理由——公平——放在一边。这里的论点是：更高的工资能为经济增长的引擎添加燃料。关于这种好处，最著名的例证莫过于亨利·福特 1914 年的决定：给 T 型车装配线的工人每天 5 美元工资。他这样做是为了提高产量——他支付溢价是为了维持一支可靠的劳动队伍。意想不到的收获是，福特的工厂工人也成了福特汽车的顾客。同样的逻辑至今成立：消费驱动美国经济，工资更高的工人能花更多的钱。主流经济学家坚称，不可能人为安排一次可持续的工资上涨，因为薪酬水平反映着市场力量不出差错的判断。传统观念认为，生产率增长是提高工资的唯一途径。透过这副眼镜看，争取更高工资的努力反而适得其反。最低工资法会推高失业率，因为工资池里的钱只有那么多，一部分人拿多了，另一部分人就一无所得。"
   },
   {
    "id": "rd2023121O50",
@@ -1072,7 +1098,7 @@
      "People have seen the link disappearing between productivity and workers' well-being."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 11/12 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「In the real world, things are more complicated.」"
    },
    "vocab": [
     {
@@ -1099,7 +1125,8 @@
      "w": "productivity",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "主流经济学家坚称，不可能人为安排一次可持续的工资上涨，因为薪酬水平反映着市场力量不出差错的判断。传统观念认为，生产率增长是提高工资的唯一途径。透过这副眼镜看，争取更高工资的努力反而适得其反。最低工资法会推高失业率，因为工资池里的钱只有那么多，一部分人拿多了，另一部分人就一无所得。正是在这种世界观的背景下，「减税将带来繁荣」的论调流行开来。富人会投资，生产率会提高，工资会上涨。在现实世界里，事情要复杂得多。工资受制于雇主与工人之间的拉锯战，而赢的一直是雇主。一个明显的证据是大约 1970 年以来生产率增长与工资增长之间不断扩大的差距。生产率增长了一倍多，工资却远远落后。关注工资增长，将是一剂解药，可以矫正人们对减税魔力那种简单诱人信念的迷信。"
   },
   {
    "id": "rd2023121T52",
@@ -1116,7 +1143,7 @@
      "The majority of editors in top psychology and neuroscience journals have relevant backgrounds."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Men were found to account for 60% of the editors of psychology journals.」"
    },
    "vocab": [
     {
@@ -1139,7 +1166,8 @@
      "w": "proportion",
      "cn": "比例；部分"
     }
-   ]
+   ],
+   "cn": "不幸的是，《自然·神经科学》上的一项新研究读来令人沮丧。该团队发现，顶级心理学和神经科学期刊的大多数编辑是男性，且身处美国——这种状况可能正在放大该领域已有的性别不平等，并影响发表什么样的研究。研究发现，男性占心理学期刊编辑的 60%。在每个资历层级上，男性编辑都明显多于女性，超过四分之三的期刊中男性占编辑多数。关键在于，女性编辑的比例明显低于女性心理学研究者的总体比例。在神经科学期刊中，差异更为刺眼：70% 的编辑是男性，88% 的期刊中男性占据编辑职位多数。在这种情况下，女性编辑的比例并不显著低于神经科学领域女性研究者的比例——这一发现揭示了该领域更广泛层面长期存在的性别差异。"
   },
   {
    "id": "rd2023121T53",
@@ -1156,7 +1184,7 @@
      "There were few female editors who could move up to senior positions."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 4/8 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「In this case, the proportion of female editors was not significantly lower than the proportion of female researchers working in neuroscience — a finding that reveals enduring gender disparities in the field more broadly.」"
    },
    "vocab": [
     {
@@ -1175,7 +1203,8 @@
      "w": "academic",
      "cn": "学术的；学院的；理论的"
     }
-   ]
+   ],
+   "cn": "研究发现，男性占心理学期刊编辑的 60%。在每个资历层级上，男性编辑都明显多于女性，超过四分之三的期刊中男性占编辑多数。关键在于，女性编辑的比例明显低于女性心理学研究者的总体比例。在神经科学期刊中，差异更为刺眼：70% 的编辑是男性，88% 的期刊中男性占据编辑职位多数。在这种情况下，女性编辑的比例并不显著低于神经科学领域女性研究者的比例——这一发现揭示了该领域更广泛层面长期存在的性别差异。基于这些结果，团队得出结论：「男性的观念、价值观和决策偏见，在心理学和神经科学最知名期刊的编辑职位中被过度代表。」"
   },
   {
    "id": "rd2023122O46",
@@ -1192,7 +1221,7 @@
      "She has succeeded in a bid on the internet"
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 2/8 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「She has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016.」"
    },
    "vocab": [
     {
@@ -1219,7 +1248,8 @@
      "w": "increasing",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "四年半不上网，你能撑过去吗？歌手兼演员赛琳娜·戈麦斯为了改善心理健康，恰恰就这么做了。她曾广泛谈及社交媒体使用与心理健康之间的关系，回忆 2016 年成为 Instagram 粉丝数第一的用户时，自己感觉像「一个瘾君子」。「离开社交媒体，是我为自己的心理健康做过的最好决定，」她说，「一放下手机，那些无谓的恶意和比较就都消失了。」然而，彻底告别整个互联网是一件微妙复杂得多的事。社会日益数字化意味着，从付燃气费、规划去朋友家的路线，到甚至打一个电话，一切都取决于你的网络连接。主动选择不上网，成了一种特权。"
   },
   {
    "id": "rd2023122O47",
@@ -1236,7 +1266,7 @@
      "Most people have been seriously addicted to the web without being aware of it."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 3/8 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Actively opting out of using the internet becomes a matter of privilege.」"
    },
    "vocab": [
     {
@@ -1263,7 +1293,8 @@
      "w": "connection",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "她曾广泛谈及社交媒体使用与心理健康之间的关系，回忆 2016 年成为 Instagram 粉丝数第一的用户时，自己感觉像「一个瘾君子」。「离开社交媒体，是我为自己的心理健康做过的最好决定，」她说，「一放下手机，那些无谓的恶意和比较就都消失了。」然而，彻底告别整个互联网是一件微妙复杂得多的事。社会日益数字化意味着，从付燃气费、规划去朋友家的路线，到甚至打一个电话，一切都取决于你的网络连接。主动选择不上网，成了一种特权。"
   },
   {
    "id": "rd2023122O48",
@@ -1280,7 +1311,7 @@
      "Most families in the UK do not have stable broadband connections."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 4/8 段）。正确答案 A。"
+    "explain": "正确答案 A。依据在第 4 段。"
    },
    "vocab": [
     {
@@ -1307,7 +1338,8 @@
      "w": "concept",
      "cn": "概念；观念"
     }
-   ]
+   ],
+   "cn": "戈麦斯坐拥数百万美元的身家，这让她得以把社交媒体里的「社交」剥离出去：她可以继续借助巨大的名气，同时把网络喷子挡在门外。她至今仍是 Instagram 上粉丝数第二多的女性，这一事实表明：完全可以在专门团队的打理下维持可观的网络形象来宣传各种项目，而无需暴露在恶毒评论、仇恨邮件乃至强奸或死亡威胁之下。不言而喻，这与我们这些没有美妆代言、没有电影要宣传的普通人使用 Instagram、TikTok 和 Twitter 的方式有着根本区别；就连「数字戒断」这个概念本身，也得先有设备和网络，才谈得上选择断开。"
   },
   {
    "id": "rd2023122O49",
@@ -1324,7 +1356,7 @@
      "They create a virtual community on the internet."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 6/8 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.」"
    },
    "vocab": [
     {
@@ -1351,7 +1383,8 @@
      "w": "community",
      "cn": "社区；团体；社会"
     }
-   ]
+   ],
+   "cn": "不言而喻，这与我们这些没有美妆代言、没有电影要宣传的普通人使用 Instagram、TikTok 和 Twitter 的方式有着根本区别；就连「数字戒断」这个概念本身，也得先有设备和网络，才谈得上选择断开。过去两年，英国的数字鸿沟进一步恶化，较贫困的家庭家中没有宽带连接。数字排斥是英国社会整体平等的重大威胁，因此，当学童们连作业都难以在线完成时，看着 Facebook 之类的公司鼓吹元宇宙是下一个伟大前沿，尤其让人火大。因此，值得记住的是：虽然删除所有社交媒体账号无疑会让一些人感觉好得多，但还有许多人都受益于分享平台所能孕育的强烈社区感。"
   },
   {
    "id": "rd2023122O50",
@@ -1368,7 +1401,7 @@
      "Opening more social media accounts."
     ],
     "answer": "D",
-    "explain": "依据定位：短文末尾（第 8/8 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「It's crucial that people who feel that social media is having a detrimental effect on their mental health are allowed to switch off and for those living in digital exclusion to be able to switch on in the first place.」"
    },
    "vocab": [
     {
@@ -1395,7 +1428,8 @@
      "w": "importance",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "过去两年，英国的数字鸿沟进一步恶化，较贫困的家庭家中没有宽带连接。数字排斥是英国社会整体平等的重大威胁，因此，当学童们连作业都难以在线完成时，看着 Facebook 之类的公司鼓吹元宇宙是下一个伟大前沿，尤其让人火大。因此，值得记住的是：虽然删除所有社交媒体账号无疑会让一些人感觉好得多，但还有许多人都受益于分享平台所能孕育的强烈社区感。随着我们进一步迈向 Web 3.0，网络接入的重要性将与日俱增，需要更多资源和行动来为弱势群体提供他们迫切需要的连接，去学习、工作和生活。至关重要的是：让那些觉得社交媒体正在损害心理健康的人能够选择关机下线，也让那些处于数字排斥中的人首先能够开机上线。"
   },
   {
    "id": "rd2023122T51",
@@ -1412,7 +1446,7 @@
      "The impact of competition."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 2/5 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Psychologically speaking, competition has been seen as an inevitable consequence of human drives.」"
    },
    "vocab": [
     {
@@ -1439,7 +1473,8 @@
      "w": "century",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "从心理学角度看，竞争一直被视为人类驱力的必然结果。按照西格蒙德·弗洛伊德的说法，人类生下来就哭喊着索取关注，充满在各个方面寻求满足的有机驱力。最初，我们争夺父母的关注。此后，我们便受制于一场拉锯：一方是自我满足的原始冲动，另一方是禁止纯粹放纵的社会文化规范。然而，人类学的当前研究表明，这种关于竞争在人类行为中作用的观点可能并不正确。托马斯·霍布斯是十七世纪伟大的哲学家之一，最为人铭记的或许是他把「自然状态」——即人类意志强加于世界之前的状态——描绘成「肮脏、野蛮而短促」。这幅前理性世界的图景至今仍广为流传，并得到查尔斯·达尔文影响深远的著作《物种起源》的强化，该书确立了自然选择学说。这一学说理所当然地认为，最能适应并驾驭自身所处自然环境的物种才能生存下来，由此暗示生存斗争是一种决定个人成败的内在人类特质。达尔文的理论甚至被概括为「适者生存」——达尔文本人从未使用过这个短语——进一步凸显了竞争在成功中的作用。"
   },
   {
    "id": "rd2023122T53",
@@ -1456,7 +1491,7 @@
      "It is the pre-rational world rarely appreciated nowadays."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 3/5 段）。正确答案 C。"
+    "explain": "正确答案 C。依据在第 3 段。"
    },
    "vocab": [
     {
@@ -1483,7 +1518,8 @@
      "w": "survive",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "然而，人类学的当前研究表明，这种关于竞争在人类行为中作用的观点可能并不正确。托马斯·霍布斯是十七世纪伟大的哲学家之一，最为人铭记的或许是他把「自然状态」——即人类意志强加于世界之前的状态——描绘成「肮脏、野蛮而短促」。这幅前理性世界的图景至今仍广为流传，并得到查尔斯·达尔文影响深远的著作《物种起源》的强化，该书确立了自然选择学说。这一学说理所当然地认为，最能适应并驾驭自身所处自然环境的物种才能生存下来，由此暗示生存斗争是一种决定个人成败的内在人类特质。达尔文的理论甚至被概括为「适者生存」——达尔文本人从未使用过这个短语——进一步凸显了竞争在成功中的作用。然而正如人们常常指出的，自然选择的概念中并没有任何内容表明竞争是适者生存最成功的策略。达尔文在《物种起源》中明确表示，他所描述的斗争应被视为隐喻，完全可以包含依赖与合作。"
   },
   {
    "id": "rd2023122T54",
@@ -1500,7 +1536,7 @@
      "The strongest species proves to be the fittest in natural selection."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 4/5 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Darwin asserted in _The Origin of Species_ that the struggles he was describing should be viewed as metaphors and could easily include dependence and cooperation.」"
    },
    "vocab": [
     {
@@ -1527,7 +1563,8 @@
      "w": "survive",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "然而，人类学的当前研究表明，这种关于竞争在人类行为中作用的观点可能并不正确。托马斯·霍布斯是十七世纪伟大的哲学家之一，最为人铭记的或许是他把「自然状态」——即人类意志强加于世界之前的状态——描绘成「肮脏、野蛮而短促」。这幅前理性世界的图景至今仍广为流传，并得到查尔斯·达尔文影响深远的著作《物种起源》的强化，该书确立了自然选择学说。这一学说理所当然地认为，最能适应并驾驭自身所处自然环境的物种才能生存下来，由此暗示生存斗争是一种决定个人成败的内在人类特质。达尔文的理论甚至被概括为「适者生存」——达尔文本人从未使用过这个短语——进一步凸显了竞争在成功中的作用。然而正如人们常常指出的，自然选择的概念中并没有任何内容表明竞争是适者生存最成功的策略。达尔文在《物种起源》中明确表示，他所描述的斗争应被视为隐喻，完全可以包含依赖与合作。"
   },
   {
    "id": "rd2023122T55",
@@ -1544,7 +1581,7 @@
      "People's attitude towards competition is actually culture-bound."
     ],
     "answer": "B",
-    "explain": "依据定位：短文末尾（第 5/5 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「Many studies have been conducted to test the importance placed on competition as opposed to other values, such as cooperation — by various cultures, and generally conclude that Americans uniquely praise competition as natural, inevitable, and desirable.」"
    },
    "vocab": [
     {
@@ -1571,7 +1608,8 @@
      "w": "behavior",
      "cn": "行为；表现；态度"
     }
-   ]
+   ],
+   "cn": "人们进行了许多研究，检验不同文化对竞争（相对于合作等其他价值观）的重视程度，结论大体一致：唯独美国人把竞争赞颂为自然的、不可避免的、可取的。1937 年，举世闻名的人类学家玛格丽特·米德出版了《原始民族的合作与竞争》，该书基于她对几个不崇尚竞争的社会的研究——这些社会有时甚至对竞争持负面评价。其中一个是亚利桑那州的祖尼印第安人，米德发现，他们对合作的重视远甚于竞争。在研究了数十个这样的文化之后，米德的最终结论是：竞争性是人类行为中由文化塑造的一面，它在特定社会中盛行的程度，取决于该社会对它的评价高低。"
   },
   {
    "id": "rd2023123O47",
@@ -1588,7 +1626,7 @@
      "They have few chances to locate the journals that publish these findings."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 4/12 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「For researchers in the tenure-track system, their main goal is winning tenure, which in part can be achieved by getting a number of papers published in prominent journals.」"
    },
    "vocab": [
     {
@@ -1615,7 +1653,8 @@
      "w": "influence",
      "cn": "影响；左右；对…起作用"
     }
-   ]
+   ],
+   "cn": "许多研究者似乎满足于在学术期刊或学术会议上分享研究成果。但很少有期刊允许所有人阅读这些发现。即使是免费获取的文章，通常也用普通读者难以理解的学术语言写成。对于终身教职体系中的研究者来说，他们的主要目标是赢得终身教职，而这在一定程度上可以通过在知名期刊上发表论文来实现。诸如此类的压力意味着面向社区的科普传播不会被优先考虑。许多研究者缺乏向普通读者描述其成果的写作技巧。他们也可能担心公众能否理解他们的发现，或者担心研究成果被用来影响有争议的政策。这些顾虑使一些研究者回避在学术界之外传播自己的发现。"
   },
   {
    "id": "rd2023123O49",
@@ -1632,7 +1671,7 @@
      "By helping them to forge ties with government agencies."
     ],
     "answer": "A",
-    "explain": "依据定位：短文中段（第 9/12 段）。正确答案 A。"
+    "explain": "正确答案 A。依据（原文）：「Institutions and researchers should invest in partnerships that expand capacity for sharing results more broadly.」"
    },
    "vocab": [
     {
@@ -1659,7 +1698,8 @@
      "w": "capacity",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "分享研究成果的好处是双向的。与其他研究者和公众交流，可以带来意想不到的新联系和新想法，为研究提示富有成果的新方向。为了让研究者和社区双双受益，寻找创新的、通俗易懂的成果分享方式，其重要性怎么强调都不为过。机构和资助组织应当支持更多研究者在开放获取期刊上发表论文，让公众不必付费阅读。机构和研究者应当投入建设伙伴关系，扩展更广泛分享成果的能力。此外，伦理委员会应强制要求研究者向公众分享其成果。每一位研究参与者都应在知情同意的过程中选择是否接收研究结果。"
   },
   {
    "id": "rd2023123O50",
@@ -1676,7 +1716,7 @@
      "To render their findings acceptable by prominent journals."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 11/12 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「But this can be resolved by researchers engaging the services of professional writers or communication officers to help with translating their study into more accessible language and share it widely with media outlets and the public.」"
    },
    "vocab": [
     {
@@ -1703,7 +1743,8 @@
      "w": "recognize",
      "cn": "认识到；承认；认出"
     }
-   ]
+   ],
+   "cn": "此外，伦理委员会应强制要求研究者向公众分享其成果。每一位研究参与者都应在知情同意的过程中选择是否接收研究结果。研究者展示的成果可能因专业术语而被误解。但这可以解决：研究者可以聘请专业作家或传播专员，帮助把研究转化为更通俗易懂的语言，并通过媒体渠道和公众广泛分享。把研究成果分享给受其影响最深的人，会让我们成为更好的研究者，并确保我们的工作能被用来改善人们的生活。机构和合作者必须认识到这样做的价值。"
   },
   {
    "id": "rd2023123T53",
@@ -1720,7 +1761,7 @@
      "The extinction of a lot of wildlife."
     ],
     "answer": "C",
-    "explain": "依据定位：短文中段（第 3/6 段）。正确答案 C。"
+    "explain": "正确答案 C。依据（原文）：「Does this perhaps explain, in part, the lack of data about how spiders are faring in our age of ecological crisis?」"
    },
    "vocab": [
     {
@@ -1747,7 +1788,8 @@
      "w": "impossible",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "这能否部分解释，在我们这个生态危机时代，关于蜘蛛处境的数据为何如此匮乏？由于长期采集和观察的传统，英国蝴蝶是世界上被研究得最多的昆虫类群。但蜘蛛保护人士指出，直到 20 世纪 80 年代，家蜘蛛的分类才得到 properly（妥善）梳理。虽然昆虫种群的信息是通过统计撞上车挡风玻璃或落入陷阱的数量等实验收集的，却几乎没有人尝试去数过蜘蛛。飞虫数量的大幅减少只能意味着蜘蛛的食物供应在减少。最近一项里程碑式的研究发现，1989 年至 2016 年间昆虫种群减少了 75%，人们认为罪魁祸首是杀虫剂的使用以及荒野因开发而遭到破坏。这意味着蜘蛛的总体前景令人担忧，大多数生物亦然。但保护人士最担心的是那些因栖息地丧失和碎片化而受威胁、无法迁徙的品种。"
   },
   {
    "id": "rd2023123T54",
@@ -1764,7 +1806,7 @@
      "More and more spider species are found losing their ability to migrate."
     ],
     "answer": "B",
-    "explain": "依据定位：短文中段（第 4/6 段）。正确答案 B。"
+    "explain": "正确答案 B。依据（原文）：「But conservationists are most concerned about those varieties that are threatened due to habitat loss and fragmentation, which makes it impossible for them to migrate.」"
    },
    "vocab": [
     {
@@ -1791,7 +1833,8 @@
      "w": "majority",
      "cn": "—"
     }
-   ]
+   ],
+   "cn": "飞虫数量的大幅减少只能意味着蜘蛛的食物供应在减少。最近一项里程碑式的研究发现，1989 年至 2016 年间昆虫种群减少了 75%，人们认为罪魁祸首是杀虫剂的使用以及荒野因开发而遭到破坏。这意味着蜘蛛的总体前景令人担忧，大多数生物亦然。但保护人士最担心的是那些因栖息地丧失和碎片化而受威胁、无法迁徙的品种。在英国定期记录的约 650 种蜘蛛中，大多数在沼泽和荒地繁衍生息。保护工作往往由意志坚定的个人主导，通过把一些物种重新引入新区域，已经帮助它们恢复。随着「再野化」稳稳列入环境政策议程，人们希望将来蜘蛛能够自行迁徙，沿着野生动物廊道移动以适应气候变化。"
   },
   {
    "id": "rd2023123T55",
@@ -1808,7 +1851,7 @@
      "There would be more people appreciating spiders' splendour."
     ],
     "answer": "D",
-    "explain": "依据定位：短文末尾（第 6/6 段）。正确答案 D。"
+    "explain": "正确答案 D。依据（原文）：「But as they reveal themselves in all their splendour this autumn, it would be a good thing if more animal lovers recognised the ways in which spiders are simply terrific.」"
    },
    "vocab": [
     {
@@ -1835,7 +1878,9 @@
      "w": "climate",
      "cn": "气候；风气；氛围"
     }
-   ]
+   ],
+   "cn": "在英国定期记录的约 650 种蜘蛛中，大多数在沼泽和荒地繁衍生息。保护工作往往由意志坚定的个人主导，通过把一些物种重新引入新区域，已经帮助它们恢复。随着「再野化」稳稳列入环境政策议程，人们希望将来蜘蛛能够自行迁徙，沿着野生动物廊道移动以适应气候变化。尽管蜘蛛作为自然界的纺织高手地位独特，但它们似乎永远无法获得与蜜蜂、鸟类或蝴蝶同等的人类热情。但当它们在今秋尽显华彩之时，如果更多动物爱好者能认识到蜘蛛的种种妙处，将是一件好事。"
   }
- ]
+ ],
+ "cnv": 1
 }
