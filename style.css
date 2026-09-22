@@ -346,6 +346,31 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .empty-tip { text-align: center; color: var(--ink-3); font-size: 14px; padding: 40px 0; }
 
 
+/* ---------- 首页入口卡片（阅读随手练） ---------- */
+.todo-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 6px 0 12px;
+  box-shadow: 0 3px 12px rgba(232, 68, 122, .06);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: transform .12s ease;
+  user-select: none;
+}
+.todo-card:active { transform: scale(.985); }
+.todo-card-ico { flex: none; font-size: 26px; line-height: 1; }
+.todo-card-main { flex: 1; min-width: 0; }
+.todo-card-title { font-weight: 700; font-size: 16.5px; }
+.todo-card-sub { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; }
+
 .todo-form { background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; }
 .todo-form input[type="text"] {
   width: 100%; border: 1.5px solid var(--line); border-radius: 10px;
