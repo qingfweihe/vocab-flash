@@ -1,5 +1,5 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机） */
-const CACHE = 'sgwd-20260922-172914';
+const CACHE = 'sgwd-20260922-222623';
 const ASSETS = [
   './',
   './index.html',
@@ -31,7 +31,7 @@ self.addEventListener('activate', (e) => {
 
 /* ---------- Web Push：接收推送并显示通知 ---------- */
 self.addEventListener('push', (e) => {
-  let data = { title: '🌸 该背单词了', body: '点开继续' };
+  let data = { title: '🌸 该背单词了', body: '点开继续', url: './' };
   try { if (e.data) data = Object.assign(data, e.data.json()); } catch (err) { /* 纯文本忽略 */ }
   e.waitUntil(
     self.registration.showNotification(data.title, {
@@ -39,19 +39,25 @@ self.addEventListener('push', (e) => {
       tag: data.tag || 'vocab',
       icon: './icons/icon-180.png',
       badge: './icons/icon-180.png',
-      data: { url: './' },
+      data: { url: data.url || './' },
     })
   );
 });
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const target = new URL(e.notification.data && e.notification.data.url || './', self.location.origin).href;
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       for (const c of list) {
-        if ('focus' in c) return c.focus();
+        // 已有窗口：聚焦并导航到通知指向的页面（如待办清单）
+        if ('focus' in c) {
+          c.focus();
+          if ('navigate' in c) return c.navigate(target).catch(() => c);
+          return c;
+        }
       }
-      return self.clients.openWindow('./');
+      return self.clients.openWindow(target);
     })
   );
 });
