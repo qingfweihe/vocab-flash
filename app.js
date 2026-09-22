@@ -24,6 +24,15 @@ let META = null;          // 轻量索引（单元名+词数），首屏秒开�
 let DATA_PROMISE = null;  // 全量词库加载 Promise（后台并行）
 let state = loadState();
 
+/** 阅读状态规整（深防御：绝不与 DEFAULT_STATE 共享内层对象，否则重置后残留记录） */
+function normalizeReading(r) {
+  r = r || {};
+  return {
+    done: (r.done && typeof r.done === 'object' && !Array.isArray(r.done)) ? r.done : {},
+    vocab: (r.vocab && typeof r.vocab === 'object' && !Array.isArray(r.vocab)) ? r.vocab : {},
+  };
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -39,7 +48,7 @@ function loadState() {
       lastUnit: s.lastUnit || null,
       reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
       todo: Array.isArray(s.todo) ? s.todo : [],
-      reading: Object.assign({}, DEFAULT_STATE.reading, s.reading || {}),
+      reading: normalizeReading(s.reading),
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -63,6 +72,11 @@ function toast(msg, ms = 1800) {
 }
 
 function unitById(id) { return DATA.units.find((u) => u.id === Number(id)); }
+
+/** HTML 转义：用户输入渲染进 innerHTML 前必过 */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 /* ---- 进度存储：以词头（小写）为键，词库重排不会错位 ---- */
 function wordKey(w) { return String(w).toLowerCase(); }
@@ -132,34 +146,6 @@ function todoExpired(it) {
   const plan = new Date(`${it.date}T${it.time}:00`).getTime();
   return Date.now() - plan > 12 * 3600e3;
 }
-/** 下一次触发时刻（本地毫秒）；永不触发返回 Infinity */
-function todoNextFire(it) {
-  const min = (d) => {
-    const [h, m] = String(d).split(':').map(Number);
-    return (h || 0) * 3600e3 + (m || 0) * 60e3;
-  };
-  if (it.type === 'once') {
-    const t = new Date(`${it.date}T${it.time}:00`).getTime();
-    return isNaN(t) ? Infinity : t;
-  }
-  const now = new Date();
-  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  if (it.type === 'daily') {
-    let t = today0 + min(it.time);
-    if (t <= now.getTime()) t += 86400e3;
-    return t;
-  }
-  // weekly：未来 7 天内最近的 wd+time
-  const target = Number(it.wd);
-  if (isNaN(target)) return Infinity;
-  for (let i = 0; i < 8; i++) {
-    const day0 = today0 + i * 86400e3;
-    if (new Date(day0).getDay() !== target) continue;
-    const t = day0 + min(it.time);
-    if (t > now.getTime()) return t;
-  }
-  return Infinity;
-}
 
 /** 待办页顶部的推送提醒状态条 */
 function renderTodoRemBar() {
@@ -202,15 +188,16 @@ function renderTodo() {
     const exp = todoExpired(it);
     const cls = (it.type === 'once' && it.done ? 'done' : '') + (exp ? ' expired' : '');
     const checked = (it.type === 'once' && it.done) || (it.todayDone === today);
-    const whenHtml = exp ? `<span class="t-expired">已过期</span> · ${todoLabel(it)}` : todoLabel(it);
+    const lbl = esc(todoLabel(it));
+    const whenHtml = exp ? `<span class="t-expired">已过期</span> · ${lbl}` : lbl;
     return `
-      <div class="todo-item ${cls}" data-id="${it.id}">
-        <button class="tk ${checked ? 'on' : ''}" data-tk="${it.id}">${checked ? '✓' : ''}</button>
+      <div class="todo-item ${cls}" data-id="${esc(it.id)}">
+        <button class="tk ${checked ? 'on' : ''}" data-tk="${esc(it.id)}">${checked ? '✓' : ''}</button>
         <div class="t-main">
-          <div class="t-text">${it.text}</div>
+          <div class="t-text">${esc(it.text)}</div>
           <div class="t-when">${whenHtml}${it.type === 'daily' || it.type === 'weekly' ? ` · 勾选=今天不再提醒` : ''}</div>
         </div>
-        <button class="t-del" data-del="${it.id}">删除</button>
+        <button class="t-del" data-del="${esc(it.id)}">删除</button>
       </div>`;
   }).join('');
 }
@@ -888,11 +875,12 @@ $('#file-import').addEventListener('change', (e) => {
         lastUnit: s.lastUnit || null,
         reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
         todo: Array.isArray(s.todo) ? s.todo : [],
-        reading: Object.assign({}, DEFAULT_STATE.reading, s.reading || {}),
+        reading: normalizeReading(s.reading),
       };
       if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
       renderTodo(); Reading.renderHome(); Reading.renderWrongVocab();
+      Reminder.sync(true); renderTodoRemBar(); // 恢复的提醒设置/待办同步到服务端
       toast('进度已恢复');
     } catch (err) { toast('文件格式不对'); }
   };
@@ -900,10 +888,12 @@ $('#file-import').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-$('#btn-reset').addEventListener('click', () => {
+$('#btn-reset').addEventListener('click', async () => {
   if (!confirm('确定清空全部学习进度？此操作不可恢复。')) return;
+  await Reminder.disable(); // 先退订并同步服务端（enabled:false），防止清空后服务端继续推旧待办
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   saveState(); applySettings(); renderUnits(); renderWrongList();
+  renderTodo(); renderTodoRemBar();
   toast('已清空');
 });
 
@@ -1084,8 +1074,6 @@ const Reading = (() => {
     $('#reading-list').classList.add('hidden');
     const box = $('#reading-quiz');
     box.classList.remove('hidden');
-    const r = rState();
-    const prev = r.done[it.id];
     box.innerHTML = `
       <div class="rd-src-line">${it.src} · 约 ${it.words} 词 <button class="rd-speak" id="rd-speak">🔊 朗读</button></div>
       <div class="rd-text">${it.text.replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
@@ -1102,7 +1090,6 @@ const Reading = (() => {
     $('#rd-speak').addEventListener('click', () => speak(it.text.replace(/\n/g, ' ')));
     $('#rd-next').addEventListener('click', () => { start(); });
     $('#rd-back').addEventListener('click', () => { box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
-    if (redo && prev) { /* 重做也重新作答，不回填 */ }
     window.scrollTo({ top: 0 });
   }
 
@@ -1175,7 +1162,7 @@ const Reading = (() => {
     const r = rState();
     const words = Object.keys(r.vocab);
     if (!words.length) {
-      box.innerHTML = '<div class="set-note">暂无。做错阅读题时，文中的六级核心词会自动收进这里。</div>';
+      box.innerHTML = '<div class="set-note">暂无。在阅读随手练的生词环节点 ★ 收藏的词，会出现在这里。</div>';
       return;
     }
     box.innerHTML = words.map((w) => `
@@ -1201,12 +1188,18 @@ const Reading = (() => {
 const Reminder = (() => {
   const DEFAULT_API = 'https://vocab-flash-qf.qingfweihe.deno.net';
   let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('deno.dev') ? '' : DEFAULT_API);
-  let subId = (state.reminder && state.reminder.id) || '';
   let pingTimer = null;
 
   function rem() {
     if (!state.reminder) state.reminder = { id: '', enabled: false, time: '20:00', smart: true, custom: [] };
     return state.reminder;
+  }
+
+  /** 上报服务端的完整设置：必须带 todo——服务端只认 settings.todo 判定待办推送 */
+  function settingsPayload() {
+    const out = Object.assign({}, rem());
+    out.todo = Array.isArray(state.todo) ? state.todo : [];
+    return out;
   }
 
   function isStandalone() {
@@ -1268,7 +1261,7 @@ const Reminder = (() => {
       }
       const r = await api('subscribe', {
         method: 'POST',
-        body: JSON.stringify({ subscription: sub.toJSON(), settings: rem() }),
+        body: JSON.stringify({ subscription: sub.toJSON(), settings: settingsPayload() }),
       });
       rem().id = r.id;
       rem().enabled = true;
@@ -1306,7 +1299,7 @@ const Reminder = (() => {
     clearTimeout(syncTimer);
     const doIt = () => api('settings', {
       method: 'POST',
-      body: JSON.stringify({ id: rem().id, settings: rem() }),
+      body: JSON.stringify({ id: rem().id, settings: settingsPayload() }),
     }).catch(() => {});
     now ? doIt() : (syncTimer = setTimeout(doIt, 1500));
   }
