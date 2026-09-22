@@ -91,6 +91,15 @@
     </div>
   </section>
 
+  <!-- 视图：收藏夹 -->
+  <section id="view-favorites" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">收藏夹</div>
+      <button class="test-btn" id="btn-test-fav">检验收藏</button>
+    </div>
+    <div id="fav-list"></div>
+  </section>
+
   <!-- 视图：错词本 -->
   <section id="view-wrong" class="view hidden">
     <div class="subhead no-back">
@@ -167,6 +176,7 @@
 <!-- 底部导航 -->
 <nav id="tabbar">
   <button class="tab active" data-nav="units"><span class="tab-ico">📖</span><span>单词</span></button>
+  <button class="tab" data-nav="favorites"><span class="tab-ico">⭐</span><span>收藏</span></button>
   <button class="tab" data-nav="wrong"><span class="tab-ico">📌</span><span>错词本</span></button>
   <button class="tab" data-nav="settings"><span class="tab-ico">⚙️</span><span>设置</span></button>
 </nav>
