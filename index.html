@@ -26,6 +26,14 @@
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
+    <button id="reading-card" class="todo-card">
+      <div class="todo-card-ico">📖</div>
+      <div class="todo-card-main">
+        <div class="todo-card-title">阅读随手练</div>
+        <div class="todo-card-sub" id="reading-card-sub">六级真题 · 一篇一题 · 随手刷</div>
+      </div>
+      <div class="reading-pct hidden" id="reading-card-pct">0%</div>
+    </button>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -130,6 +138,17 @@
     <div id="todo-list"></div>
   </section>
 
+  <!-- 视图：阅读随手练 -->
+  <section id="view-reading" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">阅读随手练</div>
+      <button class="test-btn" id="btn-reading-start">随机来一篇</button>
+    </div>
+    <div class="reading-stats" id="reading-stats"></div>
+    <div id="reading-quiz" class="hidden"></div>
+    <div id="reading-list"></div>
+  </section>
+
   <!-- 视图：收藏夹 -->
   <section id="view-favorites" class="view hidden">
     <div class="subhead no-back">
@@ -144,6 +163,10 @@
     <div class="subhead no-back">
       <div class="subhead-title">错词本</div>
       <button class="test-btn" id="btn-test-wrong">检验错词</button>
+    </div>
+    <div class="settings-box" id="read-vocab-box">
+      <div class="set-section-title">📖 阅读生词（做错的阅读篇自动收进）</div>
+      <div id="read-vocab-list"></div>
     </div>
     <div id="wrong-list"></div>
   </section>
