@@ -1,0 +1,257 @@
+{
+ "papers": [
+  {
+   "id": "26-06-2",
+   "title": "2026-06（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 140
+  },
+  {
+   "id": "26-06-1",
+   "title": "2026-06（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 130
+  },
+  {
+   "id": "25-12-2",
+   "title": "25-12(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 152
+  },
+  {
+   "id": "25-12-1",
+   "title": "25-12(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 150
+  },
+  {
+   "id": "25-6-2",
+   "title": "25-6(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 165
+  },
+  {
+   "id": "25-6-1",
+   "title": "25-6(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 165
+  },
+  {
+   "id": "24-12-2",
+   "title": "24-12(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 152
+  },
+  {
+   "id": "24-12-1",
+   "title": "24-12(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 169
+  },
+  {
+   "id": "24-6-2",
+   "title": "24-6(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 134
+  },
+  {
+   "id": "24-6-1",
+   "title": "24-6(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 146
+  },
+  {
+   "id": "23-12-2",
+   "title": "23-12(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 168
+  },
+  {
+   "id": "23-12-1",
+   "title": "23-12(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 156
+  },
+  {
+   "id": "23-6-2",
+   "title": "23-6(2)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 143
+  },
+  {
+   "id": "23-6-1",
+   "title": "23-6(1)",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 151
+  },
+  {
+   "id": "22-12-2",
+   "title": "2022-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 175
+  },
+  {
+   "id": "22-12-1",
+   "title": "2022-12（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 141
+  },
+  {
+   "id": "22-09-1",
+   "title": "2022-09（全1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 180
+  },
+  {
+   "id": "22-06-1",
+   "title": "2022-06（全1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 160
+  },
+  {
+   "id": "21-12-2",
+   "title": "2021-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 161
+  },
+  {
+   "id": "21-12-1",
+   "title": "2021-12（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 167
+  },
+  {
+   "id": "21-06-2",
+   "title": "2021-06（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 163
+  },
+  {
+   "id": "21-06-1",
+   "title": "2021-06（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 173
+  },
+  {
+   "id": "20-12-2",
+   "title": "2020-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 159
+  },
+  {
+   "id": "20-12-1",
+   "title": "2020-12（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 168
+  },
+  {
+   "id": "20-09-1",
+   "title": "2020-09（全1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 162
+  },
+  {
+   "id": "20-07-1",
+   "title": "2020-07（全1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 158
+  },
+  {
+   "id": "19-12-2",
+   "title": "2019-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 156
+  },
+  {
+   "id": "19-12-1",
+   "title": "2019-12（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 173
+  },
+  {
+   "id": "19-06-2",
+   "title": "2019-06（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 172
+  },
+  {
+   "id": "18-12-2",
+   "title": "2018-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 164
+  },
+  {
+   "id": "18-06-2",
+   "title": "2018-06（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 163
+  },
+  {
+   "id": "18-06-1",
+   "title": "2018-06（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 210
+  },
+  {
+   "id": "17-12-2",
+   "title": "2017-12（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 201
+  },
+  {
+   "id": "17-12-1",
+   "title": "2017-12（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 153
+  },
+  {
+   "id": "17-06-2",
+   "title": "2017-06（第2套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 109
+  },
+  {
+   "id": "17-06-1",
+   "title": "2017-06（第1套）",
+   "questionCount": 25,
+   "groups": 7,
+   "sentences": 141
+  }
+ ],
+ "audioRoot": "audio/cet6"
+}

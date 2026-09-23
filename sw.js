@@ -1,5 +1,7 @@
-/* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机） */
-const CACHE = 'sgwd-20260923-102618';
+/* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
+   听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
+const CACHE = 'sgwd-20260923-120446';
+const AUDIO_CACHE = 'sgwd-audio-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -25,7 +27,8 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      // 只清旧版本主缓存；音频缓存（sgwd-audio-*）保留
+      Promise.all(keys.filter((k) => k !== CACHE && k.indexOf('sgwd-audio-') !== 0).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -67,10 +70,11 @@ self.addEventListener('notificationclick', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  const isData = url.pathname.endsWith('/data/words.json') || url.pathname.endsWith('/data/meta.json') || url.pathname.endsWith('/data/readings.json');
+  const isData = url.pathname.endsWith('/data/words.json') || url.pathname.endsWith('/data/meta.json')
+    || url.pathname.endsWith('/data/readings.json') || url.pathname.indexOf('/data/listening/') >= 0;
 
   if (isData) {
-    // 词表/索引：网络优先，成功即刷新缓存；离线回落缓存
+    // 词表/索引/听力数据：网络优先，成功即刷新缓存；离线回落缓存
     e.respondWith(
       fetch(e.request).then((res) => {
         if (res && res.ok) {
@@ -82,6 +86,28 @@ self.addEventListener('fetch', (e) => {
         caches.match(e.request, { ignoreSearch: true }).then((hit) =>
           hit || new Response('{"units":[]}', { headers: { 'Content-Type': 'application/json' } })
         )
+      )
+    );
+    return;
+  }
+
+  // 听力音频：独立缓存区，按需下载后长期保留（缓存优先）
+  if (url.pathname.indexOf('/audio/') >= 0) {
+    e.respondWith(
+      caches.open(AUDIO_CACHE).then((c) =>
+        c.match(url.pathname).then((hit) => {
+          if (hit) return hit;
+          // 忽略 Range：整文件抓取后缓存（缓存半截的 206 会导致后续播放错乱）
+          return fetch(new Request(url.href, { mode: 'same-origin', credentials: 'same-origin' }))
+            .then((res) => {
+              if (res && res.status === 200) {
+                const copy = res.clone();
+                c.put(url.pathname, copy);
+              }
+              return res;
+            })
+            .catch(() => Response.error());
+        })
       )
     );
     return;

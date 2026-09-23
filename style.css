@@ -485,3 +485,57 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .rd-vword .vw-fav.on { color: var(--pink-deep); }
 .rd-cn-toggle { margin-bottom: 8px; }
 .rd-cn { background: #fff; border: 1.5px dashed var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.8; color: var(--ink-2); margin-bottom: 10px; }
+
+/* ================= 六级听力精听 ================= */
+.ls-paper { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; cursor: pointer; }
+.ls-paper-main { flex: 1; min-width: 0; }
+.ls-paper-title { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.ls-paper-sub { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+.ls-badge { flex: none; font-size: 11px; color: var(--pink-deep); background: var(--pink-soft); border-radius: 999px; padding: 3px 8px; }
+
+.ls-group { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+.ls-group-main { flex: 1; min-width: 0; }
+.ls-group-title { font-size: 14px; color: var(--ink); }
+.ls-group-sub { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+.ls-group-mark { flex: none; font-weight: 700; color: var(--ink-3); }
+.ls-group-mark.ok { color: #2e9e5b; }
+.ls-group-mark.no { color: #d84c4c; }
+
+.ls-player { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 12px; }
+.ls-player audio { width: 100%; margin-bottom: 8px; }
+.ls-ctl, .ls-toggles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.ls-ctl .mini-btn.on { border-color: var(--pink); color: var(--pink-deep); background: var(--pink-soft); }
+#ls-hint { margin: 4px 0 0; }
+
+.ls-q { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+.ls-q-stem { font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+.ls-q-stem b { color: var(--pink-deep); margin-right: 3px; }
+.ls-q-cn { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
+.ls-opts { display: flex; flex-direction: column; gap: 7px; }
+.ls-opt { text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 11px; font-size: 13.5px; color: var(--ink); cursor: pointer; line-height: 1.5; }
+.ls-opt b { color: var(--pink-deep); margin-right: 4px; }
+.ls-opt.right { border-color: #2e9e5b; background: #f0faf3; }
+.ls-opt.wrong { border-color: #d84c4c; background: #fdf1f1; }
+.ls-opt:disabled { cursor: default; }
+.ls-opt-cn { display: block; color: var(--ink-2); font-size: 12px; margin-top: 2px; }
+
+.ls-tr-sec { margin-top: 4px; }
+#ls-tr { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.ls-line { padding: 6px 4px; border-radius: 8px; cursor: pointer; line-height: 1.55; }
+.ls-line.active { background: var(--pink-soft); }
+.ls-line-t { color: var(--ink-3); font-size: 11px; margin-right: 6px; }
+.ls-line-en { font-size: 14px; }
+.ls-line-cn { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 2px; }
+.ls-w { border-radius: 4px; }
+.ls-w.in-dict { border-bottom: 1.5px dotted var(--pink); }
+.ls-actions { margin: 12px 0 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ls-wordcard { position: absolute; z-index: 60; width: 280px; background: #fff; border: 1.5px solid var(--pink); border-radius: 12px; box-shadow: 0 6px 24px rgba(232, 68, 122, .18); padding: 10px 12px; }
+.lw-head { display: flex; align-items: center; gap: 8px; }
+.lw-head b { font-size: 16px; color: var(--pink-deep); }
+.lw-ph { color: var(--ink-2); font-size: 12px; flex: 1; }
+.lw-head .vw-fav { border: none; background: none; font-size: 16px; cursor: pointer; color: #b8b8b8; padding: 0 4px; }
+.lw-head .vw-fav.on { color: var(--pink-deep); }
+.lw-close { border: none; background: none; color: var(--ink-3); font-size: 13px; cursor: pointer; }
+.lw-cn { font-size: 13.5px; line-height: 1.6; margin-top: 6px; }
+.lw-root { font-size: 12px; color: var(--ink-2); margin-top: 4px; }

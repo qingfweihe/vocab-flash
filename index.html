@@ -34,6 +34,14 @@
       </div>
       <div class="reading-pct hidden" id="reading-card-pct">0%</div>
     </button>
+    <button id="listening-card" class="todo-card">
+      <div class="todo-card-ico">🎧</div>
+      <div class="todo-card-main">
+        <div class="todo-card-title">六级听力精听</div>
+        <div class="todo-card-sub" id="listening-card-sub">真题 36 套 · 逐段逐句 · 先听后看</div>
+      </div>
+      <div class="reading-pct hidden" id="listening-card-pct">0%</div>
+    </button>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -149,6 +157,17 @@
     <div id="reading-list"></div>
   </section>
 
+  <!-- 视图：六级听力精听 -->
+  <section id="view-listening" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" id="ls-back">‹ 返回</button>
+      <div class="subhead-title" id="ls-title">六级听力精听</div>
+      <button class="test-btn" id="ls-cache-btn">缓存</button>
+    </div>
+    <div class="reading-stats" id="ls-stats"></div>
+    <div id="ls-body"></div>
+  </section>
+
   <!-- 视图：收藏夹 -->
   <section id="view-favorites" class="view hidden">
     <div class="subhead no-back">
@@ -167,6 +186,10 @@
     <div class="settings-box" id="read-vocab-box">
       <div class="set-section-title">📖 阅读生词（在随手练解析里点 ★ 收藏的词）</div>
       <div id="read-vocab-list"></div>
+    </div>
+    <div class="settings-box" id="listen-vocab-box">
+      <div class="set-section-title">🎧 听力生词（在听力原文里点 ★ 收藏的词）</div>
+      <div id="listen-vocab-list"></div>
     </div>
     <div id="wrong-list"></div>
   </section>
