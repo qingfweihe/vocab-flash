@@ -1,6 +1,6 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
    听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
-const CACHE = 'sgwd-20260923-141053';
+const CACHE = 'sgwd-20260923-141446';
 const AUDIO_CACHE = 'sgwd-audio-v1';
 const ASSETS = [
   './',
