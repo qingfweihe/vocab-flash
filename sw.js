@@ -1,5 +1,5 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机） */
-const CACHE = 'sgwd-20260923-010259';
+const CACHE = 'sgwd-20260923-102618';
 const ASSETS = [
   './',
   './index.html',
