@@ -17,6 +17,7 @@ const DEFAULT_STATE = {
   reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
   todo: [],      // 待办清单 [{id,text,type:'once'|'daily'|'weekly',date?,time,wd?,done?,todayDone?,createdAt}]
   reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
+  listen: { done: {}, vocab: {} },   // 听力精听 done:{taskId:{answered,correct,ts}} vocab:{word:{cn,ts}}
 };
 
 let DATA = { meta: {}, units: [] };
@@ -31,6 +32,36 @@ function normalizeReading(r) {
     done: (r.done && typeof r.done === 'object' && !Array.isArray(r.done)) ? r.done : {},
     vocab: (r.vocab && typeof r.vocab === 'object' && !Array.isArray(r.vocab)) ? r.vocab : {},
   };
+}
+
+/** 听力状态规整（同上；done 键为段 id，如 legacy-22-06-1-a1） */
+function normalizeListen(l) {
+  l = l || {};
+  return {
+    done: (l.done && typeof l.done === 'object' && !Array.isArray(l.done)) ? l.done : {},
+    vocab: (l.vocab && typeof l.vocab === 'object' && !Array.isArray(l.vocab)) ? l.vocab : {},
+  };
+}
+
+/** 打卡：阅读与听力共用一套（今天练过任意一项即算打卡） */
+function bjDateOf(ts) { return new Date((ts || Date.now()) + 8 * 3600e3).toISOString().slice(0, 10); }
+function practiceDays() {
+  const days = new Set();
+  const r = (state && state.reading) || {};
+  Object.keys(r.done || {}).forEach((k) => days.add(bjDateOf(r.done[k] && r.done[k].ts)));
+  const l = (state && state.listen) || {};
+  Object.keys(l.done || {}).forEach((k) => days.add(bjDateOf(l.done[k] && l.done[k].ts)));
+  return days;
+}
+function streakFrom(days) {
+  let streak = 0;
+  const d = new Date();
+  if (!days.has(bjDateOf())) d.setDate(d.getDate() - 1); // 今天还没练，从昨天算
+  for (;;) {
+    if (days.has(bjDateOf(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
 }
 
 function loadState() {
@@ -49,6 +80,7 @@ function loadState() {
       reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
       todo: Array.isArray(s.todo) ? s.todo : [],
       reading: normalizeReading(s.reading),
+      listen: normalizeListen(s.listen),
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -333,11 +365,12 @@ function nav(view) {
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
-  if (view === 'units') Reading.renderHome();
-  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); }
+  if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
+  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); }
   if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
   if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
   if (view === 'reading') Reading.renderPage();
+  if (view === 'listening') Listening.renderPage();
 }
 
 document.addEventListener('click', (e) => {
@@ -876,10 +909,12 @@ $('#file-import').addEventListener('change', (e) => {
         reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
         todo: Array.isArray(s.todo) ? s.todo : [],
         reading: normalizeReading(s.reading),
+        listen: normalizeListen(s.listen),
       };
       if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
       renderTodo(); Reading.renderHome(); Reading.renderWrongVocab();
+      Listening.renderHome(); Listening.renderWrongVocab();
       Reminder.sync(true); renderTodoRemBar(); // 恢复的提醒设置/待办同步到服务端
       toast('进度已恢复');
     } catch (err) { toast('文件格式不对'); }
@@ -1003,15 +1038,8 @@ const Reading = (() => {
     const r = rState();
     const ids = Object.keys(r.done);
     const okN = ids.filter((k) => r.done[k].ok).length;
-    // 连续刷题天数（北京时间，今天或昨天截止）
-    const days = new Set(ids.map((k) => bjDate(r.done[k].ts)));
-    let streak = 0;
-    const d = new Date();
-    if (!days.has(bjDate())) d.setDate(d.getDate() - 1); // 今天没刷从昨天算
-    for (;;) {
-      if (days.has(bjDate(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); }
-      else break;
-    }
+    // 连续刷题天数（北京时间）：与听力共用同一套打卡（见 practiceDays）
+    const streak = streakFrom(practiceDays());
     return { done: ids.length, total: ITEMS ? ITEMS.length : 0, pct: ids.length ? Math.round(okN / ids.length * 100) : 0, streak };
   }
 
@@ -1182,6 +1210,579 @@ const Reading = (() => {
   }
 
   return { ensure, renderHome, renderPage, renderWrongVocab, bind, start, stats };
+})();
+
+/* ================= 六级听力精听 ================= */
+/* 结构：卷列表 → 段列表（Sec A 第1组…）→ 精听页（播放器 / 题目 / 原文 / 中文）
+   音频按需下载（SW 单独缓存，不预缓存），中文默认遮住，答完题或手动点开才显示。 */
+const Listening = (() => {
+  const LS_CACHE = 'sgwd-audio-v1';
+  let IDX = null, PROMISE = null;       // 卷索引
+  let paper = null, paperData = null;   // 当前卷
+  let task = null;                      // 当前段
+  let audio = null;                     // 复用的 <audio>
+  let loopLine = -1;                    // 单句循环的行号（-1 = 关）
+  let rate = 1;                         // 播放速度
+  let showEn = false, showCn = false;   // 原文 / 中文 开关
+  let unlocked = false;                 // 本段是否已解锁中文（答完题自动解锁）
+  let wordMap = null;                   // 词库索引（小写 → 词条）
+  let blobUrl = null, blobFor = null;   // 当前段音频的 Blob URL
+
+  /* ---------- 数据 ---------- */
+  function ensure() {
+    if (IDX) return Promise.resolve(true);
+    if (!PROMISE) {
+      PROMISE = fetch('data/listening/index.json', { cache: 'no-cache' })
+        .then((r) => r.json())
+        .then((j) => { if (j && j.papers && j.papers.length) { IDX = j; return true; } return false; })
+        .catch(() => { PROMISE = null; return false; });
+    }
+    return PROMISE;
+  }
+
+  function loadPaper(id) {
+    if (paperData && paper && paper.id === id) return Promise.resolve(paperData);
+    return fetch('data/listening/' + id + '.json', { cache: 'no-cache' })
+      .then((r) => r.json())
+      .then((j) => { paperData = j; return j; })
+      .catch(() => null);
+  }
+
+  function lState() {
+    if (!state.listen || typeof state.listen !== 'object') state.listen = { done: {}, vocab: {} };
+    if (!state.listen.done) state.listen.done = {};
+    if (!state.listen.vocab) state.listen.vocab = {};
+    return state.listen;
+  }
+
+  function words() {
+    if (!wordMap) {
+      wordMap = new Map();
+      (DATA.units || []).forEach((u) => (u.words || []).forEach((w) => {
+        if (!wordMap.has(w.w.toLowerCase())) wordMap.set(w.w.toLowerCase(), { unit: u.id, w });
+      }));
+    }
+    return wordMap;
+  }
+
+  function stats() {
+    const l = lState();
+    const ids = Object.keys(l.done);
+    let ans = 0, cor = 0;
+    ids.forEach((k) => { ans += l.done[k].answered || 0; cor += l.done[k].correct || 0; });
+    const totalGroups = IDX ? IDX.papers.reduce((s, p) => s + (p.groups || 0), 0) : 0;
+    return {
+      groups: ids.length, totalGroups,
+      answered: ans, correct: cor,
+      pct: ans ? Math.round(cor / ans * 100) : 0,
+      streak: streakFrom(practiceDays()),
+    };
+  }
+
+  /* ---------- 首页卡片 ---------- */
+  function renderHome() {
+    const sub = $('#listening-card-sub'), pct = $('#listening-card-pct');
+    if (!sub) return;
+    const s = stats();
+    if (s.groups) {
+      sub.textContent = `已练 ${s.groups} 段 · 正确率 ${s.pct}%` + (s.streak > 1 ? ` · 连刷 ${s.streak} 天` : '');
+      pct.textContent = s.pct + '%';
+      pct.classList.remove('hidden');
+    } else {
+      sub.textContent = '真题 36 套 · 逐段逐句 · 先听后看';
+      pct.classList.add('hidden');
+    }
+  }
+
+  /* ---------- 页面骨架 ---------- */
+  function renderStats() {
+    const box = $('#ls-stats');
+    if (!box) return;
+    const s = stats();
+    box.innerHTML = `<div class="rs-item"><b>${s.groups}</b><span>已练段</span></div>
+      <div class="rs-item"><b>${s.answered ? s.pct + '%' : '—'}</b><span>正确率</span></div>
+      <div class="rs-item"><b>${s.streak}</b><span>连刷天数</span></div>
+      <div class="rs-item"><b>${s.totalGroups}</b><span>总段数</span></div>`;
+  }
+
+  function renderPage() {
+    renderStats();
+    ensure().then((ok) => {
+      if (!ok) { $('#ls-body').innerHTML = '<div class="set-note">题库索引加载失败，请联网重试。</div>'; return; }
+      renderPapers();
+    });
+  }
+
+  function setTitle(t) { const el = $('#ls-title'); if (el) el.textContent = t; }
+
+  function renderPapers() {
+    paper = null; paperData = null; task = null; stopAudio();
+    setTitle('六级听力精听');
+    const l = lState();
+    const body = $('#ls-body');
+    body.innerHTML = '<div class="set-note" style="margin:10px 2px 6px">' +
+      '按年份倒序 · 点开一套 → 选一段精听 · 音频按需下载</div>' +
+      IDX.papers.map((p) => {
+        const done = (paperDoneCount(p.id, l));
+        const badge = done ? `<span class="ls-badge">${done}/${p.groups}</span>` : '';
+        return `<div class="ls-paper" data-paper="${p.id}">
+          <div class="ls-paper-main">
+            <div class="ls-paper-title">${esc(p.title || p.id)}</div>
+            <div class="ls-paper-sub">${p.groups} 段 · ${p.questionCount} 题 · ${p.sentences} 句</div>
+          </div>${badge}</div>`;
+      }).join('');
+    body.querySelectorAll('[data-paper]').forEach((el) => el.addEventListener('click', () => openPaper(el.dataset.paper)));
+    window.scrollTo({ top: 0 });
+  }
+
+  function paperDoneCount(pid, l) {
+    let n = 0;
+    Object.keys(l.done).forEach((k) => { if (k.indexOf('-' + pid + '-') > 0) n++; });
+    return n;
+  }
+
+  function openPaper(id) {
+    const meta = IDX.papers.find((p) => p.id === id);
+    setTitle(meta ? (meta.title || id) : id);
+    $('#ls-body').innerHTML = '<div class="set-note">加载中…</div>';
+    loadPaper(id).then((d) => {
+      if (!d) { $('#ls-body').innerHTML = '<div class="set-note">这一套加载失败，请联网重试。</div>'; return; }
+      paper = meta || { id, title: id };
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    task = null; stopAudio();
+    const l = lState();
+    const body = $('#ls-body');
+    const secs = {};
+    paperData.tasks.forEach((t) => { (secs[t.section || '其他'] = secs[t.section || '其他'] || []).push(t); });
+    body.innerHTML = Object.keys(secs).map((sec) => `
+      <div class="set-section-title">${esc(sec)}</div>
+      ${secs[sec].map((t) => {
+        const rec = l.done[t.id];
+        const qn = t.questions.length;
+        const st = rec ? `已答 ${rec.answered}/${qn} · 对 ${rec.correct}` : `${qn} 题 · ${t.lines.length} 句`;
+        return `<div class="ls-group" data-task="${t.id}">
+          <div class="ls-group-main">
+            <div class="ls-group-title">${esc(t.title || t.id)}</div>
+            <div class="ls-group-sub">${st}</div>
+          </div>
+          <div class="ls-group-mark ${rec && rec.answered >= qn ? (rec.correct >= rec.answered * 0.6 ? 'ok' : 'no') : ''}">
+            ${rec && rec.answered >= qn ? (rec.correct >= rec.answered * 0.6 ? '✓' : '✗') : '›'}</div>
+        </div>`;
+      }).join('')}`).join('') + `
+      <div class="ls-actions">
+        <button class="ghost-btn" id="ls-prefetch">预下载本套音频（离线可听）</button>
+      </div>
+      <div class="set-note" id="ls-prefetch-note"></div>`;
+    body.querySelectorAll('[data-task]').forEach((el) => el.addEventListener('click', () => {
+      const t = paperData.tasks.find((x) => x.id === el.dataset.task);
+      if (t) openTask(t);
+    }));
+    const pf = $('#ls-prefetch');
+    if (pf) pf.addEventListener('click', prefetchPaper);
+    window.scrollTo({ top: 0 });
+  }
+
+  /* ---------- 预下载（离线） ---------- */
+  function prefetchPaper() {
+    if (!paperData) return;
+    const note = $('#ls-prefetch-note');
+    const files = paperData.tasks.map((t) => t.audio);
+    let done = 0, fail = 0, bytes = 0;
+    note.textContent = `预下载中… 0/${files.length}`;
+    const one = (u) => fetch(u).then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    }).then((b) => { bytes += b.size; done++; })
+      .catch(() => { fail++; });
+    Promise.all(files.map(one)).then(() => {
+      note.textContent = `已下载 ${done}/${files.length} 个音频（${(bytes / 1048576).toFixed(1)} MB）`
+        + (fail ? ` · 失败 ${fail} 个` : ' · 离线可听');
+    });
+  }
+
+  /* ---------- 精听页 ---------- */
+  function openTask(t) {
+    task = t; loopLine = -1; showEn = false; showCn = false; unlocked = false;
+    setTitle(t.title || t.id);
+    renderDrill();
+    window.scrollTo({ top: 0 });
+  }
+
+  /* 统一取"页面上那只" <audio>：早期版本这里 new Audio() 另建了一只，
+     导致 seek/循环操作的是隐藏元素、用户看到却没反应（已修） */
+  function getAudio() {
+    const el = document.querySelector('#ls-audio');
+    if (el) {
+      if (audio !== el) { audio = el; audio.dataset.bound = ''; }
+      if (!audio.dataset.bound) {
+        audio.dataset.bound = '1';
+        audio.addEventListener('timeupdate', onTick);
+        audio.addEventListener('ended', () => { loopLine = -1; updateLoopBtn(); });
+        audio.addEventListener('play', () => { const b = $('#ls-play'); if (b) b.textContent = '❚❚ 暂停'; });
+        audio.addEventListener('pause', () => { const b = $('#ls-play'); if (b) b.textContent = '▶ 播放'; });
+      }
+      return audio;
+    }
+    if (!audio) { audio = new Audio(); audio.preload = 'metadata'; }
+    return audio;
+  }
+  function stopAudio() { const au = document.querySelector('#ls-audio'); if (au) { try { au.pause(); } catch (e) {} } loopLine = -1; }
+
+  /* 音频以"整文件 Blob"喂给播放器：绕开 HTTP Range 与 SW 缓存的兼容坑，
+     离线可听、点句 seek 必定生效；SW 仍会把文件缓存下来供下次秒开。 */
+  function attachAudio(rel) {
+    const au = getAudio();
+    if (blobFor === rel && blobUrl) { au.src = blobUrl; return; }
+    setHint('音频加载中…（首次需下载，之后离线可听）');
+    fetch(rel).then((r) => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    }).then((b) => {
+      if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch (e) {} }
+      blobUrl = URL.createObjectURL(b);
+      blobFor = rel;
+      au.src = blobUrl;
+      setHint('音频就绪 · ' + (b.size / 1048576).toFixed(1) + ' MB（已缓存，可离线听）');
+    }).catch(() => setHint('音频下载失败，请联网后重进本段'));
+  }
+  function setHint(t) { const h = $('#ls-hint'); if (h) h.textContent = t; }
+
+  function renderDrill() {
+    const l = lState();
+    const rec = l.done[task.id] || { picks: {} };
+    const lines = task.lines;
+    const body = $('#ls-body');
+    body.innerHTML = `
+      <div class="ls-player">
+        <audio id="ls-audio" controls preload="metadata"></audio>
+        <div class="ls-ctl">
+          <button class="mini-btn" id="ls-back5">« 5s</button>
+          <button class="mini-btn" id="ls-play">▶ 播放</button>
+          <button class="mini-btn" id="ls-fwd5">5s »</button>
+          <button class="mini-btn" id="ls-rate">1.0×</button>
+          <button class="mini-btn" id="ls-loop">单句循环</button>
+        </div>
+        <div class="ls-toggles">
+          <button class="mini-btn" id="ls-en">显示原文</button>
+          <button class="mini-btn" id="ls-cn">显示中文</button>
+        </div>
+        <div class="set-note" id="ls-hint">先听；听不懂就点句重听，或开原文对照。</div>
+      </div>
+      <div class="ls-q-sec">
+        <div class="set-section-title">题目</div>
+        <div id="ls-qs"></div>
+      </div>
+      <div class="ls-tr-sec">
+        <div class="set-section-title">听力原文 <span class="set-hint" id="ls-tr-hint"></span></div>
+        <div id="ls-tr" class="hidden"></div>
+      </div>
+      <div class="ls-actions">
+        <button class="primary-btn" id="ls-next">下一段 ›</button>
+        <button class="ghost-btn" id="ls-to-groups">返回段列表</button>
+      </div>`;
+    const au = getAudio();
+    au.playbackRate = rate;
+    attachAudio(task.audio);
+    renderQuestions();
+    renderTranscript();
+    bindDrill();
+    updateLoopBtn();
+    $('#ls-tr').classList.toggle('hidden', !showEn);
+    $('#ls-en').textContent = showEn ? '隐藏原文' : '显示原文';
+    $('#ls-cn').textContent = showCn ? '隐藏中文' : '显示中文';
+    $('#ls-cn').disabled = false;
+    updateTrHint();
+  }
+
+  function renderQuestions() {
+    const l = lState();
+    const rec = l.done[task.id] || { picks: {} };
+    const box = $('#ls-qs');
+    box.innerHTML = task.questions.map((q) => {
+      const pick = rec.picks ? rec.picks[q.n] : null;
+      const cnOn = showCn || unlocked;
+      return `<div class="ls-q" data-q="${q.n}">
+        <div class="ls-q-stem"><b>${q.n}.</b> ${esc(q.stem)}
+          ${q.cn && cnOn ? `<span class="ls-q-cn">${esc(q.cn)}</span>` : ''}</div>
+        <div class="ls-opts">${['A', 'B', 'C', 'D'].map((c) => {
+          let cls = '';
+          if (pick) {
+            if (c === q.answer) cls = 'right';
+            else if (c === pick) cls = 'wrong';
+          }
+          const ocn = (q.optionsCn && q.optionsCn[c]) || '';
+          return `<button class="ls-opt ${cls}" data-q="${q.n}" data-opt="${c}" ${pick ? 'disabled' : ''}>
+            <b>${c}</b> ${esc(q.options[c] || '')}${ocn && cnOn ? `<span class="ls-opt-cn">${esc(ocn)}</span>` : ''}</button>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('');
+    box.querySelectorAll('.ls-opt').forEach((b) => b.addEventListener('click', () => pickQ(Number(b.dataset.q), b.dataset.opt)));
+  }
+
+  function pickQ(n, letter) {
+    const q = task.questions.find((x) => x.n === n);
+    if (!q) return;
+    const l = lState();
+    const rec = l.done[task.id] || (l.done[task.id] = { picks: {}, answered: 0, correct: 0, ts: 0 });
+    if (!rec.picks) rec.picks = {};
+    if (rec.picks[n]) return;                       // 已答过不重复计分
+    rec.picks[n] = letter;
+    rec.answered = Object.keys(rec.picks).length;
+    rec.correct = task.questions.filter((x) => rec.picks[x.n] && rec.picks[x.n] === x.answer).length;
+    rec.ts = Date.now();
+    saveState();
+    renderQuestions();
+    // 答完本题即解锁中文（用户要求：答完题或手动打开才显示中文）
+    unlocked = true;
+    const allDone = rec.answered >= task.questions.length;
+    if (allDone) {
+      showCn = true;                                 // 整段答完，自动展开中文
+      renderTranscript();
+      $('#ls-cn').textContent = '隐藏中文';
+      updateTrHint();
+    }
+    renderStats();
+    renderHome();
+    const res = `第 ${n} 题：${letter === q.answer ? '✓ 对了' : '✗ 错了，正确答案 ' + q.answer}`;
+    toast(res);
+  }
+
+  /* ---------- 原文（逐句） ---------- */
+  function renderTranscript() {
+    const box = $('#ls-tr');
+    if (!box) return;
+    const cnOn = showCn || unlocked;
+    box.innerHTML = task.lines.map((ln, i) => `
+      <div class="ls-line" data-i="${i}">
+        <span class="ls-line-t">${fmtTime(ln.start)}</span>
+        <span class="ls-line-en">${markWords(ln.t)}</span>
+        ${ln.cn && cnOn ? `<span class="ls-line-cn">${esc(ln.cn)}</span>` : ''}
+      </div>`).join('');
+    box.querySelectorAll('.ls-line').forEach((el) => el.addEventListener('click', (ev) => {
+      if (ev.target.closest('.ls-w')) return;         // 点词交给词卡
+      seekLine(Number(el.dataset.i));
+    }));
+    box.querySelectorAll('.ls-w').forEach((el) => el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      showWord(el.dataset.w, el);
+    }));
+  }
+
+  function markWords(text) {
+    return esc(text).replace(/([A-Za-z][A-Za-z'’\-]*)/g, (m) => {
+      const key = m.toLowerCase().replace(/[’']s$/, '');
+      const hit = words().has(key);
+      return `<span class="ls-w ${hit ? 'in-dict' : ''}" data-w="${esc(m)}">${m}</span>`;
+    });
+  }
+
+  function fmtTime(t) {
+    if (t == null) return '--:--';
+    const m = Math.floor(t / 60), s = Math.floor(t % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  const SEEK_BACK = 0.12;   // 回退一点点，避免切掉首音节
+  const LINE_TOL = 0.3;     // 判定"当前句"的容差，需大于 SEEK_BACK，否则高亮会落到上一句
+
+  function seekLine(i) {
+    const ln = task.lines[i];
+    if (!ln || ln.start == null) return;
+    const au = getAudio();
+    const at = Math.max(0, ln.start - SEEK_BACK);
+    // 元数据未就绪时直接设 currentTime 会被丢弃（慢网/大文件必现）→ 挂到 loadedmetadata 上补做
+    if (au.readyState >= 1) {
+      try { au.currentTime = at; } catch (e) {}
+      au.play().catch(() => {});
+    } else {
+      const once = () => {
+        au.removeEventListener('loadedmetadata', once);
+        try { au.currentTime = at; } catch (e) {}
+        au.play().catch(() => {});
+      };
+      au.addEventListener('loadedmetadata', once);
+      au.load();
+    }
+    setActiveLine(i);
+  }
+
+  function setActiveLine(i) {
+    const box = $('#ls-tr');
+    if (!box) return;
+    box.querySelectorAll('.ls-line.active').forEach((el) => el.classList.remove('active'));
+    const el = box.querySelector(`.ls-line[data-i="${i}"]`);
+    if (el) el.classList.add('active');
+  }
+
+  function onTick() {
+    const au = getAudio();
+    if (!task) return;
+    const t = au.currentTime;
+    // 单句循环
+    if (loopLine >= 0) {
+      const ln = task.lines[loopLine];
+      if (ln && ln.end != null && t >= ln.end) {
+        try { au.currentTime = Math.max(0, (ln.start || 0) - SEEK_BACK); } catch (e) {}
+        return;
+      }
+    }
+    // 高亮当前句
+    let cur = -1;
+    for (let i = 0; i < task.lines.length; i++) {
+      const st = task.lines[i].start;
+      if (st != null && t >= st - LINE_TOL) cur = i; else break;
+    }
+    if (cur >= 0) setActiveLine(cur);
+  }
+
+  function updateLoopBtn() {
+    const b = $('#ls-loop');
+    if (!b) return;
+    b.textContent = loopLine >= 0 ? `循环中：第 ${loopLine + 1} 句 ✕` : '单句循环';
+    b.classList.toggle('on', loopLine >= 0);
+  }
+
+  function updateTrHint() {
+    const h = $('#ls-tr-hint');
+    if (!h) return;
+    h.textContent = (showCn || unlocked) ? '点句重听 · 点词看释义/收藏' : '点句重听 · 点词看释义';
+  }
+
+  /* ---------- 词卡 ---------- */
+  function showWord(raw, el) {
+    const key = raw.toLowerCase().replace(/[^a-z'’\-]/g, '').replace(/[’']s$/, '');
+    const hit = words().get(key);
+    const l = lState();
+    const faved = !!l.vocab[key];
+    const box = $('#ls-wordcard');
+    if (box) box.remove();
+    const card = document.createElement('div');
+    card.id = 'ls-wordcard';
+    card.className = 'ls-wordcard';
+    if (hit) {
+      const cn = (hit.w.defs || []).map((d) => d.cn).join('；');
+      card.innerHTML = `<div class="lw-head"><b>${esc(hit.w.w)}</b>
+          <span class="lw-ph">${esc(hit.w.ph || '')}</span>
+          <button class="vw-fav ${faved ? 'on' : ''}" data-lw="${esc(hit.w.w)}" data-cn="${esc(cn)}">${faved ? '★' : '☆'}</button>
+          <button class="lw-close">✕</button></div>
+        <div class="lw-cn">${esc(cn)}</div>
+        <div class="lw-root">${esc((hit.w.root || '').slice(0, 90))}</div>`;
+    } else {
+      card.innerHTML = `<div class="lw-head"><b>${esc(raw)}</b><button class="lw-close">✕</button></div>
+        <div class="lw-cn">词库（1007 词）里没有这个词，先按发音记一下。</div>`;
+    }
+    document.body.appendChild(card);
+    const rect = el.getBoundingClientRect();
+    const top = Math.min(window.innerHeight - 170, rect.bottom + 8 + window.scrollY);
+    card.style.top = Math.max(8, top) + 'px';
+    card.style.left = Math.max(8, Math.min(window.innerWidth - 300, rect.left - 20)) + 'px';
+    speak(raw.replace(/[^A-Za-z'’\-]/g, ''));
+    card.querySelector('.lw-close').addEventListener('click', () => card.remove());
+    const fav = card.querySelector('[data-lw]');
+    if (fav) fav.addEventListener('click', () => {
+      const w = fav.dataset.lw;
+      if (l.vocab[w.toLowerCase()]) { delete l.vocab[w.toLowerCase()]; fav.classList.remove('on'); fav.textContent = '☆'; toast('已取消收藏'); }
+      else { l.vocab[w.toLowerCase()] = { cn: fav.dataset.cn, ts: Date.now() }; fav.classList.add('on'); fav.textContent = '★'; toast('已收藏到错词本·听力生词'); }
+      saveState();
+    });
+  }
+
+  /* ---------- 交互绑定 ---------- */
+  function bindDrill() {
+    const au = getAudio();
+    $('#ls-play').addEventListener('click', () => {
+      if (au.paused) au.play().catch(() => toast('音频还没下好，稍等再点')); else au.pause();
+    });
+    $('#ls-back5').addEventListener('click', () => { au.currentTime = Math.max(0, au.currentTime - 5); });
+    $('#ls-fwd5').addEventListener('click', () => { au.currentTime = Math.min(au.duration || 1e9, au.currentTime + 5); });
+    $('#ls-rate').addEventListener('click', () => {
+      rate = rate === 1 ? 0.75 : rate === 0.75 ? 1.25 : 1;
+      au.playbackRate = rate;
+      $('#ls-rate').textContent = rate.toFixed(2).replace(/0$/, '') + '×';
+    });
+    $('#ls-loop').addEventListener('click', () => {
+      const active = $('#ls-tr .ls-line.active');
+      if (loopLine >= 0) { loopLine = -1; }
+      else if (active) { loopLine = Number(active.dataset.i); seekLine(loopLine); }
+      else { toast('先点一句原文再开循环'); return; }
+      updateLoopBtn();
+    });
+    $('#ls-en').addEventListener('click', () => {
+      showEn = !showEn;
+      $('#ls-tr').classList.toggle('hidden', !showEn);
+      $('#ls-en').textContent = showEn ? '隐藏原文' : '显示原文';
+      if (showEn && !$('#ls-tr').innerHTML) renderTranscript();
+    });
+    $('#ls-cn').addEventListener('click', () => {
+      showCn = !showCn;
+      if (showCn) unlocked = true;                 // 手动打开即解锁
+      renderQuestions(); renderTranscript(); updateTrHint();
+      $('#ls-cn').textContent = showCn ? '隐藏中文' : '显示中文';
+      if (showCn) toast('中文已展开（练完再关掉更有效）');
+    });
+    $('#ls-to-groups').addEventListener('click', () => { stopAudio(); renderGroups(); });
+    $('#ls-next').addEventListener('click', () => {
+      const i = paperData.tasks.findIndex((t) => t.id === task.id);
+      const nxt = paperData.tasks[i + 1];
+      if (nxt) { stopAudio(); openTask(nxt); } else { toast('这一套练完了 🎉'); stopAudio(); renderGroups(); }
+    });
+  }
+
+  function bind() {
+    const card = $('#listening-card');
+    if (card) card.addEventListener('click', () => nav('listening'));
+    const back = $('#ls-back');
+    if (back) back.addEventListener('click', () => {
+      if (task) { stopAudio(); renderGroups(); }
+      else if (paperData) renderPapers();
+      else nav('units');
+    });
+    const cb = $('#ls-cache-btn');
+    if (cb) cb.addEventListener('click', showCache);
+  }
+
+  /* ---------- 缓存信息 / 清理 ---------- */
+  function showCache() {
+    const jobs = [];
+    if (navigator.storage && navigator.storage.estimate) {
+      jobs.push(navigator.storage.estimate().then((e) => {
+        const used = (e.usage || 0) / 1048576, quota = (e.quota || 0) / 1048576;
+        return `本应用已占 ${used.toFixed(1)} MB（可用上限约 ${quota.toFixed(0)} MB）`;
+      }));
+    }
+    jobs.push(caches.keys().then((ks) => '缓存区：' + (ks.filter((k) => k.indexOf('sgwd-audio') === 0).length ? '有音频缓存' : '暂无音频缓存')));
+    Promise.all(jobs).then((msgs) => {
+      if (confirm(msgs.join('\n') + '\n\n是否清理已下载的音频缓存？（不影响学习进度）')) {
+        caches.keys().then((ks) => Promise.all(ks.filter((k) => k.indexOf('sgwd-audio') === 0).map((k) => caches.delete(k))))
+          .then(() => toast('音频缓存已清理'));
+      }
+    });
+  }
+
+  /* ---------- 错词本：听力生词分区 ---------- */
+  function renderWrongVocab() {
+    const box = $('#listen-vocab-list');
+    if (!box) return;
+    const l = lState();
+    const ws = Object.keys(l.vocab);
+    if (!ws.length) {
+      box.innerHTML = '<div class="set-note">暂无。在听力原文里点词 → 点 ★ 收藏的词会出现在这里。</div>';
+      return;
+    }
+    box.innerHTML = ws.map((w) => `
+      <div class="rem-item"><div><div>${esc(w)}</div><div class="rem-when">${esc(l.vocab[w].cn || '')}</div></div>
+      <button class="rem-del" data-lvw="${esc(w)}">认识</button></div>`).join('');
+    box.querySelectorAll('[data-lvw]').forEach((b) => b.addEventListener('click', () => {
+      delete lState().vocab[b.dataset.lvw];
+      saveState(); renderWrongVocab();
+    }));
+  }
+
+  return { ensure, renderHome, renderPage, renderWrongVocab, bind, stats, showCache };
 })();
 
 /* ================= 提醒（Web Push） ================= */
@@ -1464,6 +2065,8 @@ async function boot() {
   renderTodoRemBar();
   Reading.bind();
   Reading.renderHome();
+  Listening.bind();
+  Listening.renderHome();
 
   // 从通知点进来：?view=todo 直达待办清单
   try {
