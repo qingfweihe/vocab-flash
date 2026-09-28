@@ -1,14 +1,32 @@
 {
   "name": "闪过背单词 · 考研高频词",
   "short_name": "闪过背单词",
+  "description": "考研高频词闪卡 + 六级听力精听 + 阅读随手练，支持云同步与双人互戳提醒。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fff5f8",
   "theme_color": "#ff6b9d",
+  "lang": "zh-CN",
   "icons": [
     { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "待办清单",
+      "short_name": "待办",
+      "url": "./index.html?view=todo",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "收藏夹",
+      "short_name": "收藏",
+      "url": "./index.html?view=favorites",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

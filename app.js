@@ -505,6 +505,9 @@ const Sync = (() => {
         '4) 手机设置 → 应用 → ntfy → 省电策略选「无限制」，并把「自启动」打开（不设的话后台被杀会漏通知）。',
         '',
         '5) 弄好告诉我，我发条测试通知给你。',
+        '',
+        '6) （推荐）装成 App 的样子：用 Chrome/Edge 打开后点右上角「⋮」→「安装应用」/「添加到主屏幕」；小米、华为自带浏览器在菜单里找「添加到桌面」。装好后就没有浏览器地址栏，和普通 App 一样。',
+        '注意：在微信里打开无法安装，要先点右上角「…」→「在浏览器打开」。',
       ].join('\n');
       nStatus('正在复制说明…');
       try {
@@ -2580,9 +2583,10 @@ async function boot() {
   Listening.bind();
   Listening.renderHome();
 
-  // 从通知点进来：?view=todo 直达待办清单
+  // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units 直达对应页
   try {
-    if (new URLSearchParams(location.search).get('view') === 'todo') nav('todo');
+    const qv = new URLSearchParams(location.search).get('view');
+    if (qv && ['todo', 'favorites', 'wrong', 'units'].includes(qv)) nav(qv);
   } catch (e) { /* ignore */ }
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）
