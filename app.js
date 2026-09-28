@@ -18,7 +18,8 @@ const DEFAULT_STATE = {
   todo: [],      // 待办清单 [{id,text,type:'once'|'daily'|'weekly',date?,time,wd?,done?,todayDone?,createdAt}]
   reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
   listen: { done: {}, vocab: {} },   // 听力精听 done:{taskId:{answered,correct,ts}} vocab:{word:{cn,ts}}
-  sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {} },  // 云同步（tomb=删除墓碑 key→±ts）
+  favStars: {},  // 收藏星级 unitId -> {wordKey: {v:0..3, ts}}（星越多越熟练）
+  sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '' },  // 云同步（tomb=删除墓碑 key→±ts）
 };
 
 let DATA = { meta: {}, units: [] };
@@ -82,6 +83,7 @@ function loadState() {
       todo: Array.isArray(s.todo) ? s.todo : [],
       reading: normalizeReading(s.reading),
       listen: normalizeListen(s.listen),
+      favStars: (s.favStars && typeof s.favStars === 'object' && !Array.isArray(s.favStars)) ? s.favStars : {},
       sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
     };
   } catch (e) {
@@ -131,8 +133,16 @@ function isFav(id, w) { return !!favMap(id)[wordKey(w)]; }
 function setFav(id, w, v) {
   const m = favMap(id), k = wordKey(w);
   if (v) { m[k] = true; if (typeof Sync !== 'undefined') Sync.untomb('f:' + id + ':' + k); }
-  else if (m[k]) { delete m[k]; if (typeof Sync !== 'undefined') Sync.tomb('f:' + id + ':' + k); }
+  else {
+    delete m[k];
+    if (state.favStars && state.favStars[String(id)]) delete state.favStars[String(id)][k]; // 取消收藏同时清掉星级
+    if (typeof Sync !== 'undefined') Sync.tomb('f:' + id + ':' + k);
+  }
 }
+/* 收藏星级：0~3，星越多越熟练；取消收藏时一并清除 */
+function favStarMap(id) { return state.favStars[String(id)] || (state.favStars[String(id)] = {}); }
+function getFavStar(id, w) { const e = favStarMap(id)[wordKey(w)]; return (e && e.v) || 0; }
+function setFavStar(id, w, v) { favStarMap(id)[wordKey(w)] = { v: v | 0, ts: Date.now() }; }
 function countKeys(store, id) {
   const v = store[String(id)];
   if (!v) return 0;
@@ -180,7 +190,7 @@ const Sync = (() => {
 
   function domainPayload(d) {
     if (d === 'progress') return { learned: state.learned };
-    if (d === 'vocab') return { wrong: state.wrong, favorites: state.favorites };
+    if (d === 'vocab') return { wrong: state.wrong, favorites: state.favorites, favStars: state.favStars || {} };
     if (d === 'reading') return { reading: { done: state.reading.done, vocab: state.reading.vocab } };
     if (d === 'listening') return { listen: { done: state.listen.done, vocab: state.listen.vocab } };
     if (d === 'todo') return { todo: state.todo };
@@ -244,6 +254,18 @@ const Sync = (() => {
             for (const w in (src[u] || {})) if (!dst[u][w]) { dst[u][w] = true; changed = true; }
           }
         }
+        // 星级：按条目 ts 新者胜
+        if (vv.favStars) {
+          const dstS = state.favStars || (state.favStars = {});
+          for (const u in vv.favStars) {
+            const src = vv.favStars[u] || {};
+            if (!dstS[u]) { dstS[u] = {}; changed = true; }
+            for (const w in src) {
+              const inc = src[w] || {}, cur = dstS[u][w];
+              if (!cur || (inc.ts || 0) > (cur.ts || 0)) { dstS[u][w] = inc; changed = true; }
+            }
+          }
+        }
         for (const [dn, key] of [['reading', 'reading'], ['listening', 'listen']]) {
           const wrap = ((dom[dn] || {}).data || {})[key];
           if (!wrap) continue;
@@ -280,6 +302,9 @@ const Sync = (() => {
             const p = k.split(':');
             const bag = p[0] === 'w' ? state.wrong : state.favorites;
             if (bag[p[1]] && bag[p[1]][p[2]]) { delete bag[p[1]][p[2]]; changed = true; }
+            if (p[0] === 'f' && state.favStars && state.favStars[p[1]] && state.favStars[p[1]][p[2]]) {
+              delete state.favStars[p[1]][p[2]]; changed = true; // 取消收藏同时清星级
+            }
           } else if (k.startsWith('rv:')) {
             const w = k.slice(3);
             if (state.reading.vocab[w]) { delete state.reading.vocab[w]; changed = true; }
@@ -305,6 +330,7 @@ const Sync = (() => {
   function renderAfterSync() {
     try {
       renderUnits(); renderWrongList(); renderTodo();
+      if (typeof renderFavorites === 'function') { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
       Reading.renderWrongVocab(); Listening.renderWrongVocab();
     } catch (e) { /* 当前视图未挂载时忽略 */ }
   }
@@ -398,6 +424,62 @@ const Sync = (() => {
         toast(d.sent > 0 ? '已戳 TA ✓ 通知已发出' : '已放进 TA 的消息盒（TA 的设备未连推送）');
       } catch (e) { toast(String(e.message || e).slice(0, 60)); }
     });
+    // ---- 已有同步码接管（第二台设备） ----
+    const toBtn = $('#sync-takeover-btn');
+    if (toBtn) toBtn.addEventListener('click', async () => {
+      const c = ($('#sync-takeover').value || '').trim().toUpperCase();
+      if (!/^[A-Z2-7]{12}$/.test(c)) { status('同步码应为 12 位大写字母数字', 'err'); return; }
+      if (c === cfg().code) { status('这就是本机的同步码', 'err'); return; }
+      if (!confirm('接管会把云端那份进度的与本机现有进度合并（取并集），继续？')) return;
+      status('正在接管…');
+      try {
+        await request('init', { code: c }); // 校验云端存在
+        cfg().code = c; cfg().on = true;
+        saveState(); renderUI();
+        await pullMerge(); await pushAll(true);
+        status('已接管 ' + c + ' ✓ 进度已合并', 'ok');
+      } catch (e) { status('接管失败：' + String(e.message || e).slice(0, 70), 'err'); }
+    });
+
+    // ---- 安卓通知（ntfy） ----
+    const nStatus = (msg, cls) => { const el = $('#ntfy-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } };
+    const nTopicEl = $('#ntfy-topic');
+    function renderNtfy() { if (nTopicEl) nTopicEl.value = (cfg().ntfyTopic) || ''; }
+    renderNtfy();
+    async function saveTopic(t) {
+      const r = await request('ntfy.set', { topic: t });
+      cfg().ntfyTopic = r.ntfyTopic || '';
+      saveState();
+      renderNtfy();
+    }
+    const genBtn = $('#ntfy-gen');
+    if (genBtn) genBtn.addEventListener('click', async () => {
+      try { await ensureOn(); } catch (e) { nStatus('需要先开通云同步（自动开通失败：' + String(e.message || e).slice(0, 50) + '）', 'err'); return; }
+      const alpha = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let t = 'vf-';
+      for (let i = 0; i < 14; i++) t += alpha[Math.floor(Math.random() * alpha.length)];
+      nStatus('正在保存主题…');
+      try { await saveTopic(t); nStatus('已生成 ✓ 点「复制主题」，到 ntfy App 里订阅它', 'ok'); }
+      catch (e) { nStatus('生成失败：' + String(e.message || e).slice(0, 60), 'err'); }
+    });
+    const copyBtn = $('#ntfy-copy');
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
+      const t = cfg().ntfyTopic || '';
+      if (!t) { nStatus('先点「生成」得到主题', 'err'); return; }
+      try { await navigator.clipboard.writeText(t); toast('主题已复制，去 ntfy App 里订阅'); }
+      catch (e) { const el = $('#ntfy-topic'); el.select(); try { document.execCommand('copy'); toast('主题已复制'); } catch (e2) { toast('复制失败，请长按输入框选择'); } }
+    });
+    const tBtn = $('#ntfy-test');
+    if (tBtn) tBtn.addEventListener('click', async () => {
+      if (!(cfg().ntfyTopic)) { nStatus('先生成主题，并在 ntfy App 里订阅', 'err'); return; }
+      nStatus('正在发送测试通知…');
+      try {
+        const r = await request('ntfy.test', {});
+        const okPub = r.result && r.result.published;
+        nStatus(okPub ? '测试已发出：几秒内手机应弹通知（没收到检查 ntfy 的省电/自启动设置）' : '发送失败：' + JSON.stringify(r.result || {}).slice(0, 80), okPub ? 'ok' : 'err');
+      } catch (e) { nStatus('测试失败：' + String(e.message || e).slice(0, 70), 'err'); }
+    });
+
     const apiInput = $('#rem-api');
     if (apiInput && !apiInput.value) apiInput.value = API;
     apiInput.addEventListener('change', () => {
@@ -645,6 +727,8 @@ function nav(view) {
     saveStudyPos();                    // 离开学习页前保存精确位置（词级）
     if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
   }
+  if (currentView === 'favorites' && view !== 'favorites') saveListPos('#fav-list', 'fav');
+  if (currentView === 'wrong' && view !== 'wrong') saveListPos('#wrong-list', 'wrong');
   currentView = view;
   $$('.view').forEach((v) => v.classList.add('hidden'));
   const el = $('#view-' + view);
@@ -655,8 +739,8 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
-  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); }
-  if (view === 'favorites' && typeof renderFavorites === 'function') renderFavorites();
+  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#wrong-list', 'wrong'); }
+  if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
   if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
   if (view === 'reading') Reading.renderPage();
   if (view === 'listening') Listening.renderPage();
@@ -827,11 +911,65 @@ function restorePos(u) {
 
 /* 学习页滚动位置记忆（节流保存，词级） */
 let scrollTimer = null;
+
+/** 列表页（收藏/错词本）位置记忆：容器 + 存储键，卡片需带 data-key（uid:wordKey） */
+function saveListPos(containerSel, storageKey) {
+  const cards = document.querySelectorAll(containerSel + ' .word-card');
+  let key = '';
+  for (const c of cards) {
+    if (c.getBoundingClientRect().bottom > 80) { key = c.dataset.key || ''; break; }
+  }
+  state.scrolls = state.scrolls || {};
+  state.scrolls[storageKey] = { w: key, y: window.scrollY };
+  saveState();
+}
+function restoreListPos(containerSel, storageKey) {
+  const el = document.querySelector(containerSel);
+  if (!el || el.offsetParent === null) return; // 视图不可见时不动作（防止误滚当前页）
+  const rec = state.scrolls && state.scrolls[storageKey];
+  if (!rec) return;
+  if (typeof rec === 'object' && rec.w) {
+    const cards = document.querySelectorAll(containerSel + ' .word-card');
+    for (const c of cards) {
+      if (c.dataset.key === rec.w) {
+        c.scrollIntoView({ block: 'start' });
+        window.scrollBy(0, -72);
+        c.classList.add('locate');
+        setTimeout(() => c.classList.remove('locate'), 2300);
+        return;
+      }
+    }
+  }
+  const y = (typeof rec === 'object' ? rec.y : rec) || 0;
+  window.scrollTo({ top: y });
+}
+
 window.addEventListener('scroll', () => {
-  if (currentView !== 'study' || studyUnitId == null) return;
-  clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(saveStudyPos, 250);
+  if (currentView === 'study' && studyUnitId != null) {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(saveStudyPos, 250);
+  } else if (currentView === 'favorites') {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => saveListPos('#fav-list', 'fav'), 250);
+  } else if (currentView === 'wrong') {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => saveListPos('#wrong-list', 'wrong'), 250);
+  }
 }, { passive: true });
+
+/** 单词详情行（背单词页与收藏页共用）：词根/例句/族/近/反/注 */
+function wordDetailRows(w) {
+  const rows = [];
+  if (w.root) rows.push(`<div class="row"><span class="lab ji">记</span>${w.root}</div>`);
+  if (w.exs && w.exs.length) {
+    rows.push(`<div class="row"><span class="lab">例</span></div>` + w.exs.map((x) => `<div class="wc-ex">${x}</div>`).join(''));
+  }
+  if (w.fam) rows.push(`<div class="row"><span class="lab zu">族</span>${w.fam}</div>`);
+  if (w.syn) rows.push(`<div class="row"><span class="lab li">近</span>${w.syn}</div>`);
+  if (w.ant) rows.push(`<div class="row"><span class="lab fan">反</span>${w.ant}</div>`);
+  if (w.note) rows.push(`<div class="row"><span class="lab">注</span>${w.note}</div>`);
+  return rows.join('') || '<div class="row" style="color:#9a9aab">（无更多信息）</div>';
+}
 
 function renderWordList() {
   const u = unitById(studyUnitId);
@@ -845,15 +983,7 @@ function renderWordList() {
     card.dataset.idx = idx;
 
     const defsHtml = w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>');
-    const rows = [];
-    if (w.root) rows.push(`<div class="row"><span class="lab ji">记</span>${w.root}</div>`);
-    if (w.exs && w.exs.length) {
-      rows.push(`<div class="row"><span class="lab">例</span></div>` + w.exs.map((x) => `<div class="wc-ex">${x}</div>`).join(''));
-    }
-    if (w.fam) rows.push(`<div class="row"><span class="lab zu">族</span>${w.fam}</div>`);
-    if (w.syn) rows.push(`<div class="row"><span class="lab li">近</span>${w.syn}</div>`);
-    if (w.ant) rows.push(`<div class="row"><span class="lab fan">反</span>${w.ant}</div>`);
-    if (w.note) rows.push(`<div class="row"><span class="lab">注</span>${w.note}</div>`);
+    const rowsHtml = wordDetailRows(w);
 
     card.innerHTML = `
       <div class="wc-head">
@@ -871,7 +1001,7 @@ function renderWordList() {
           <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${isLearned(studyUnitId, w.w) ? 'checked' : ''}></label>
         </div>
       </div>
-      <div class="wc-detail collapsed" data-detail="${idx}">${rows.join('') || '<div class="row" style="color:#9a9aab">（无更多信息）</div>'}</div>`;
+      <div class="wc-detail collapsed" data-detail="${idx}">${rowsHtml}</div>`;
 
     // 点击卡片主体：展开详情 / 恢复模糊的中文
     card.addEventListener('click', (ev) => {
@@ -1047,46 +1177,105 @@ $('#btn-test-wrong').addEventListener('click', () => {
 });
 
 /* ================= 收藏夹 ================= */
+/* 收藏筛选档位：全部 / 还没记牢（0~2★）/ 已熟练（3★）；检验收藏跟随当前档位 */
+let favFilter = 'all';
+
+function favCounts() {
+  let all = 0, weak = 0, good = 0;
+  DATA.units.forEach((u) => {
+    const m = state.favorites[String(u.id)] || {};
+    if (Array.isArray(m)) return;
+    Object.keys(m).forEach((k) => {
+      all++;
+      if (getFavStar(u.id, k) >= 3) good++; else weak++;
+    });
+  });
+  return { all, weak, good };
+}
+function favStarHtml(v) { return '★'.repeat(v) + '☆'.repeat(3 - v); }
+
+function renderFavChips() {
+  const chips = $('#fav-filters');
+  if (!chips) return;
+  const c = favCounts();
+  chips.innerHTML = [['all', '全部', c.all], ['weak', '还没记牢', c.weak], ['good', '已熟练', c.good]]
+    .map(([k, label, n]) => `<button class="fav-chip${favFilter === k ? ' on' : ''}" data-ff="${k}">${label} ${n}</button>`).join('');
+  chips.querySelectorAll('[data-ff]').forEach((b) => b.addEventListener('click', () => {
+    favFilter = b.dataset.ff;
+    renderFavorites();
+  }));
+}
+
 function renderFavorites() {
   const box = $('#fav-list');
   if (!box) return;
   box.innerHTML = '';
-  let count = 0;
+  renderFavChips();
+  const items = [];
   DATA.units.forEach((u) => {
     const m = state.favorites[String(u.id)] || {};
-    const keys = Array.isArray(m) ? null : Object.keys(m);
-    if (!keys || !keys.length) return;
-    const words = keys.map((k) => u.words.find((x) => wordKey(x.w) === k)).filter(Boolean);
-    words.forEach((w) => {
-      count++;
-      const card = document.createElement('div');
-      card.className = 'word-card';
-      card.innerHTML = `
-        <div class="wc-head">
-          <div class="wc-main">
-            <div class="wc-word-row">
-              <span class="wc-word">${w.w}</span>
-              <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
-            </div>
-            ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
-            <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
-          </div>
-          <div class="wc-actions">
-            <button class="speak-btn">🔊</button>
-            <button class="mini-btn" data-unfav>取消收藏</button>
-          </div>
-        </div>`;
-      card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
-      card.querySelector('[data-unfav]').addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        setFav(u.id, w.w, false);
-        saveState(); renderFavorites();
-        toast('已取消收藏');
-      });
-      box.appendChild(card);
+    if (Array.isArray(m)) return;
+    Object.keys(m).forEach((k) => {
+      const w = u.words.find((x) => wordKey(x.w) === k);
+      if (!w) return;
+      items.push({ u, w, k, star: getFavStar(u.id, k) });
     });
   });
-  if (!count) box.innerHTML = '<div class="empty-tip">收藏夹是空的 ⭐<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
+  const shown = items.filter((it) => favFilter === 'all' || (favFilter === 'weak' ? it.star < 3 : it.star >= 3));
+  if (!shown.length) {
+    box.innerHTML = items.length
+      ? '<div class="empty-tip">这一档是空的 👌<br>点上面的「全部」看看其它词</div>'
+      : '<div class="empty-tip">收藏夹是空的 ⭐<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
+    return;
+  }
+  shown.forEach((it) => {
+    const u = it.u, w = it.w, star = it.star;
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    card.dataset.key = u.id + ':' + it.k;
+    card.innerHTML = `
+      <div class="wc-head">
+        <div class="wc-main">
+          <div class="wc-word-row">
+            <span class="wc-word">${w.w}</span>
+            <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
+            ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
+          </div>
+          ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
+          <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
+        </div>
+        <div class="wc-actions">
+          <button class="speak-btn">🔊</button>
+          <button class="mini-btn" data-unfav>取消收藏</button>
+        </div>
+      </div>
+      <button class="star-btn" data-star aria-label="熟练度"><span>熟练度</span> <b>${favStarHtml(star)}</b><span class="star-hint">点一下加一星</span></button>
+      <div class="wc-detail collapsed">${wordDetailRows(w)}</div>`;
+    // 点卡片主体展开详情（避开按钮）
+    card.addEventListener('click', (ev) => {
+      if (ev.target.closest('.star-btn') || ev.target.closest('.speak-btn') || ev.target.closest('[data-unfav]')) return;
+      card.querySelector('.wc-detail').classList.toggle('collapsed');
+    });
+    card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
+    card.querySelector('[data-star]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const next = (getFavStar(u.id, w.w) + 1) % 4; // 0→1→2→3→0 循环
+      setFavStar(u.id, w.w, next);
+      saveState();
+      const b = ev.currentTarget.querySelector('b');
+      if (b) b.textContent = favStarHtml(next);
+      renderFavChips(); // 数字实时更新，但不重建列表（避免滚动跳动）
+      if (next === 3) toast('已标为熟练 ★★★');
+      else if (next === 0) toast('已重置为 ☆☆☆');
+    });
+    card.querySelector('[data-unfav]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      setFav(u.id, w.w, false);
+      saveState(); renderFavorites();
+      toast('已取消收藏');
+    });
+    box.appendChild(card);
+  });
 }
 
 function buildQueueFavorites() {
@@ -1096,6 +1285,9 @@ function buildQueueFavorites() {
     const keys = Array.isArray(m) ? null : Object.keys(m);
     if (!keys) return;
     keys.forEach((k) => {
+      const star = getFavStar(u.id, k);
+      if (favFilter === 'weak' && star >= 3) return; // 检验「还没记牢」时不抽已熟练的
+      if (favFilter === 'good' && star < 3) return;
       const idx = u.words.findIndex((w) => wordKey(w.w) === k);
       if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
     });
@@ -1105,7 +1297,10 @@ function buildQueueFavorites() {
 }
 
 $('#btn-test-fav').addEventListener('click', () => {
-  startTest(buildQueueFavorites(), '检验收藏');
+  const q = buildQueueFavorites();
+  if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
+  const title = favFilter === 'weak' ? '检验收藏 · 还没记牢' : (favFilter === 'good' ? '检验收藏 · 已熟练' : '检验收藏');
+  startTest(q, title);
 });
 
 /* ================= 错词本 ================= */
@@ -1123,6 +1318,7 @@ function renderWrongList() {
       count++;
       const card = document.createElement('div');
       card.className = 'word-card';
+      card.dataset.key = u.id + ':' + wordKey(w.w); // 位置记忆用
       card.innerHTML = `
         <div class="wc-head">
           <div class="wc-main">
@@ -1199,6 +1395,7 @@ $('#file-import').addEventListener('change', (e) => {
         todo: Array.isArray(s.todo) ? s.todo : [],
         reading: normalizeReading(s.reading),
         listen: normalizeListen(s.listen),
+        favStars: (s.favStars && typeof s.favStars === 'object' && !Array.isArray(s.favStars)) ? s.favStars : {},
         sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
       };
       if (DATA.units.length) migrateProgress();
@@ -2135,11 +2332,11 @@ const Reminder = (() => {
   /** 订阅（需要用户手势内调用）*/
   async function enable() {
     if (!pushSupported()) {
-      setStatus('当前浏览器不支持通知（iPhone 需 iOS 16.4+，且先添加到主屏幕）', 'err');
+      setStatus('当前浏览器不支持系统通知（iPhone 需 iOS 16.4+ 并加到主屏幕；安卓请用设置页的「安卓通知(ntfy)」）', 'err');
       return false;
     }
     if (!isStandalone()) {
-      setStatus('请先把本应用「添加到主屏幕」，再从主屏图标打开后开启提醒（iPhone 的限制）', 'warn');
+      setStatus('请先把本应用「添加到主屏幕」，再从主屏图标打开后开启提醒（安卓手机可直接用「安卓通知(ntfy)」，无需安装）', 'warn');
       return false;
     }
     try {

@@ -27,7 +27,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-body { min-height: 100vh; }
+body { min-height: 100vh; min-height: 100dvh; } /* dvh 兜底：安卓地址栏伸缩不抖 */
 
 #sakura {
   position: fixed;
@@ -539,3 +539,38 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .lw-close { border: none; background: none; color: var(--ink-3); font-size: 13px; cursor: pointer; }
 .lw-cn { font-size: 13.5px; line-height: 1.6; margin-top: 6px; }
 .lw-root { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+
+/* ===== 收藏页：筛选 chips + 星级大按钮（2026-09-28 用户需求） ===== */
+#fav-filters { display: flex; gap: 8px; margin: 2px 14px 10px; flex-wrap: wrap; }
+.fav-chip {
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.fav-chip.on { border-color: var(--pink); background: var(--pink-soft); color: var(--pink-deep); font-weight: 600; }
+.star-btn {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 2px 14px 10px;
+  padding: 11px 12px;
+  border: 1.5px dashed var(--pink);
+  border-radius: 10px;
+  background: #fffafc;
+  color: var(--ink-2);
+  font-size: 15px;
+  cursor: pointer;
+  text-align: center;
+  min-height: 44px; /* 大点击区：手指粗也点得准 */
+}
+.star-btn:active { background: var(--pink-soft); }
+.star-btn b { color: #f5a623; font-size: 17px; letter-spacing: 2px; margin: 0 2px; }
+.star-btn .star-hint { font-size: 11px; color: var(--ink-3); margin-left: 6px; }
+/* ===== 安卓通知说明折叠块 ===== */
+.ntfy-help { margin: 10px 0 2px; font-size: 13px; color: var(--ink-2); }
+.ntfy-help summary { cursor: pointer; color: var(--pink-deep); padding: 6px 0; }
+.ntfy-help ol { margin: 6px 0 4px 18px; padding: 0; line-height: 1.75; }
+.ntfy-help code { display: inline-block; background: #f7f7fa; border-radius: 4px; padding: 1px 5px; font-size: 12px; word-break: break-all; margin: 2px 0; }
