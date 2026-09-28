@@ -795,3 +795,79 @@ input[type="time"]:focus, input[type="text"]:focus {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   v3 夜间模式（黑色系 × 粉点缀）—— html.dark 挂在 <html> 上
+   原理：先翻转调色板变量，再定点覆盖少数写死的浅色
+   ══════════════════════════════════════════════════════════ */
+html.dark {
+  --pink: #ff6b9d;
+  --pink-deep: #ff5f92;              /* 深色底上略提亮 */
+  --pink-soft: #38242e;              /* 按钮底 → 暗梅色 */
+  --pink-bg: #15161b;
+  --ink: #eceef2;
+  --ink-2: #aab0bd;
+  --ink-3: #7a7f8c;
+  --card: #1d1f26;
+  --line: #2e3140;
+  --tech-ink: #dfe4ee;
+  --tech-line: #313546;
+  --glow-soft: 0 6px 24px rgba(0, 0, 0, .35);
+  color-scheme: dark;                /* 系统控件（时间选择器等）也变暗 */
+}
+
+html.dark body {
+  background:
+    linear-gradient(180deg, #1b1d24 0%, #101116 100%),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(255, 255, 255, .030) 27px 28px),
+    repeating-linear-gradient(90deg, transparent 0 27px, rgba(255, 255, 255, .030) 27px 28px);
+  background-attachment: fixed;
+}
+
+/* —— 写死浅色的定点覆盖 —— */
+html.dark .mini-btn, html.dark .ghost-btn, html.dark .fav-chip,
+html.dark .ls-opt, html.dark .rd-opt, html.dark .rem-item, html.dark .t-item,
+html.dark #search-input, html.dark #search-results, html.dark .settings-box,
+html.dark .judge-btn.yes { background: var(--card); }
+html.dark .star-btn { background: #221a1f; }
+html.dark .ls-opt.on, html.dark .rd-opt.on { background: #2a1c24; }
+html.dark .judge-btn.no { background: #33232a; color: #ff8fa3; }
+html.dark .fc-root { background: #262230; }
+html.dark .speak-btn:active { background: #4a3040; }
+html.dark .sr-item { border-bottom-color: #262832; }
+html.dark .progress-hero { background: rgba(24, 25, 31, .74); }
+html.dark .search-box input { background: rgba(26, 27, 33, .68); }
+html.dark #tabbar {
+  background: rgba(18, 19, 24, .80);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, .45);
+}
+html.dark #ls-player {
+  background: rgba(20, 21, 26, .85);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, .5);
+}
+html.dark #ring-text { text-shadow: 0 1px 0 #000; }
+html.dark .wc-detail .lab { color: #1b1c22; }   /* 粉标签上的字保持深色可读 */
+
+/* 单元/错词小标签（JS 内联色，用 !important 压过内联样式） */
+html.dark .tag-u { background: #3a3222 !important; color: #e9c98d !important; }
+html.dark .tag-w { background: #3a2328 !important; color: #f0a2b2 !important; }
+
+/* 定位高亮（深色版光晕） */
+html.dark .word-card.locate { animation: locate-glow-dark 2.2s ease; }
+@keyframes locate-glow-dark {
+  0%, 60% { box-shadow: 0 0 0 3px var(--pink), 0 8px 30px rgba(255, 95, 146, .30); background: #2c1a23; }
+  100% { box-shadow: 0 2px 10px rgba(0, 0, 0, .3); background: var(--card); }
+}
+
+/* 详情展开的标签底色微调（浅粉在深底上过亮） */
+html.dark .wc-detail .lab { background: #c98ba5; }
+html.dark .wc-detail .lab.ji { background: #c9a37e; }
+
+/* 输入控件 */
+html.dark input[type="text"], html.dark input[type="time"], html.dark input[type="search"] {
+  background: var(--card); color: var(--ink); border-color: var(--line);
+}
+html.dark input::placeholder { color: var(--ink-3); }
+
+/* 主题切换 chips 的选中态 */
+.theme-chip.on { border-color: var(--pink); background: var(--pink-soft); color: var(--pink-deep); font-weight: 600; }

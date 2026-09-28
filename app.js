@@ -11,7 +11,7 @@ const DEFAULT_STATE = {
   wrong: {},     // unitId(str) -> {wordKey: true} 错词
   favorites: {}, // unitId(str) -> {wordKey: true} 收藏（以后再复习）
   stats: { tested: 0, correct: 0 },
-  settings: { rate: 0.9, fontSize: 17, sakura: true },
+  settings: { rate: 0.9, fontSize: 17, sakura: true, theme: 'auto' },
   scrolls: {},   // unitId(str) -> 学习页滚动位置
   lastUnit: null,
   reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
@@ -1373,7 +1373,7 @@ function renderFavorites() {
         <div class="wc-main">
           <div class="wc-word-row">
             <span class="wc-word">${w.w}</span>
-            <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
+            <span class="mini-btn tag-u" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
@@ -1459,7 +1459,7 @@ function renderWrongList() {
           <div class="wc-main">
             <div class="wc-word-row">
               <span class="wc-word">${w.w}</span>
-              <span class="mini-btn" style="border:none;background:#fdeaea;color:#c66">${u.name}</span>
+              <span class="mini-btn tag-w" style="border:none;background:#fdeaea;color:#c66">${u.name}</span>
             </div>
             ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
             <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
@@ -1490,8 +1490,38 @@ function applySettings() {
   $('#set-fontsize').value = s.fontSize;
   $('#set-sakura').checked = !!s.sakura;
   Sakura.setEnabled(!!s.sakura);
+  applyTheme();
 }
 
+/** 夜间模式：auto 跟随系统 / light / dark；同步系统状态栏颜色 */
+function applyTheme() {
+  const t = (state.settings && state.settings.theme) || 'auto';
+  const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = t === 'dark' || (t === 'auto' && sysDark);
+  document.documentElement.classList.toggle('dark', dark);
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.content = dark ? '#15161b' : '#ff6b9d';
+  // 更新三档 chips 的选中态
+  document.querySelectorAll('.theme-chip').forEach((b) => {
+    b.classList.toggle('on', b.dataset.theme === t);
+  });
+}
+// 系统深浅色变化时，跟随系统档实时切换
+if (window.matchMedia) {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onScheme = () => { if ((state.settings.theme || 'auto') === 'auto') applyTheme(); };
+  if (mq.addEventListener) mq.addEventListener('change', onScheme);
+  else if (mq.addListener) mq.addListener(onScheme);
+}
+
+document.querySelectorAll('.theme-chip').forEach((b) => {
+  b.addEventListener('click', () => { state.settings.theme = b.dataset.theme; saveState(); applyTheme(); });
+});
 $('#set-rate').addEventListener('input', (e) => { state.settings.rate = Number(e.target.value); saveState(); });
 $('#set-fontsize').addEventListener('input', (e) => {
   state.settings.fontSize = Number(e.target.value); saveState(); applySettings();
