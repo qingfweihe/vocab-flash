@@ -383,8 +383,17 @@ const Sync = (() => {
     }
   }
 
+  function isShell() {
+    // 安卓 App 壳（WebView + 定时取件）会注入 window.vfShell
+    try { return !!(window.vfShell && window.vfShell.setSyncCode); } catch (e) { return false; }
+  }
+  function tellShell() {
+    try { if (isShell() && cfg().code) window.vfShell.setSyncCode(cfg().code); } catch (e) { /* 老壳无此方法 */ }
+  }
+
   function renderUI() {
     const c = cfg();
+    tellShell();
     const on = $('#sync-on'); if (on) on.checked = !!c.on;
     const code = $('#sync-code'); if (code) code.value = c.code || '';
     const p = $('#sync-partner'); if (p && document.activeElement !== p) p.value = c.partner || '';
@@ -621,7 +630,7 @@ const Sync = (() => {
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset };
+  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -2529,15 +2538,16 @@ const Reminder = (() => {
       } else {
         why = '还没把本应用「添加到主屏幕」';
       }
-      if (!pushOK && !ntfyOn) {
-        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机请到下面「📱 安卓通知(ntfy)」→ 生成主题 → 在 ntfy App 里订阅 → 再回来开启；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
+      if (!pushOK && !ntfyOn && !state.sync.pushplusToken && !Sync.isShell()) {
+        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机可以：装「📲 安卓 App 安装包」（最省心），或到下面「💬 微信通知」粘贴 PushPlus 口令；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
         return false;
       }
       rem().enabled = true;
       saveState();
       const enEl = $('#rem-enabled');
       if (enEl) enEl.checked = true;
-      setStatus('提醒已开启 ✓ 每天 ' + (rem().time || '20:00') + ' · 通道：' + [pushOK ? '系统通知' : '', ntfyOn ? 'ntfy' : ''].filter(Boolean).join(' + '), 'ok');
+      const shell = Sync.isShell();
+      setStatus('提醒已开启 ✓ 每天 ' + (rem().time || '20:00') + ' · 通道：' + [pushOK ? '系统通知' : '', ntfyOn ? 'ntfy' : '', state.sync.pushplusToken ? '微信' : '', shell ? 'App 通知' : ''].filter(Boolean).join(' + '), 'ok');
       sync(true);
       return true;
     } catch (e) {
@@ -2577,6 +2587,9 @@ const Reminder = (() => {
 
   async function sendTest() {
     if (!state.sync || !state.sync.code) { setStatus('先在下方「云同步」里开启（开启提醒会自动开通）', 'warn'); return; }
+    if (Sync.isShell()) {
+      try { window.vfShell.testNotify(); setStatus('已让 App 弹一条测试通知（几秒内到）', 'ok'); return; } catch (e) { /* 落回服务端测试 */ }
+    }
     setStatus('正在发送测试通知…');
     try {
       const r = await Sync.request('testpush', {});
