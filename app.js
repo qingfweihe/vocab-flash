@@ -480,6 +480,50 @@ const Sync = (() => {
       } catch (e) { nStatus('测试失败：' + String(e.message || e).slice(0, 70), 'err'); }
     });
 
+    const helpBtn = $('#ntfy-copyhelp');
+    if (helpBtn) helpBtn.addEventListener('click', async () => {
+      const topic = cfg().ntfyTopic || '';
+      const A = 'https://gh-proxy.com/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk';
+      const B = 'https://ghproxy.net/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk';
+      const C = 'https://ghfast.top/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk';
+      const txt = [
+        '【闪过背单词 · 手机提醒设置】',
+        '',
+        '1) 用手机浏览器打开（若在微信里打开，点右上角「…」→ 在浏览器打开）：',
+        'https://qingfweihe.github.io/vocab-flash/',
+        '',
+        '2) 装通知小工具 ntfy（9MB，不依赖谷歌服务），点这个链接直接下载安装：',
+        A,
+        '下不动就换下面任一条（同一个文件）：',
+        B,
+        C,
+        '安装时若提示「未知来源」，先允许浏览器安装应用。',
+        '',
+        '3) 打开 ntfy → 右上角「＋」→ 粘贴这个主题名 → 订阅：',
+        topic || '（在你那边点「生成」后，把主题名发给我）',
+        '',
+        '4) 手机设置 → 应用 → ntfy → 省电策略选「无限制」，并把「自启动」打开（不设的话后台被杀会漏通知）。',
+        '',
+        '5) 弄好告诉我，我发条测试通知给你。',
+      ].join('\n');
+      nStatus('正在复制说明…');
+      try {
+        await navigator.clipboard.writeText(txt);
+        nStatus('已复制 ✓ 去微信粘贴给朋友即可', 'ok');
+      } catch (e) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = txt;
+          ta.style.cssText = 'position:fixed;left:-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          nStatus('已复制 ✓ 去微信粘贴给朋友即可', 'ok');
+        } catch (e2) { nStatus('复制失败：请手动长按上方说明复制', 'err'); }
+      }
+    });
+
     const apiInput = $('#rem-api');
     if (apiInput && !apiInput.value) apiInput.value = API;
     apiInput.addEventListener('change', () => {
