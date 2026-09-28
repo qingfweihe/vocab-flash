@@ -18,6 +18,7 @@ const DEFAULT_STATE = {
   todo: [],      // 待办清单 [{id,text,type:'once'|'daily'|'weekly',date?,time,wd?,done?,todayDone?,createdAt}]
   reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
   listen: { done: {}, vocab: {} },   // 听力精听 done:{taskId:{answered,correct,ts}} vocab:{word:{cn,ts}}
+  sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {} },  // 云同步（tomb=删除墓碑 key→±ts）
 };
 
 let DATA = { meta: {}, units: [] };
@@ -81,6 +82,7 @@ function loadState() {
       todo: Array.isArray(s.todo) ? s.todo : [],
       reading: normalizeReading(s.reading),
       listen: normalizeListen(s.listen),
+      sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -89,6 +91,7 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
   if (typeof Reminder !== 'undefined') Reminder.ping(); // 学习动作后上报（自带节流）
+  if (typeof Sync !== 'undefined') Sync.markDirty();    // 改动后节流上传云端
 }
 
 /* ================= 工具 ================= */
@@ -117,16 +120,301 @@ function wrongMap(id) { return state.wrong[String(id)] || (state.wrong[String(id
 function isLearned(id, w) { return !!learnedMap(id)[wordKey(w)]; }
 function isWrong(id, w) { return !!wrongMap(id)[wordKey(w)]; }
 function setLearned(id, w, v) { const m = learnedMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
-function setWrong(id, w, v) { const m = wrongMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+function setWrong(id, w, v) {
+  const m = wrongMap(id), k = wordKey(w);
+  if (v) { m[k] = true; if (typeof Sync !== 'undefined') Sync.untomb('w:' + id + ':' + k); }
+  else if (m[k]) { delete m[k]; if (typeof Sync !== 'undefined') Sync.tomb('w:' + id + ':' + k); }
+}
 /* 收藏 */
 function favMap(id) { return state.favorites[String(id)] || (state.favorites[String(id)] = {}); }
 function isFav(id, w) { return !!favMap(id)[wordKey(w)]; }
-function setFav(id, w, v) { const m = favMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+function setFav(id, w, v) {
+  const m = favMap(id), k = wordKey(w);
+  if (v) { m[k] = true; if (typeof Sync !== 'undefined') Sync.untomb('f:' + id + ':' + k); }
+  else if (m[k]) { delete m[k]; if (typeof Sync !== 'undefined') Sync.tomb('f:' + id + ':' + k); }
+}
 function countKeys(store, id) {
   const v = store[String(id)];
   if (!v) return 0;
   return Array.isArray(v) ? v.length : Object.keys(v).length;  // 兼容旧数组格式
 }
+
+/* ================= 云同步（多设备共用进度 · 双人互戳） =================
+ * 后端：CloudBase 云函数 /api（动作分发）。设计要点：
+ * - 推送节流 30s，各域内容哈希不变则跳过；拉取在打开应用/切前台时触发
+ * - 合并规则：进度/错词/收藏=并集，阅读/听力记录=按条目 ts 新者胜，待办=按 id + 完成态优先
+ * - 删除用墓碑（state.sync.tomb，key→±ts）：删除记正、重添记负；服务端合并时统一过滤 */
+const Sync = (() => {
+  const API_DEFAULT = 'https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api';
+  const PUSH_DELAY = 30000;
+  const DOMAINS = ['progress', 'vocab', 'reading', 'listening', 'todo', 'meta'];
+  let API = localStorage.getItem('sgwd_api') || API_DEFAULT;
+  if (!API || /deno\.(dev|net)/.test(API)) API = API_DEFAULT; // Deno 后端已停用
+  let applyingRemote = false;
+  let pushTimer = null;
+  let inFlight = false;
+
+  function cfg() {
+    if (!state.sync) state.sync = { code: '', partner: '', on: false, lastSync: 0, tomb: {} };
+    if (!state.sync.tomb) state.sync.tomb = {};
+    return state.sync;
+  }
+  function hashes() { try { return JSON.parse(localStorage.getItem('sgwd_sync_hashes') || '{}'); } catch (e) { return {}; } }
+  function setHash(d, h) { const m = hashes(); m[d] = h; try { localStorage.setItem('sgwd_sync_hashes', JSON.stringify(m)); } catch (e) {} }
+  function djb2(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h); }
+  function status(msg, cls) { const el = $('#sync-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } }
+
+  async function request(action, payload) {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ action, code: cfg().code || undefined }, payload || {})),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || j.ok === false) { const e = new Error((j && j.message) || ('HTTP ' + res.status)); e.code = j && j.error; throw e; }
+    return j;
+  }
+
+  function tomb(key) { cfg().tomb[key] = Date.now(); }
+  function untomb(key) { const t = cfg().tomb; if (t[key] !== undefined) t[key] = -Date.now(); }
+
+  function domainPayload(d) {
+    if (d === 'progress') return { learned: state.learned };
+    if (d === 'vocab') return { wrong: state.wrong, favorites: state.favorites };
+    if (d === 'reading') return { reading: { done: state.reading.done, vocab: state.reading.vocab } };
+    if (d === 'listening') return { listen: { done: state.listen.done, vocab: state.listen.vocab } };
+    if (d === 'todo') return { todo: state.todo };
+    let learnedTotal = 0;
+    for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
+    return { tomb: cfg().tomb, lastActive: Date.now(), learnedTotal };
+  }
+  function domainHash(d) {
+    const p = domainPayload(d);
+    return djb2(JSON.stringify(d === 'meta' ? (p.tomb || {}) : p));
+  }
+
+  function markDirty() {
+    if (applyingRemote || !cfg().on || !cfg().code) return;
+    clearTimeout(pushTimer);
+    // 先拉取合并、再上传：服务端是纯存储（读-改-写会踩 CDN 回源延迟丢数据）
+    pushTimer = setTimeout(() => { pullMerge().then(() => pushAll(false)).catch(() => {}); }, PUSH_DELAY);
+  }
+
+  async function pushAll(force) {
+    if (!cfg().on || !cfg().code || inFlight) return;
+    inFlight = true;
+    try {
+      const hs = hashes();
+      for (const d of DOMAINS) {
+        const h = domainHash(d);
+        if (!force && hs[d] === h) continue;
+        await request('state.put', { domain: d, data: domainPayload(d) });
+        setHash(d, h);
+      }
+      cfg().lastSync = Date.now();
+      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+      status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
+    } catch (e) {
+      status('同步失败：' + String(e.message || e).slice(0, 70), 'err');
+      throw e;
+    } finally { inFlight = false; }
+  }
+
+  async function pullMerge() {
+    if (!cfg().on || !cfg().code || inFlight) return;
+    inFlight = true;
+    try {
+      const r = await request('state.get', { domain: 'ALL' });
+      const dom = (r && r.domains) || {};
+      const meta = (dom.meta && dom.meta.data) || {};
+      const tombs = meta.tomb || {};
+      let changed = false;
+      applyingRemote = true;
+      try {
+        const pl = (dom.progress && dom.progress.data && dom.progress.data.learned) || {};
+        for (const u in pl) {
+          const lm = learnedMap(u);
+          for (const w in (pl[u] || {})) if (!lm[w]) { lm[w] = true; changed = true; }
+        }
+        const vv = (dom.vocab && dom.vocab.data) || {};
+        for (const bagName of ['wrong', 'favorites']) {
+          const src = vv[bagName] || {}, dst = state[bagName];
+          for (const u in src) {
+            if (!dst[u]) { dst[u] = {}; changed = true; }
+            for (const w in (src[u] || {})) if (!dst[u][w]) { dst[u][w] = true; changed = true; }
+          }
+        }
+        for (const [dn, key] of [['reading', 'reading'], ['listening', 'listen']]) {
+          const wrap = ((dom[dn] || {}).data || {})[key];
+          if (!wrap) continue;
+          for (const id in (wrap.done || {})) {
+            const inc = wrap.done[id], cur = state[key].done[id];
+            if (!cur || (inc.ts || 0) > (cur.ts || 0)) { state[key].done[id] = inc; changed = true; }
+          }
+          for (const w in (wrap.vocab || {})) {
+            const inc = wrap.vocab[w], cur = state[key].vocab[w];
+            if (!cur || (inc.ts || 0) > (cur.ts || 0)) { state[key].vocab[w] = inc; changed = true; }
+          }
+        }
+        const incTodo = ((dom.todo || {}).data || {}).todo;
+        if (Array.isArray(incTodo)) {
+          const map = {};
+          (state.todo || []).forEach(x => { map[x.id] = x; });
+          incTodo.forEach(x => {
+            const cur = map[x.id];
+            if (!cur) { map[x.id] = x; changed = true; }
+            else if ((x.done === true && cur.done !== true) || (x.createdAt || 0) > (cur.createdAt || 0)) { map[x.id] = x; changed = true; }
+          });
+          state.todo = Object.keys(map).map(k => map[k]).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        }
+        // 墓碑合并：云端 tomb 并入本地（同 key 取 |ts| 更大者），再统一过滤删除项
+        const localT = cfg().tomb;
+        for (const k in tombs) {
+          const a = localT[k], b2 = tombs[k];
+          if (a === undefined) { localT[k] = b2; changed = true; }
+          else if (Math.abs(b2) > Math.abs(a)) { localT[k] = b2; changed = true; }
+        }
+        for (const k in localT) {
+          if (!(localT[k] > 0)) continue;
+          if (k.startsWith('w:') || k.startsWith('f:')) {
+            const p = k.split(':');
+            const bag = p[0] === 'w' ? state.wrong : state.favorites;
+            if (bag[p[1]] && bag[p[1]][p[2]]) { delete bag[p[1]][p[2]]; changed = true; }
+          } else if (k.startsWith('rv:')) {
+            const w = k.slice(3);
+            if (state.reading.vocab[w]) { delete state.reading.vocab[w]; changed = true; }
+          } else if (k.startsWith('lv:')) {
+            const w = k.slice(3);
+            if (state.listen.vocab[w]) { delete state.listen.vocab[w]; changed = true; }
+          } else if (k.startsWith('t:')) {
+            const id = k.slice(2);
+            if ((state.todo || []).some(x => x.id === id)) { state.todo = state.todo.filter(x => x.id !== id); changed = true; }
+          }
+        }
+      } finally { applyingRemote = false; }
+      if (changed) saveState();
+      cfg().lastSync = Date.now();
+      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+      if (changed) renderAfterSync();
+      status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
+    } catch (e) {
+      status('拉取失败：' + String(e.message || e).slice(0, 70), 'err');
+    } finally { inFlight = false; }
+  }
+
+  function renderAfterSync() {
+    try {
+      renderUnits(); renderWrongList(); renderTodo();
+      Reading.renderWrongVocab(); Listening.renderWrongVocab();
+    } catch (e) { /* 当前视图未挂载时忽略 */ }
+  }
+
+  async function ensureCode() {
+    const c = cfg();
+    if (c.code) {
+      try { await request('init', {}); return c.code; }
+      catch (e) { if (e.code !== 'NO_SUCH_CODE') throw e; }
+    }
+    const r = await request('init', {});
+    c.code = r.code; c.on = true;
+    saveState();
+    return c.code;
+  }
+  async function ensureOn() {
+    await ensureCode();
+    if (!cfg().on) { cfg().on = true; saveState(); renderUI(); }
+  }
+
+  async function enable() {
+    status('正在开启云同步…');
+    try { await ensureCode(); } catch (e) { status('开启失败：' + String(e.message || e).slice(0, 70), 'err'); return false; }
+    cfg().on = true;
+    saveState(); renderUI();
+    pullMerge().then(() => pushAll(true)).catch(() => {});
+    return true;
+  }
+  function disable() { cfg().on = false; saveState(); renderUI(); status('云同步已暂停（云端数据保留，重新打开即恢复）', ''); }
+
+  /** 清空进度后调用：清墓碑 + 全域整体覆盖上传（union 会复活旧数据，必须 replace） */
+  async function afterReset() {
+    cfg().tomb = {};
+    for (const d of DOMAINS) {
+      try {
+        await request('state.put', { domain: d, data: domainPayload(d) });
+        setHash(d, domainHash(d));
+      } catch (e) { /* 单域失败忽略 */ }
+    }
+  }
+
+  function renderUI() {
+    const c = cfg();
+    const on = $('#sync-on'); if (on) on.checked = !!c.on;
+    const code = $('#sync-code'); if (code) code.value = c.code || '';
+    const p = $('#sync-partner'); if (p && document.activeElement !== p) p.value = c.partner || '';
+    if (c.on && c.code) {
+      status((c.partner ? '已开启 · 伙伴 ' + c.partner : '已开启') + (c.lastSync ? ' · 上次同步 ' + new Date(c.lastSync).toLocaleTimeString('zh-CN', { hour12: false }) : ''), 'ok');
+    } else if (!c.on && c.code) {
+      status('已暂停（云端数据保留）', '');
+    }
+  }
+
+  function init() {
+    const on = $('#sync-on');
+    if (!on) return;
+    on.checked = !!cfg().on;
+    renderUI();
+    on.addEventListener('change', async () => {
+      if (on.checked) { const okRes = await enable(); on.checked = !!okRes; }
+      else disable();
+    });
+    $('#sync-copy').addEventListener('click', async () => {
+      const v = cfg().code || '';
+      if (!v) { status('先开启云同步生成同步码', 'err'); return; }
+      try { await navigator.clipboard.writeText(v); toast('同步码已复制'); }
+      catch (e) { const el = $('#sync-code'); el.select(); try { document.execCommand('copy'); toast('同步码已复制'); } catch (e2) { toast('复制失败，请手动长按选择'); } }
+    });
+    $('#sync-pair').addEventListener('click', async () => {
+      const p = $('#sync-partner').value.trim().toUpperCase();
+      if (!cfg().code) { status('先开启云同步', 'err'); return; }
+      if (!/^[A-Z2-7]{12}$/.test(p)) { status('伙伴码应为 12 位大写字母数字', 'err'); return; }
+      if (p === cfg().code) { status('不能和自己结对', 'err'); return; }
+      status('正在结对…');
+      try {
+        await request('pair', { partner: p });
+        cfg().partner = p; saveState(); renderUI();
+        status('已与 ' + p + ' 结对 ✓ 现在可以互戳了', 'ok');
+      } catch (e) { status('结对失败：' + String(e.message || e).slice(0, 60), 'err'); }
+    });
+    $('#sync-push').addEventListener('click', async () => {
+      if (!cfg().on) { status('先开启云同步', 'err'); return; }
+      status('正在同步…');
+      try { await pullMerge(); await pushAll(true); } catch (e) { /* 状态已显示 */ }
+    });
+    $('#sync-poke').addEventListener('click', async () => {
+      if (!cfg().partner) { status('先填写伙伴码并结对', 'err'); return; }
+      try {
+        const r = await request('poke', { to: cfg().partner, text: '该背单词啦！' });
+        const d = (r && r.delivered) || {};
+        toast(d.sent > 0 ? '已戳 TA ✓ 通知已发出' : '已放进 TA 的消息盒（TA 的设备未连推送）');
+      } catch (e) { toast(String(e.message || e).slice(0, 60)); }
+    });
+    const apiInput = $('#rem-api');
+    if (apiInput && !apiInput.value) apiInput.value = API;
+    apiInput.addEventListener('change', () => {
+      API = apiInput.value.trim().replace(/\/+$/, '') || API_DEFAULT;
+      localStorage.setItem('sgwd_api', API);
+      status('后端地址已更新', 'ok');
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!cfg().on || !cfg().code) return;
+      if (document.visibilityState === 'visible') pullMerge().catch(() => {});
+      else { clearTimeout(pushTimer); pullMerge().then(() => pushAll(false)).catch(() => {}); }
+    });
+    if (cfg().on && cfg().code) pullMerge().catch(() => {});
+  }
+
+  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset };
+})();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
 function migrateProgress() {
@@ -318,6 +606,7 @@ function bindTodo() {
       }
       saveState(); renderTodo(); Reminder.sync(true);
     } else if (del) {
+      if (typeof Sync !== 'undefined') Sync.tomb('t:' + del.dataset.del);
       state.todo = state.todo.filter((x) => x.id !== del.dataset.del);
       saveState(); renderTodo(); Reminder.sync(true);
     }
@@ -910,6 +1199,7 @@ $('#file-import').addEventListener('change', (e) => {
         todo: Array.isArray(s.todo) ? s.todo : [],
         reading: normalizeReading(s.reading),
         listen: normalizeListen(s.listen),
+        sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
       };
       if (DATA.units.length) migrateProgress();
       saveState(); applySettings(); renderUnits(); renderWrongList();
@@ -926,9 +1216,12 @@ $('#file-import').addEventListener('change', (e) => {
 $('#btn-reset').addEventListener('click', async () => {
   if (!confirm('确定清空全部学习进度？此操作不可恢复。')) return;
   await Reminder.disable(); // 先退订并同步服务端（enabled:false），防止清空后服务端继续推旧待办
+  const keepSync = state.sync; // 同步码/结对关系保留，云端数据改为整体覆盖
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  if (keepSync) state.sync = keepSync;
   saveState(); applySettings(); renderUnits(); renderWrongList();
   renderTodo(); renderTodoRemBar();
+  if (typeof Sync !== 'undefined' && state.sync.on && state.sync.code) Sync.afterReset().catch(() => {}); // 云端镜像清空
   toast('已清空');
 });
 
@@ -1169,8 +1462,8 @@ const Reading = (() => {
     });
     res.querySelectorAll('.vw-fav').forEach((b) => b.addEventListener('click', () => {
       const w = b.dataset.w;
-      if (r.vocab[w]) { delete r.vocab[w]; b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
-      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; b.classList.add('on'); b.textContent = '★'; toast('已收藏到错词本·阅读生词'); }
+      if (r.vocab[w]) { delete r.vocab[w]; if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w); b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
+      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到错词本·阅读生词'); }
       saveState();
     }));
     const cnT = $('#rd-cn-toggle');
@@ -1198,6 +1491,7 @@ const Reading = (() => {
       <button class="rem-del" data-rvw="${w}">认识</button></div>`).join('');
     box.querySelectorAll('[data-rvw]').forEach((b) => b.addEventListener('click', () => {
       delete rState().vocab[b.dataset.rvw];
+      if (typeof Sync !== 'undefined') Sync.tomb('rv:' + b.dataset.rvw);
       saveState(); renderWrongVocab();
     }));
   }
@@ -1685,8 +1979,8 @@ const Listening = (() => {
     const fav = card.querySelector('[data-lw]');
     if (fav) fav.addEventListener('click', () => {
       const w = fav.dataset.lw;
-      if (l.vocab[w.toLowerCase()]) { delete l.vocab[w.toLowerCase()]; fav.classList.remove('on'); fav.textContent = '☆'; toast('已取消收藏'); }
-      else { l.vocab[w.toLowerCase()] = { cn: fav.dataset.cn, ts: Date.now() }; fav.classList.add('on'); fav.textContent = '★'; toast('已收藏到错词本·听力生词'); }
+      if (l.vocab[w.toLowerCase()]) { delete l.vocab[w.toLowerCase()]; if (typeof Sync !== 'undefined') Sync.tomb('lv:' + w.toLowerCase()); fav.classList.remove('on'); fav.textContent = '☆'; toast('已取消收藏'); }
+      else { l.vocab[w.toLowerCase()] = { cn: fav.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('lv:' + w.toLowerCase()); fav.classList.add('on'); fav.textContent = '★'; toast('已收藏到错词本·听力生词'); }
       saveState();
     });
   }
@@ -1778,6 +2072,7 @@ const Listening = (() => {
       <button class="rem-del" data-lvw="${esc(w)}">认识</button></div>`).join('');
     box.querySelectorAll('[data-lvw]').forEach((b) => b.addEventListener('click', () => {
       delete lState().vocab[b.dataset.lvw];
+      if (typeof Sync !== 'undefined') Sync.tomb('lv:' + b.dataset.lvw);
       saveState(); renderWrongVocab();
     }));
   }
@@ -1787,20 +2082,13 @@ const Listening = (() => {
 
 /* ================= 提醒（Web Push） ================= */
 const Reminder = (() => {
-  const DEFAULT_API = 'https://vocab-flash-qf.qingfweihe.deno.net';
-  let API = localStorage.getItem('sgwd_api') || (location.hostname.endsWith('deno.dev') ? '' : DEFAULT_API);
-  let pingTimer = null;
+  const DEFAULT_API = 'https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api';
+  let API = localStorage.getItem('sgwd_api') || DEFAULT_API;
+  if (!API || /deno\.(dev|net)/.test(API)) API = DEFAULT_API; // Deno 后端已停用，迁移到 CloudBase
 
   function rem() {
     if (!state.reminder) state.reminder = { id: '', enabled: false, time: '20:00', smart: true, custom: [] };
     return state.reminder;
-  }
-
-  /** 上报服务端的完整设置：必须带 todo——服务端只认 settings.todo 判定待办推送 */
-  function settingsPayload() {
-    const out = Object.assign({}, rem());
-    out.todo = Array.isArray(state.todo) ? state.todo : [];
-    return out;
   }
 
   function isStandalone() {
@@ -1819,9 +2107,16 @@ const Reminder = (() => {
   }
 
   async function api(path, opts) {
-    const res = await fetch(API + '/api/' + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    // 兼容旧签名：转成 CloudBase 动作调用（path 即 action 名）
+    return Sync.request(path, opts && opts.body ? JSON.parse(opts.body) : {});
+  }
+
+  /** 上报服务端的提醒设置（时间/智能/开关/活跃度） */
+  function settingsPayload() {
+    const r = rem();
+    let learnedTotal = 0;
+    for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
+    return { time: r.time || '20:00', smart: r.smart !== false, enabled: !!r.enabled, lastActive: Date.now(), learnedTotal };
   }
 
   function urlBase64ToUint8Array(base64String) {
@@ -1856,15 +2151,12 @@ const Reminder = (() => {
       }
       const reg = await navigator.serviceWorker.ready;
       let sub = await reg.pushManager.getSubscription();
+      await Sync.ensureOn(); // 推送需要同步码作身份（会自动开通云同步）
       if (!sub) {
-        const { publicKey } = await api('pubkey');
-        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+        const pk = await Sync.request('pubkey', {});
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(pk.publicKey) });
       }
-      const r = await api('subscribe', {
-        method: 'POST',
-        body: JSON.stringify({ subscription: sub.toJSON(), settings: settingsPayload() }),
-      });
-      rem().id = r.id;
+      await Sync.request('subscribe', { subscription: sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
       rem().enabled = true;
       saveState();
       const enEl = $('#rem-enabled');
@@ -1893,40 +2185,28 @@ const Reminder = (() => {
     return true;
   }
 
-  /** 把设置推给服务端（节流）*/
+  /** 把提醒设置推给服务端（节流）*/
   let syncTimer = null;
   function sync(now) {
-    if (!rem().id) return;
+    if (!state.sync || !state.sync.code) return;
     clearTimeout(syncTimer);
-    const doIt = () => api('settings', {
-      method: 'POST',
-      body: JSON.stringify({ id: rem().id, settings: settingsPayload() }),
-    }).catch(() => {});
+    const doIt = () => Sync.request('reminder.set', settingsPayload()).catch(() => {});
     now ? doIt() : (syncTimer = setTimeout(doIt, 1500));
   }
 
-  /** 学习状态上报（供智能模式判断"今天是否已背过"）*/
+  /** 学习状态上报（供智能模式判断"今天是否已背过"）—— 走云同步的 meta 域 */
   function ping() {
-    if (!rem().id || !rem().enabled) return;
-    clearTimeout(pingTimer);
-    pingTimer = setTimeout(() => {
-      let learnedTotal = 0;
-      for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
-      api('settings', {
-        method: 'POST',
-        body: JSON.stringify({ id: rem().id, lastActive: Date.now(), learnedTotal }),
-      }).catch(() => {});
-    }, 2000);
+    if (typeof Sync !== 'undefined') Sync.markDirty();
   }
 
   async function sendTest() {
-    if (!rem().id) { setStatus('先开启提醒再发送测试', 'warn'); return; }
+    if (!state.sync || !state.sync.code) { setStatus('先在下方「云同步」里开启（开启提醒会自动开通）', 'warn'); return; }
     setStatus('正在发送测试通知…');
     try {
-      await api('test', { method: 'POST', body: JSON.stringify({ id: rem().id }) });
-      setStatus('测试通知已发出，几秒内到（没收到检查系统通知设置）', 'ok');
+      const r = await Sync.request('testpush', {});
+      setStatus(r && r.total > 0 ? '测试通知已发出，几秒内到（没收到检查系统通知设置）' : '本机还没有推送订阅：先关掉再打开上面的开关', r && r.total > 0 ? 'ok' : 'warn');
     } catch (e) {
-      setStatus('测试失败：' + String(e).slice(0, 80), 'err');
+      setStatus('测试失败：' + String(e.message || e).slice(0, 80), 'err');
     }
   }
 
@@ -1950,18 +2230,8 @@ const Reminder = (() => {
     $('#rem-time').addEventListener('change', (e) => { rem().time = e.target.value || '20:00'; saveState(); sync(); });
     $('#rem-smart').addEventListener('change', (e) => { rem().smart = e.target.checked; saveState(); sync(); });
     $('#rem-test').addEventListener('click', sendTest);
-    const apiInput = $('#rem-api');
-    if (apiInput) {
-      apiInput.value = API;
-      apiInput.addEventListener('change', (e) => {
-        const v = e.target.value.trim().replace(/\/+$/, '');
-        API = v;
-        localStorage.setItem('sgwd_api', v);
-        setStatus('后端地址已更新为 ' + v, 'ok');
-      });
-    }
-
-    if (r.enabled && r.id) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
+    // 后端地址输入框由 Sync 模块统一接管（两个模块共用同一地址）
+    if (r.enabled && state.sync && state.sync.code) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
     else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
   }
 
@@ -2060,6 +2330,7 @@ async function boot() {
   renderWrongList();
   nav('units');
   Reminder.init();
+  Sync.init();
   migrateTodo();
   bindTodo();
   renderTodoRemBar();
