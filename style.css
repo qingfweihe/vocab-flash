@@ -574,3 +574,224 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, #rem-custom-text:f
 .ntfy-help summary { cursor: pointer; color: var(--pink-deep); padding: 6px 0; }
 .ntfy-help ol { margin: 6px 0 4px 18px; padding: 0; line-height: 1.75; }
 .ntfy-help code { display: inline-block; background: #f7f7fa; border-radius: 4px; padding: 1px 5px; font-size: 12px; word-break: break-all; margin: 2px 0; }
+
+/* ══════════════════════════════════════════════════════════
+   v2 美化层 —— 粉白 × 工业点缀（2026-09-28）
+   原则：粉白打底；工业感只出现在「结构」（等宽数字/细网格/角标括号）
+   与「反馈」（选中态/进度发光）；动效克制（transform/opacity，≤0.3s）
+   ══════════════════════════════════════════════════════════ */
+:root {
+  --tech-ink: #3a4250;          /* 工业墨：数字/标签/等宽元素 */
+  --tech-line: #dde3ea;         /* 工业线：网格/分隔 */
+  --glow-pink: 0 0 0 3px rgba(255, 107, 157, .18), 0 4px 18px rgba(232, 68, 122, .22);
+  --glow-soft: 0 6px 24px rgba(232, 68, 122, .10);
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+/* —— 全局：背景细网格（极淡，点缀不喧宾） —— */
+body {
+  background:
+    linear-gradient(180deg, #fff8fb 0%, var(--pink-bg) 100%),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(58, 66, 80, .028) 27px 28px),
+    repeating-linear-gradient(90deg, transparent 0 27px, rgba(58, 66, 80, .028) 27px 28px);
+  background-attachment: fixed;
+}
+
+/* —— 通用按钮：按压缩放 + 过渡（克制微动效） —— */
+.ghost-btn, .test-btn, .mini-btn, .fav-chip, .star-btn, .rem-del, .t-del {
+  transition: transform .12s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+}
+.ghost-btn:active, .test-btn:active, .mini-btn:active, .fav-chip:active, .star-btn:active, .unit-card:active, .todo-card:active, .tab:active {
+  transform: scale(.97);
+}
+
+/* —— 等宽数字：让百分比/统计有仪表感 —— */
+.unit-pct, #ring-text, .ph-line1 b, .ph-line2 b, .reading-pct, .ls-stats b, #listening-card-sub, #reading-card-sub {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.2px;
+}
+.unit-pct { color: var(--tech-ink); font-weight: 700; }
+
+/* ══ 首页 ══ */
+/* 英雄环：发光弧线 + 底部微光 */
+.ph-ring .ring-fg { filter: drop-shadow(0 0 6px rgba(255, 107, 157, .55)); }
+.ph-ring .ring-bg { stroke: var(--tech-line); }
+#ring-text { color: var(--tech-ink); text-shadow: 0 1px 0 #fff; }
+.progress-hero {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--glow-soft);
+}
+/* 工业角标括号：只给首页英雄区（四角短折线） */
+.progress-hero::before, .progress-hero::after {
+  content: "";
+  position: absolute;
+  width: 14px; height: 14px;
+  border-color: var(--pink-deep);
+  border-style: solid;
+  opacity: .55;
+  pointer-events: none;
+}
+.progress-hero::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 6px 0 0 0; }
+.progress-hero::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 6px 0; }
+
+/* 搜索框：雾面玻璃 */
+.search-box input {
+  background: rgba(255, 255, 255, .68);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  box-shadow: var(--glow-soft);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.search-box input:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: var(--glow-pink);
+}
+
+/* 单元卡：左侧进度色条 + 等宽序号 + 交错入场 */
+.unit-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 10px rgba(232, 68, 122, .06);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  animation: fadeUp .3s ease both;
+}
+.unit-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--pink), var(--pink-deep));
+  opacity: .7;
+  border-radius: 3px 0 0 3px;
+}
+.unit-card:active { box-shadow: var(--glow-pink); border-color: var(--pink); }
+.unit-name { letter-spacing: .3px; }
+.unit-bar { background: var(--tech-line); border-radius: 99px; overflow: hidden; }
+.unit-bar i { background: linear-gradient(90deg, var(--pink), var(--pink-deep)); box-shadow: 0 0 6px rgba(255, 107, 157, .5); border-radius: 99px; }
+.unit-meta { font-variant-numeric: tabular-nums; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.unit-card:nth-child(1) { animation-delay: .02s; } .unit-card:nth-child(2) { animation-delay: .05s; }
+.unit-card:nth-child(3) { animation-delay: .08s; } .unit-card:nth-child(4) { animation-delay: .11s; }
+.unit-card:nth-child(5) { animation-delay: .14s; } .unit-card:nth-child(6) { animation-delay: .17s; }
+.unit-card:nth-child(7) { animation-delay: .20s; } .unit-card:nth-child(8) { animation-delay: .23s; }
+
+/* 阅读听力入口卡：图标瓷砖微光 */
+.todo-card { border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(232, 68, 122, .06); transition: transform .15s ease, box-shadow .2s ease; animation: fadeUp .3s ease both; }
+.todo-card:active { box-shadow: var(--glow-pink); }
+
+/* ══ 底部导航：雾面玻璃 + 选中发光点 ══ */
+#tabbar {
+  background: rgba(255, 255, 255, .78);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 24px rgba(232, 68, 122, .08);
+}
+#tabbar .tab { transition: color .18s ease, transform .12s ease; position: relative; }
+#tabbar .tab.active { color: var(--pink-deep); }
+#tabbar .tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 4px; left: 50%;
+  width: 16px; height: 3px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--pink), var(--pink-deep));
+  box-shadow: 0 0 8px rgba(255, 107, 157, .8);
+}
+
+/* ══ 学习页 / 卡片体系 ══ */
+.word-card { border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(232, 68, 122, .05); animation: fadeUp .26s ease both; }
+.word-card.locate { box-shadow: var(--glow-pink) !important; border-color: var(--pink) !important; }
+.wc-detail:not(.collapsed) { animation: detailIn .22s ease; }
+@keyframes detailIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.star-btn b { text-shadow: 0 0 10px rgba(245, 166, 35, .45); transition: text-shadow .2s ease; }
+.star-btn:active b { text-shadow: 0 0 16px rgba(245, 166, 35, .8); }
+.speak-btn { transition: transform .12s ease, box-shadow .18s ease; }
+.speak-btn:active { box-shadow: 0 0 0 4px rgba(255, 107, 157, .15); }
+
+/* ══ 检验/闪卡 ══ */
+#test-stage { border: 1px solid var(--line); box-shadow: var(--glow-soft); }
+
+/* ══ 练习页（听力/阅读） ══ */
+.ls-opt, .rd-opt {
+  border: 1.5px solid var(--line);
+  background: #fff;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .12s ease;
+}
+.ls-opt:active, .rd-opt:active { transform: scale(.985); }
+.ls-opt.on, .rd-opt.on {
+  border-color: var(--pink);
+  box-shadow: var(--glow-pink);
+  background: #fffafc;
+}
+.ls-line.hit, .rd-line.hit {
+  border-left: 3px solid var(--pink-deep);
+  box-shadow: inset 3px 0 10px -4px rgba(232, 68, 122, .5);
+}
+#ls-player {
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  box-shadow: 0 -4px 20px rgba(232, 68, 122, .08);
+}
+
+/* ══ 设置 / 待办 ══ */
+.settings-box { border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(232, 68, 122, .05); }
+.set-section-title {
+  position: relative;
+  padding-left: 10px;
+  letter-spacing: .5px;
+}
+.set-section-title::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 3px; bottom: 3px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--pink), var(--pink-deep));
+  box-shadow: 0 0 6px rgba(255, 107, 157, .5);
+}
+.rem-item, .t-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(232, 68, 122, .04);
+  animation: fadeUp .24s ease both;
+}
+
+/* ══ 弹层 / 提示 ══ */
+#toast {
+  background: rgba(58, 66, 80, .92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 28px rgba(45, 45, 58, .35);
+  letter-spacing: .3px;
+}
+.ls-wordcard { animation: popIn .2s cubic-bezier(.2, 1.2, .4, 1); }
+@keyframes popIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+.empty-tip { font-family: var(--mono); letter-spacing: .3px; color: var(--ink-3); }
+
+/* ══ 开关：选中发光 ══ */
+.switch input { transition: background-color .2s ease, box-shadow .2s ease; }
+.switch input:checked { box-shadow: 0 0 10px rgba(255, 107, 157, .55); }
+input[type="time"]:focus, input[type="text"]:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(255, 107, 157, .15);
+}
+
+/* —— 尊重系统「减弱动态效果」—— */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
