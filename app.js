@@ -175,11 +175,22 @@ const Sync = (() => {
   function status(msg, cls) { const el = $('#sync-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } }
 
   async function request(action, payload) {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({ action, code: cfg().code || undefined }, payload || {})),
-    });
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 15000); // 弱网下 15 秒必给反馈，不挂起按钮
+    let res;
+    try {
+      res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ action, code: cfg().code || undefined }, payload || {})),
+        signal: ctrl.signal,
+      });
+    } catch (e) {
+      clearTimeout(tid);
+      if (e.name === 'AbortError') { const err = new Error('网络超时（15 秒无响应）'); err.code = 'TIMEOUT'; throw err; }
+      throw e;
+    }
+    clearTimeout(tid);
     const j = await res.json().catch(() => ({}));
     if (!res.ok || j.ok === false) { const e = new Error((j && j.message) || ('HTTP ' + res.status)); e.code = j && j.error; throw e; }
     return j;
@@ -1314,6 +1325,7 @@ $('#btn-test-wrong').addEventListener('click', () => {
 /* ================= 收藏夹 ================= */
 /* 收藏筛选档位：全部 / 还没记牢（0~2★）/ 已熟练（3★）；检验收藏跟随当前档位 */
 let favFilter = 'all';
+const favOpen = new Set(); // 已展开详情的卡片 key（重渲染后保留展开状态）
 
 function favCounts() {
   let all = 0, weak = 0, good = 0;
@@ -1365,15 +1377,16 @@ function renderFavorites() {
   }
   shown.forEach((it) => {
     const u = it.u, w = it.w, star = it.star;
+    const key = u.id + ':' + it.k;
     const card = document.createElement('div');
     card.className = 'word-card';
-    card.dataset.key = u.id + ':' + it.k;
+    card.dataset.key = key;
     card.innerHTML = `
       <div class="wc-head">
         <div class="wc-main">
           <div class="wc-word-row">
             <span class="wc-word">${w.w}</span>
-            <span class="mini-btn tag-u" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
+            <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
@@ -1385,11 +1398,13 @@ function renderFavorites() {
         </div>
       </div>
       <button class="star-btn" data-star aria-label="熟练度"><span>熟练度</span> <b>${favStarHtml(star)}</b><span class="star-hint">点一下加一星</span></button>
-      <div class="wc-detail collapsed">${wordDetailRows(w)}</div>`;
-    // 点卡片主体展开详情（避开按钮）
+      <div class="wc-detail${favOpen.has(key) ? '' : ' collapsed'}">${wordDetailRows(w)}</div>`;
+    // 点卡片主体展开详情（避开按钮）；记住展开状态，重渲染后不折叠
     card.addEventListener('click', (ev) => {
       if (ev.target.closest('.star-btn') || ev.target.closest('.speak-btn') || ev.target.closest('[data-unfav]')) return;
-      card.querySelector('.wc-detail').classList.toggle('collapsed');
+      const d = card.querySelector('.wc-detail');
+      d.classList.toggle('collapsed');
+      if (d.classList.contains('collapsed')) favOpen.delete(key); else favOpen.add(key);
     });
     card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
     card.querySelector('[data-star]').addEventListener('click', (ev) => {
@@ -1405,6 +1420,7 @@ function renderFavorites() {
     });
     card.querySelector('[data-unfav]').addEventListener('click', (ev) => {
       ev.stopPropagation();
+      favOpen.delete(key);
       setFav(u.id, w.w, false);
       saveState(); renderFavorites();
       toast('已取消收藏');

@@ -871,3 +871,44 @@ html.dark input::placeholder { color: var(--ink-3); }
 
 /* 主题切换 chips 的选中态 */
 .theme-chip.on { border-color: var(--pink); background: var(--pink-soft); color: var(--pink-deep); font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════════
+   v3.1 深色补全 —— 待办页/阅读页/听力页/杂项（覆盖写死的白底）
+   ══════════════════════════════════════════════════════════ */
+html.dark .todo-form,
+html.dark .todo-item,
+html.dark .rd-text,
+html.dark .rd-item,
+html.dark .rd-vocab,
+html.dark .rd-vocab-sec,
+html.dark .rd-vword,
+html.dark .rd-reveal,
+html.dark .rd-speak,
+html.dark .rd-cn,
+html.dark .ls-paper,
+html.dark .ls-group,
+html.dark .ls-q,
+html.dark .ls-wordcard,
+html.dark .reading-stats .rs-item,
+html.dark .ntfy-help code {
+  background: var(--card);
+}
+html.dark .todo-rem-bar { background: #241c26; }
+html.dark .reading-pct { background: #2c1a23; }
+html.dark .todo-type { background: var(--card); border-color: var(--line); color: var(--ink-2); }
+html.dark .todo-type.active { background: var(--pink-soft); border-color: var(--pink-deep); color: var(--pink-deep); }
+html.dark .todo-when-row input,
+html.dark .todo-when-row select { background: var(--card); color: var(--ink); border-color: var(--line); }
+html.dark .rd-vword .vw-fav { color: #8a8f9c; }
+html.dark .rd-vword .vw-main { background: #242631; }
+html.dark .rd-vword .vw-main .wc-cn { color: var(--ink); }
+html.dark .ls-opt.right { border-color: #3f8f5f; background: #1c2b21; color: #9fd8b2; }
+html.dark .ls-opt.wrong { border-color: #b04848; background: #2e1c1c; color: #f0a2a2; }
+html.dark .ls-tr { border-bottom-color: #262832; }
+html.dark .ntfy-help code { background: #262832; color: var(--ink-2); }
+/* 定位高亮的深色版（浅色 keyframes 的背景在黑底上刺眼） */
+html.dark .word-card.locate { animation-name: locate-glow-dark; }
+@keyframes locate-glow-dark {
+  0%, 60% { box-shadow: 0 0 0 3px var(--pink), 0 8px 30px rgba(255, 95, 146, .30); background: #2c1a23; }
+  100% { box-shadow: 0 2px 10px rgba(0, 0, 0, .30); background: var(--card); }
+}
