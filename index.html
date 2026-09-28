@@ -202,9 +202,9 @@
       <div class="subhead-title">设置</div>
     </div>
 
-    <!-- 提醒 -->
+    <!-- 提醒与通知 -->
     <div class="settings-box">
-      <div class="set-section-title">⏰ 提醒</div>
+      <div class="set-section-title">🔔 提醒</div>
       <div class="set-item">
         <div class="set-label">每日背单词提醒</div>
         <label class="switch"><input type="checkbox" id="rem-enabled"><span>开启</span></label>
@@ -218,15 +218,76 @@
         <label class="switch"><input type="checkbox" id="rem-smart" checked><span>开启</span></label>
       </div>
       <div id="rem-status" class="set-note"></div>
-
       <button class="ghost-btn" id="rem-test" style="margin-top:8px">发送测试通知</button>
+
+      <div class="set-section-title" style="margin-top:16px">📲 安卓：装成 App（推荐，通知最稳）</div>
       <div class="set-item" style="border-bottom:none">
-        <div class="set-label">后端地址<div class="set-hint">同步/提醒服务，一般不用改</div></div>
-        <input type="text" id="rem-api" style="width:56%;font-size:12px" placeholder="https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api">
+        <div class="set-label">下载安装包（29KB）<div class="set-hint">不依赖 ntfy / 微信 / 谷歌；后台每 15 分钟自动取提醒和互戳；内容自动更新</div></div>
       </div>
-      <div class="set-note">
-        提醒需要把本应用「添加到主屏幕」后使用（iPhone 用系统通知；安卓请用下面的「安卓通知」）。首次开启会弹出「允许通知」请点允许。提醒走云同步通道，开启提醒会自动开通云同步。
+      <div style="margin:4px 0 2px">
+        <a class="ghost-btn" id="apk-dl" href="./android/vocab-flash.apk" download style="text-decoration:none;display:inline-block">下载 APK</a>
       </div>
+      <details class="ntfy-help">
+        <summary>安装步骤（约 1 分钟，可转发给朋友）</summary>
+        <ol>
+          <li>安卓手机用「浏览器」打开本页，点「下载 APK」；<span style="color:#c66">微信里点不了</span>，要用系统浏览器。</li>
+          <li>下载完点开安装包 → 允许「未知来源/本浏览器安装应用」→ 安装。</li>
+          <li>打开「闪过背单词」App → 允许「应用发送通知」。</li>
+          <li>App 里：开启云同步（同步码发给我）→ 打开提醒开关（通道显示「App 通知」）。</li>
+          <li>放行后台：手机设置 → 应用 → 闪过背单词 → 启动管理改手动（允许自启动/后台活动）；电池选不受限制。</li>
+          <li>验证：让我戳你一下，或自己点「发送测试」——通知栏弹出即成功（后台取件最长 15 分钟延迟，前台即时）。</li>
+        </ol>
+        <div class="set-note">内容与网页版一致且自动更新（App 只是外壳）；卸载不影响网页版，数据靠云同步互通。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary>💬 备选：微信通知（不想装 App 用这个，需一次实名）</summary>
+        <div class="set-item">
+          <div class="set-label">PushPlus 口令</div>
+          <div>
+            <input type="text" id="wx-token" style="width:56%;font-size:12px" placeholder="粘贴 PushPlus 的 token">
+            <button class="ghost-btn" id="wx-save" style="padding:4px 10px;margin-left:6px">保存</button>
+          </div>
+        </div>
+        <div id="wx-status" class="set-note"></div>
+        <button class="ghost-btn" id="wx-test" style="margin-top:8px">发送测试（微信）</button>
+        <ol style="margin:8px 0 2px 18px;padding:0;line-height:1.75">
+          <li>手机浏览器打开 <code>https://www.pushplus.plus/</code>，微信扫码登录；</li>
+          <li>完成一次实名（姓名＋身份证＋手机号＋验证码）；</li>
+          <li>复制「一对一消息」页的 token → 粘贴保存 → 发送测试，微信里立刻收到「服务通知」。</li>
+        </ol>
+        <div class="set-note">没收到：确认实名已完成（未实名返回 905）；再看微信是否关了「服务通知」。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary>📤 给朋友的说明（一键复制全文）</summary>
+        <button class="ghost-btn" id="ntfy-copyhelp" style="border-color:var(--pink);color:var(--pink-deep)">复制「安卓安装 + 通知设置」全文</button>
+        <div class="set-note">点一下复制全文，微信粘贴发给朋友即可；内含 APK 下载与微信通知的完整步骤。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary>📱 备用：ntfy 主题（网络不稳时可能延迟）</summary>
+        <div class="set-item">
+          <div class="set-label">本机 ntfy 主题</div>
+          <div>
+            <input type="text" id="ntfy-topic" readonly style="width:52%;font-size:12px;letter-spacing:.5px">
+            <button class="ghost-btn" id="ntfy-gen" style="padding:4px 10px;margin-left:6px">生成</button>
+          </div>
+        </div>
+        <div id="ntfy-status" class="set-note"></div>
+        <div style="margin-top:8px">
+          <button class="ghost-btn" id="ntfy-copy">复制主题</button>
+          <button class="ghost-btn" id="ntfy-test" style="margin-left:6px">发送测试（ntfy）</button>
+        </div>
+        <div class="set-note">ntfy 服务器在国外，长连接可能失败重试；已装 App 壳的可忽略本区。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary>⚙️ 高级：后端地址（一般不动）</summary>
+        <div class="set-item" style="border-bottom:none">
+          <input type="text" id="rem-api" style="width:56%;font-size:12px" placeholder="https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api">
+        </div>
+      </details>
     </div>
 
     <!-- 云同步 -->
@@ -269,95 +330,6 @@
       </div>
     </div>
 
-    <!-- 微信通知（安卓推荐） -->
-    <div class="settings-box">
-      <div class="set-section-title">💬 微信通知（安卓推荐）</div>
-      <div class="set-item">
-        <div class="set-label">PushPlus 口令<div class="set-hint">提醒/互戳直接进微信，不用装任何东西、不会被后台杀</div></div>
-        <div>
-          <input type="text" id="wx-token" style="width:56%;font-size:12px" placeholder="粘贴 PushPlus 的 token">
-          <button class="ghost-btn" id="wx-save" style="padding:4px 10px;margin-left:6px">保存</button>
-        </div>
-      </div>
-      <div id="wx-status" class="set-note"></div>
-      <div style="margin-top:8px">
-        <button class="ghost-btn" id="wx-test">发送测试</button>
-      </div>
-      <details class="ntfy-help">
-        <summary>怎么弄到口令？（约 1 分钟，需一次实名）</summary>
-        <ol>
-          <li>用手机浏览器打开 <code>https://www.pushplus.plus/</code>，点「登录」用<b>微信扫码</b>；</li>
-          <li>按页面提示完成一次<b>实名认证</b>（姓名＋身份证号＋手机号＋短信验证码，只做一次）；</li>
-          <li>在「一对一消息」页面复制你的 <b>token</b>（一串字母数字）；</li>
-          <li>回到本页粘贴进上面输入框 → 点「保存」→ 点「发送测试」；<br>微信里应立刻收到一条「服务通知」。</li>
-        </ol>
-        <div class="set-note">没收到测试：先确认实名已完成（未实名调用会返回 905），再看微信是否屏蔽了「服务通知」。</div>
-      </details>
-    </div>
-
-    <!-- 安卓 App 安装包 -->
-    <div class="settings-box">
-      <div class="set-section-title">📲 安卓 App 安装包（安卓推荐）</div>
-      <div class="set-item" style="border-bottom:none">
-        <div class="set-label">装成真正的 App<div class="set-hint">不依赖 ntfy / 微信推送 / 谷歌服务；后台每 15 分钟自动取一次提醒和互戳</div></div>
-      </div>
-      <div style="margin:4px 0 2px">
-        <a class="ghost-btn" id="apk-dl" href="./android/vocab-flash.apk" download style="text-decoration:none;display:inline-block">下载 APK（29KB）</a>
-      </div>
-      <details class="ntfy-help">
-        <summary>安装步骤（约 1 分钟，可直接转发给朋友）</summary>
-        <ol>
-          <li>安卓手机上用「浏览器」打开本页，点上面的「下载 APK」（29KB）；<br><span style="color:#c66">不要在微信里点</span>——微信里下不了 APK，要先用系统浏览器打开本页。</li>
-          <li>下载完点开安装包 → 若提示「未知来源/禁止安装」，允许本浏览器安装应用 → 安装。</li>
-          <li>打开「闪过背单词」App → 首次会问「允许应用发送通知」→ 点允许。</li>
-          <li>在 App 里完成：设置 → 云同步开启（把同步码发给我）→ 设置 → 提醒开关打开（通道会显示「App 通知」）。</li>
-          <li>最后给 App 放行后台：手机设置 → 应用 → 闪过背单词 → 应用启动管理 → 改「手动管理」，允许自启动/关联启动/后台活动；电池 → 不受限制。</li>
-          <li>验证：让我戳你一下，或自己点「发送测试」——通知栏弹出即成功（App 在后台时提醒最长 15 分钟延迟，前台即时）。</li>
-        </ol>
-        <div class="set-note">内容与网页版完全一致且自动更新（App 只是外壳）。卸载不影响网页版，两边数据靠云同步互通。</div>
-      </details>
-    </div>
-
-    <!-- 安卓通知（ntfy） -->
-    <div class="settings-box">
-      <div class="set-section-title">📱 备用通道（ntfy · 网络不稳时可能延迟）</div>
-      <div class="set-item">
-        <div class="set-label">本机 ntfy 主题<div class="set-hint">在 ntfy App 里订阅这个主题，安卓也能收到提醒/互戳</div></div>
-        <div>
-          <input type="text" id="ntfy-topic" readonly style="width:52%;font-size:12px;letter-spacing:.5px">
-          <button class="ghost-btn" id="ntfy-gen" style="padding:4px 10px;margin-left:6px">生成</button>
-        </div>
-      </div>
-      <div id="ntfy-status" class="set-note"></div>
-      <div class="set-note">订阅好之后，再到上面「⏰ 提醒」把开关打开——安卓的每日提醒就会通过通知通道送到你手机（微信优先、ntfy 备用）。</div>
-      <div style="margin-top:8px">
-        <button class="ghost-btn" id="ntfy-copy">复制主题</button>
-        <button class="ghost-btn" id="ntfy-test" style="margin-left:6px">发送测试</button>
-        <button class="ghost-btn" id="ntfy-copyhelp" style="margin-left:6px;border-color:var(--pink);color:var(--pink-deep)">复制给朋友的说明</button>
-      </div>
-      <details class="ntfy-help">
-        <summary>给安卓朋友的安装步骤（可长按复制转发）</summary>
-        <ol>
-          <li>用手机浏览器打开：<br><code>https://qingfweihe.github.io/vocab-flash/</code><br>（若在微信里打开，点右上角「…」→「在浏览器打开」）</li>
-          <li>装 ntfy（推荐按①直接下 APK，9MB；这是<b>不依赖谷歌服务</b>的版本）：
-            <div style="margin:4px 0 2px">① 点开即开始下载：</div>
-            <code>https://gh-proxy.com/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk</code>
-            <div style="margin:4px 0 2px">② 上面下不动就换这两个（同一个文件）：</div>
-            <code>https://ghproxy.net/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk</code><br>
-            <code>https://ghfast.top/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk</code>
-            <div style="margin:4px 0 2px">③ 有谷歌商店的也可直接搜「ntfy」安装。</div>
-            下载完点开 APK 安装；若提示「未知来源」，先允许本浏览器安装应用。链接若失效（版本更新），到
-            <code>https://github.com/binwiederhier/ntfy-android/releases</code> 找最新的 fdroid-release.apk。
-          </li>
-          <li>打开 ntfy → 右上角「＋」→ 粘贴好友给你的主题名 → 订阅。</li>
-          <li>给 ntfy 放行后台：手机设置 → 应用 → ntfy → 省电策略选「无限制」，并把「自启动」打开（不同品牌叫法不同，小米叫自启动、华为叫应用启动管理）。</li>
-          <li>回到本应用点「发送测试」，手机上弹出通知即成功。</li>
-          <li><b>装成 App 的样子（可选但推荐）</b>：用 Chrome / Edge 打开后，点右上角「⋮」→「<b>安装应用</b>」或「添加到主屏幕」；小米、华为等自带浏览器在菜单里找「<b>添加到桌面</b>」。装好后从桌面图标打开，就没有浏览器地址栏，和普通 App 一样，长按图标还能直接跳「待办 / 收藏」。<br>（在微信里打开无法安装，必须先点右上角「…」→「在浏览器打开」）</li>
-        </ol>
-      </details>
-    </div>
-
-    <div class="settings-box">
       <div class="set-item">
         <div class="set-label">发音语速</div>
         <input type="range" id="set-rate" min="0.5" max="1.2" step="0.05" value="0.9">
