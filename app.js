@@ -2467,49 +2467,53 @@ const Reminder = (() => {
       if (!state.sync || !state.sync.code) return;
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
-      if (!sub) { // 没订阅但显示已开启 → 重建
-        const r0 = await ensureFreshSub();
-        await Sync.request('subscribe', { subscription: r0.sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
-        setStatus('已自动补上推送订阅 ✓', 'ok');
-        return;
-      }
+      if (!sub) return; // 没有订阅就不自动创建（安卓上创建必失败，交给 enable 流程按需处理）
       const pk = await Sync.request('pubkey', {});
       if (sameAppServerKey(sub, pk.publicKey)) return; // 正常，不动
-      const r1 = await ensureFreshSub();
+      const r1 = await withTimeout(ensureFreshSub(), 9000);
       await Sync.request('subscribe', { subscription: r1.sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
       setStatus('已自动修复推送订阅（换服务器导致的密钥不匹配）✓', 'ok');
     } catch (e) { /* 静默，不打扰 */ }
   }
 
-  /** 订阅（需要用户手势内调用）*/
+  function withTimeout(p, ms) {
+    return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('订阅超时（网络不通）')), ms))]);
+  }
+
+  /** 开启每日提醒：iPhone 走系统通知、安卓走 ntfy —— 两条通道至少有一条能用即可开启 */
   async function enable() {
-    if (!pushSupported()) {
-      setStatus('当前浏览器不支持系统通知（iPhone 需 iOS 16.4+ 并加到主屏幕；安卓请用设置页的「安卓通知(ntfy)」）', 'err');
-      return false;
-    }
-    if (!isStandalone()) {
-      setStatus('请先把本应用「添加到主屏幕」，再从主屏图标打开后开启提醒（安卓手机可直接用「安卓通知(ntfy)」，无需安装）', 'warn');
-      return false;
-    }
     try {
       setStatus('正在开启…');
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') {
-        setStatus('通知权限被拒绝：到 iPhone 设置 → 通知 → 闪过背单词 里允许', 'err');
+      await Sync.ensureOn(); // 提醒需要云身份（自动开通云同步）
+      const ntfyOn = !!(state.sync && state.sync.ntfyTopic);
+      let pushOK = false, why = '';
+      if (pushSupported() && isStandalone()) {
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm === 'granted') {
+            const { sub } = await withTimeout(ensureFreshSub(), 9000); // 密钥不符会重建；安卓订阅不了会超时
+            await Sync.request('subscribe', { subscription: sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
+            pushOK = true;
+          } else { why = '通知权限没允许'; }
+        } catch (e) { why = String((e && e.message) || e).slice(0, 40); }
+      } else if (!pushSupported()) {
+        why = '这个浏览器不支持系统通知';
+      } else {
+        why = '还没把本应用「添加到主屏幕」';
+      }
+      if (!pushOK && !ntfyOn) {
+        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机请到下面「📱 安卓通知(ntfy)」→ 生成主题 → 在 ntfy App 里订阅 → 再回来开启；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
         return false;
       }
-      await Sync.ensureOn(); // 推送需要同步码作身份（会自动开通云同步）
-      const { sub } = await ensureFreshSub(); // 密钥不匹配的旧订阅会在这里被重建
-      await Sync.request('subscribe', { subscription: sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
       rem().enabled = true;
       saveState();
       const enEl = $('#rem-enabled');
       if (enEl) enEl.checked = true;
-      setStatus('提醒已开启 ✓ 到点会推送通知', 'ok');
+      setStatus('提醒已开启 ✓ 每天 ' + (rem().time || '20:00') + ' · 通道：' + [pushOK ? '系统通知' : '', ntfyOn ? 'ntfy' : ''].filter(Boolean).join(' + '), 'ok');
       sync(true);
       return true;
     } catch (e) {
-      setStatus('开启失败：' + String(e).slice(0, 80) + '（若刚添加主屏，杀掉重开一次再试）', 'err');
+      setStatus('开启失败：' + String(e).slice(0, 80), 'err');
       return false;
     }
   }
@@ -2552,14 +2556,15 @@ const Reminder = (() => {
       const ntfy = (r && r.ntfy) || {};
       const first = (push.results || [])[0] || {};
       const pushSent = push.sent || 0;
-      if (pushSent > 0 || ntfy.published) {
-        setStatus('测试通知已发出（' + [pushSent > 0 ? '系统通知' : '', ntfy.published ? 'ntfy' : ''].filter(Boolean).join(' + ') + '），几秒内到', 'ok');
+      const chans = [pushSent > 0 ? '系统通知' : '', ntfy.published ? 'ntfy' : ''].filter(Boolean);
+      if (chans.length) {
+        setStatus('测试通知已发出（' + chans.join(' + ') + '），几秒内到', 'ok');
+      } else if (!(state.sync && state.sync.ntfyTopic)) {
+        setStatus('这台设备两条通道都还没配：安卓请到「📱 安卓通知(ntfy)」生成主题并在 ntfy App 里订阅；iPhone 请重新开启上面的提醒开关', 'err');
       } else if (push.total > 0 && first.status === 403) {
         setStatus('苹果拒收（订阅是旧服务器密钥建的）——关掉再打开上面的开关即可自动修复', 'err');
-      } else if ((push.total || 0) === 0) {
-        setStatus('本机还没有推送订阅：先关掉再打开上面的开关', 'warn');
       } else {
-        setStatus('发送失败：' + String(first.error || JSON.stringify(first)).slice(0, 90), 'err');
+        setStatus('发送失败：' + String(first.error || (ntfy.error || '') || JSON.stringify(first)).slice(0, 90), 'err');
       }
     } catch (e) {
       setStatus('测试失败：' + String(e.message || e).slice(0, 80), 'err');
