@@ -200,7 +200,11 @@ const Sync = (() => {
   }
   function domainHash(d) {
     const p = domainPayload(d);
-    return djb2(JSON.stringify(d === 'meta' ? (p.tomb || {}) : p));
+    if (d === 'meta') {
+      // 只按「墓碑 + 活跃度小时桶」算指纹：活跃度最多每小时推一次，保证智能提醒判据新鲜
+      return djb2(JSON.stringify({ t: p.tomb || {}, la: Math.floor((p.lastActive || 0) / 3600000) }));
+    }
+    return djb2(JSON.stringify(p));
   }
 
   function markDirty() {
@@ -2423,6 +2427,60 @@ const Reminder = (() => {
     return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   }
 
+  /** 订阅的 applicationServerKey 是否与当前后端的 VAPID 公钥一致
+   * （换后端后旧订阅是用旧密钥建的，苹果会直接拒收新服务器的推送） */
+  function sameAppServerKey(sub, pubB64) {
+    try {
+      const cur = sub && sub.options && sub.options.applicationServerKey;
+      if (!cur) return false;
+      const a = new Uint8Array(cur);
+      const b = urlBase64ToUint8Array(pubB64);
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /** 拿到与当前后端匹配的订阅（不一致就作废重建） */
+  async function ensureFreshSub() {
+    const reg = await navigator.serviceWorker.ready;
+    const pk = await Sync.request('pubkey', {});
+    let sub = await reg.pushManager.getSubscription();
+    let rebuilt = false;
+    if (sub && !sameAppServerKey(sub, pk.publicKey)) {
+      try { await sub.unsubscribe(); } catch (e) { /* 忽略 */ }
+      sub = null;
+      rebuilt = true;
+    }
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(pk.publicKey) });
+    }
+    return { sub, rebuilt };
+  }
+
+  /** 启动自愈：已开提醒但订阅还是旧服务器密钥建的 → 静默重建并重传 */
+  async function repairPush() {
+    try {
+      if (!rem().enabled) return;
+      if (!pushSupported() || !isStandalone()) return;
+      if (Notification.permission !== 'granted') return;
+      if (!state.sync || !state.sync.code) return;
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub) { // 没订阅但显示已开启 → 重建
+        const r0 = await ensureFreshSub();
+        await Sync.request('subscribe', { subscription: r0.sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
+        setStatus('已自动补上推送订阅 ✓', 'ok');
+        return;
+      }
+      const pk = await Sync.request('pubkey', {});
+      if (sameAppServerKey(sub, pk.publicKey)) return; // 正常，不动
+      const r1 = await ensureFreshSub();
+      await Sync.request('subscribe', { subscription: r1.sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
+      setStatus('已自动修复推送订阅（换服务器导致的密钥不匹配）✓', 'ok');
+    } catch (e) { /* 静默，不打扰 */ }
+  }
+
   /** 订阅（需要用户手势内调用）*/
   async function enable() {
     if (!pushSupported()) {
@@ -2441,12 +2499,9 @@ const Reminder = (() => {
         return false;
       }
       const reg = await navigator.serviceWorker.ready;
-      let sub = await reg.pushManager.getSubscription();
+      void reg;
       await Sync.ensureOn(); // 推送需要同步码作身份（会自动开通云同步）
-      if (!sub) {
-        const pk = await Sync.request('pubkey', {});
-        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(pk.publicKey) });
-      }
+      const { sub } = await ensureFreshSub(); // 密钥不匹配的旧订阅会在这里被重建
       await Sync.request('subscribe', { subscription: sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
       rem().enabled = true;
       saveState();
@@ -2495,7 +2550,19 @@ const Reminder = (() => {
     setStatus('正在发送测试通知…');
     try {
       const r = await Sync.request('testpush', {});
-      setStatus(r && r.total > 0 ? '测试通知已发出，几秒内到（没收到检查系统通知设置）' : '本机还没有推送订阅：先关掉再打开上面的开关', r && r.total > 0 ? 'ok' : 'warn');
+      const push = (r && r.push) || {};
+      const ntfy = (r && r.ntfy) || {};
+      const first = (push.results || [])[0] || {};
+      const pushSent = push.sent || 0;
+      if (pushSent > 0 || ntfy.published) {
+        setStatus('测试通知已发出（' + [pushSent > 0 ? '系统通知' : '', ntfy.published ? 'ntfy' : ''].filter(Boolean).join(' + ') + '），几秒内到', 'ok');
+      } else if (push.total > 0 && first.status === 403) {
+        setStatus('苹果拒收（订阅是旧服务器密钥建的）——关掉再打开上面的开关即可自动修复', 'err');
+      } else if ((push.total || 0) === 0) {
+        setStatus('本机还没有推送订阅：先关掉再打开上面的开关', 'warn');
+      } else {
+        setStatus('发送失败：' + String(first.error || JSON.stringify(first)).slice(0, 90), 'err');
+      }
     } catch (e) {
       setStatus('测试失败：' + String(e.message || e).slice(0, 80), 'err');
     }
@@ -2524,9 +2591,10 @@ const Reminder = (() => {
     // 后端地址输入框由 Sync 模块统一接管（两个模块共用同一地址）
     if (r.enabled && state.sync && state.sync.code) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
     else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
+    if (r.enabled) repairPush(); // 启动自愈：旧订阅密钥不匹配时自动重建（换后端后必备）
   }
 
-  return { init, ping, sync, isStandalone, pushSupported, enable, disable, sendTest };
+  return { init, ping, sync, isStandalone, pushSupported, enable, disable, sendTest, repairPush };
 })();
 
 /* ================= Service Worker（https 环境下离线可用；http 下静默跳过） ================= */
