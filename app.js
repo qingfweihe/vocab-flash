@@ -236,6 +236,12 @@ const Sync = (() => {
     try {
       const r = await request('state.get', { domain: 'ALL' });
       const dom = (r && r.domains) || {};
+      // 对方在自己手机上完成结对后，这一侧自动认到伙伴码（免手动重填）
+      let adoptedPartner = '';
+      if (r && r.partner && !cfg().partner) {
+        cfg().partner = r.partner;
+        adoptedPartner = r.partner;
+      }
       const meta = (dom.meta && dom.meta.data) || {};
       const tombs = meta.tomb || {};
       let changed = false;
@@ -321,6 +327,7 @@ const Sync = (() => {
       cfg().lastSync = Date.now();
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
       if (changed) renderAfterSync();
+      if (adoptedPartner) { renderUI(); toast('已与 ' + adoptedPartner + ' 结对 ✓ 可以互戳了'); }
       status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
     } catch (e) {
       status('拉取失败：' + String(e.message || e).slice(0, 70), 'err');
