@@ -416,6 +416,7 @@ const Sync = (() => {
         await request('pair', { partner: p });
         cfg().partner = p; saveState(); renderUI();
         status('已与 ' + p + ' 结对 ✓ 现在可以互戳了', 'ok');
+        refreshPartnerStatus();
       } catch (e) { status('结对失败：' + String(e.message || e).slice(0, 60), 'err'); }
     });
     $('#sync-push').addEventListener('click', async () => {
@@ -428,9 +429,47 @@ const Sync = (() => {
       try {
         const r = await request('poke', { to: cfg().partner, text: '该背单词啦！' });
         const d = (r && r.delivered) || {};
-        toast(d.sent > 0 ? '已戳 TA ✓ 通知已发出' : '已放进 TA 的消息盒（TA 的设备未连推送）');
+        const pushSent = (d.push && d.push.sent) || 0;
+        const ntfyOk = !!(d.ntfy && d.ntfy.published);
+        if (pushSent > 0 && ntfyOk) toast('已戳 TA ✓ 两条通道都发了');
+        else if (pushSent > 0) toast('已戳 TA ✓ 网页推送已发出');
+        else if (ntfyOk) toast('已戳 TA ✓ 已发到 TA 的 ntfy');
+        else if (d.ntfy && d.ntfy.skipped === 'no-topic') toast('已放进消息盒：TA 还没生成 ntfy 主题');
+        else toast('已放进 TA 的消息盒（TA 暂时收不到提醒）');
+        refreshPartnerStatus();
       } catch (e) { toast(String(e.message || e).slice(0, 60)); }
     });
+
+    // ---- 对方状态检查（让"他到底连没连上"一眼可见） ----
+    function agoText(ts) {
+      if (!ts) return '未知';
+      const m = Math.floor((Date.now() - ts) / 60000);
+      if (m < 2) return '刚刚';
+      if (m < 60) return m + ' 分钟前';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' 小时前';
+      return Math.floor(h / 24) + ' 天前';
+    }
+    async function refreshPartnerStatus() {
+      const el = $('#partner-status');
+      if (!el) return;
+      if (!cfg().partner) { el.textContent = ''; return; }
+      try {
+        const r = await request('partner.status', { partner: cfg().partner });
+        const s = (r && r.partner) || {};
+        const bits = [];
+        bits.push(s.hasNtfy ? '已连 ntfy ✓' : '未设置 ntfy（通知收不到）');
+        if (s.pushCount) bits.push('网页推送 ' + s.pushCount + ' 台设备');
+        if (s.reminderEnabled) bits.push('已开每日提醒');
+        bits.push('最后活跃 ' + agoText(s.lastActive || s.lastSeen));
+        el.textContent = '对方状态：' + bits.join(' · ');
+        el.className = 'set-note' + (s.hasNtfy ? ' ' : ' err');
+      } catch (e) {
+        el.textContent = '对方状态：读取失败（' + String(e.message || e).slice(0, 40) + '）';
+      }
+    }
+    const refreshBtn = $('#partner-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', refreshPartnerStatus);
     // ---- 已有同步码接管（第二台设备） ----
     const toBtn = $('#sync-takeover-btn');
     if (toBtn) toBtn.addEventListener('click', async () => {
@@ -547,6 +586,7 @@ const Sync = (() => {
       else { clearTimeout(pushTimer); pullMerge().then(() => pushAll(false)).catch(() => {}); }
     });
     if (cfg().on && cfg().code) pullMerge().catch(() => {});
+    if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
   return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset };
