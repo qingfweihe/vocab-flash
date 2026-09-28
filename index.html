@@ -269,9 +269,35 @@
       </div>
     </div>
 
+    <!-- 微信通知（安卓推荐） -->
+    <div class="settings-box">
+      <div class="set-section-title">💬 微信通知（安卓推荐）</div>
+      <div class="set-item">
+        <div class="set-label">PushPlus 口令<div class="set-hint">提醒/互戳直接进微信，不用装任何东西、不会被后台杀</div></div>
+        <div>
+          <input type="text" id="wx-token" style="width:56%;font-size:12px" placeholder="粘贴 PushPlus 的 token">
+          <button class="ghost-btn" id="wx-save" style="padding:4px 10px;margin-left:6px">保存</button>
+        </div>
+      </div>
+      <div id="wx-status" class="set-note"></div>
+      <div style="margin-top:8px">
+        <button class="ghost-btn" id="wx-test">发送测试</button>
+      </div>
+      <details class="ntfy-help">
+        <summary>怎么弄到口令？（约 1 分钟，需一次实名）</summary>
+        <ol>
+          <li>用手机浏览器打开 <code>https://www.pushplus.plus/</code>，点「登录」用<b>微信扫码</b>；</li>
+          <li>按页面提示完成一次<b>实名认证</b>（姓名＋身份证号＋手机号＋短信验证码，只做一次）；</li>
+          <li>在「一对一消息」页面复制你的 <b>token</b>（一串字母数字）；</li>
+          <li>回到本页粘贴进上面输入框 → 点「保存」→ 点「发送测试」；<br>微信里应立刻收到一条「服务通知」。</li>
+        </ol>
+        <div class="set-note">没收到测试：先确认实名已完成（未实名调用会返回 905），再看微信是否屏蔽了「服务通知」。</div>
+      </details>
+    </div>
+
     <!-- 安卓通知（ntfy） -->
     <div class="settings-box">
-      <div class="set-section-title">📱 安卓通知（ntfy）</div>
+      <div class="set-section-title">📱 备用通道（ntfy · 网络不稳时可能延迟）</div>
       <div class="set-item">
         <div class="set-label">本机 ntfy 主题<div class="set-hint">在 ntfy App 里订阅这个主题，安卓也能收到提醒/互戳</div></div>
         <div>
@@ -280,7 +306,7 @@
         </div>
       </div>
       <div id="ntfy-status" class="set-note"></div>
-      <div class="set-note">订阅好之后，再到上面「⏰ 提醒」把开关打开——<b>安卓的每日提醒就是通过这条 ntfy 通道送到你手机的</b>（不需要"添加到主屏幕"）。</div>
+      <div class="set-note">订阅好之后，再到上面「⏰ 提醒」把开关打开——安卓的每日提醒就会通过通知通道送到你手机（微信优先、ntfy 备用）。</div>
       <div style="margin-top:8px">
         <button class="ghost-btn" id="ntfy-copy">复制主题</button>
         <button class="ghost-btn" id="ntfy-test" style="margin-left:6px">发送测试</button>

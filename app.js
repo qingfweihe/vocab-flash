@@ -19,7 +19,7 @@ const DEFAULT_STATE = {
   reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
   listen: { done: {}, vocab: {} },   // 听力精听 done:{taskId:{answered,correct,ts}} vocab:{word:{cn,ts}}
   favStars: {},  // 收藏星级 unitId -> {wordKey: {v:0..3, ts}}（星越多越熟练）
-  sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '' },  // 云同步（tomb=删除墓碑 key→±ts）
+  sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '', pushplusToken: '' },  // 云同步（tomb=删除墓碑 key→±ts）
 };
 
 let DATA = { meta: {}, units: [] };
@@ -537,27 +537,24 @@ const Sync = (() => {
       const B = 'https://ghproxy.net/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk';
       const C = 'https://ghfast.top/https://github.com/binwiederhier/ntfy-android/releases/download/v1.25.2/ntfy-1.25.2-fdroid-release.apk';
       const txt = [
-        '【闪过背单词 · 手机提醒设置】',
+        '【闪过背单词 · 手机设置】',
         '',
-        '1) 用手机浏览器打开（若在微信里打开，点右上角「…」→ 在浏览器打开）：',
+        '1) 用手机浏览器打开（在微信里打开的话，点右上角「…」→ 在浏览器打开）：',
         'https://qingfweihe.github.io/vocab-flash/',
         '',
-        '2) 装通知小工具 ntfy（9MB，不依赖谷歌服务），点这个链接直接下载安装：',
+        '2) 进「设置 → 云同步」→ 开启 → 把你的同步码发回给我（我这边结对后就能互相戳）。',
+        '',
+        '3) 进「设置 → 微信通知」：',
+        '   手机浏览器打开 https://www.pushplus.plus/ → 微信扫码登录 → 完成一次实名 → 复制 token',
+        '   → 回到应用粘贴 token → 点保存 → 点发送测试，微信里马上会收到一条「服务通知」。',
+        '',
+        '4) 回到「设置 → 提醒」把每日提醒开关打开（提醒会走微信通道）。',
+        '',
+        '5) （可选）装成 App 的样子：Chrome/Edge 菜单 →「安装应用」；国产自带浏览器找「添加到桌面」。',
+        '',
+        '备用通道 ntfy（微信搞不定时再用）：应用商店搜 ntfy，搜不到就下载：',
         A,
-        '下不动就换下面任一条（同一个文件）：',
-        B,
-        C,
-        '安装时若提示「未知来源」，先允许浏览器安装应用。',
-        '',
-        '3) 打开 ntfy → 右上角「＋」→ 粘贴这个主题名 → 订阅：',
-        topic || '（在你那边点「生成」后，把主题名发给我）',
-        '',
-        '4) 手机设置 → 应用 → ntfy → 省电策略选「无限制」，并把「自启动」打开（不设的话后台被杀会漏通知）。',
-        '',
-        '5) 弄好告诉我，我发条测试通知给你。',
-        '',
-        '6) （推荐）装成 App 的样子：用 Chrome/Edge 打开后点右上角「⋮」→「安装应用」/「添加到主屏幕」；小米、华为自带浏览器在菜单里找「添加到桌面」。装好后就没有浏览器地址栏，和普通 App 一样。',
-        '注意：在微信里打开无法安装，要先点右上角「…」→「在浏览器打开」。',
+        '装好后在应用「备用通道」里生成主题并订阅。',
       ].join('\n');
       nStatus('正在复制说明…');
       try {
@@ -575,6 +572,37 @@ const Sync = (() => {
           nStatus('已复制 ✓ 去微信粘贴给朋友即可', 'ok');
         } catch (e2) { nStatus('复制失败：请手动长按上方说明复制', 'err'); }
       }
+    });
+
+    // ---- 微信通知（PushPlus，安卓首选通道） ----
+    const wxStatus = (msg, cls) => { const el = $('#wx-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } };
+    const wxTokenEl = $('#wx-token');
+    function renderWx() { if (wxTokenEl) wxTokenEl.value = cfg().pushplusToken || ''; }
+    renderWx();
+    const wxSave = $('#wx-save');
+    if (wxSave) wxSave.addEventListener('click', async () => {
+      try { await ensureOn(); } catch (e) { wxStatus('需要先开通云同步（自动开通失败，请到上面「云同步」手动开启）', 'err'); return; }
+      const t = (wxTokenEl.value || '').trim();
+      if (t && !/^[A-Za-z0-9_-]{16,64}$/.test(t)) { wxStatus('口令看起来不对：应是 20~40 位的字母数字（从 PushPlus 复制）', 'err'); return; }
+      wxStatus('正在保存…');
+      try {
+        const r = await request('wechat.set', { token: t });
+        cfg().pushplusToken = r.pushplusToken || '';
+        saveState(); renderWx();
+        wxStatus(t ? '已保存 ✓ 点「发送测试」验证' : '已清除', 'ok');
+      } catch (e) { wxStatus('保存失败：' + String(e.message || e).slice(0, 60), 'err'); }
+    });
+    const wxTest = $('#wx-test');
+    if (wxTest) wxTest.addEventListener('click', async () => {
+      if (!cfg().pushplusToken) { wxStatus('先把口令粘贴到上面并点「保存」', 'err'); return; }
+      wxStatus('正在发送测试…');
+      try {
+        const r = await request('wechat.test', {});
+        const res = (r && r.result) || {};
+        if (res.published) wxStatus('已发出：去微信看看「服务通知」', 'ok');
+        else if (String(res.resp || '').indexOf('905') >= 0) wxStatus('对方账号还没实名：去 pushplus.plus 完成实名后再试', 'err');
+        else wxStatus('发送失败：' + String(res.resp || res.error || '').slice(0, 90), 'err');
+      } catch (e) { wxStatus('测试失败：' + String(e.message || e).slice(0, 70), 'err'); }
     });
 
     const apiInput = $('#rem-api');
