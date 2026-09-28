@@ -2498,8 +2498,6 @@ const Reminder = (() => {
         setStatus('通知权限被拒绝：到 iPhone 设置 → 通知 → 闪过背单词 里允许', 'err');
         return false;
       }
-      const reg = await navigator.serviceWorker.ready;
-      void reg;
       await Sync.ensureOn(); // 推送需要同步码作身份（会自动开通云同步）
       const { sub } = await ensureFreshSub(); // 密钥不匹配的旧订阅会在这里被重建
       await Sync.request('subscribe', { subscription: sub.toJSON(), ua: String(navigator.userAgent).slice(0, 100) });
