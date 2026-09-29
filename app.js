@@ -1358,9 +1358,93 @@ function buildQueueSrs() {
   return q;
 }
 
+/* ---------- 拼写模式（看中文+听音 → 拼英文） ---------- */
+function showSpell(item) {
+  const w = item.word;
+  $('#flashcard').classList.add('hidden');
+  $('#fc-judge').classList.add('hidden');
+  $('#spell-stage').classList.remove('hidden');
+  $('#test-mode').textContent = '咔 闪卡';
+  $('#spell-cn').innerHTML = w.defs.map((d) => `<div><span class="pos">${d.pos || ''}</span>${d.cn || ''}</div>`).join('');
+  const inp = $('#spell-input');
+  inp.value = '';
+  inp.disabled = false;
+  $('#spell-submit').classList.remove('hidden');
+  $('#spell-submit').disabled = false;
+  $('#spell-result').classList.add('hidden');
+  $('#spell-next').classList.add('hidden');
+  window.scrollTo({ top: 0 });
+  setTimeout(() => { try { inp.focus(); } catch (e) { } }, 80);
+  speak(w.w); // 自动读一遍（听音拼写）
+}
+
+function spellDiff(you, right) {
+  let html = '';
+  for (let i = 0; i < right.length; i++) {
+    const c = right[i];
+    html += you[i] === c
+      ? `<span class="ok">${c}</span>`
+      : `<span class="no">${c}</span>`;
+  }
+  return html;
+}
+
+function spellSubmit() {
+  if (!test || !test.queue[test.pos]) return;
+  const item = test.queue[test.pos];
+  const target = String(item.word.w).toLowerCase();
+  const you = String($('#spell-input').value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!you) { toast('先拼一下再提交 🌸'); return; }
+  const ok = you === target;
+
+  state.stats.tested += 1;
+  if (ok) state.stats.correct += 1;
+  if (item.unitId != null && item.word) {
+    srsGrade(item.unitId, item.word.w, ok ? 'got' : 'nope');
+    logLearn('r');
+  }
+  if (ok) {
+    setWrong(item.unitId, item.word.w, false);
+    test.right += 1;
+  } else {
+    setWrong(item.unitId, item.word.w, true);
+    test.miss.push(item);
+  }
+  saveState();
+  if (typeof renderToday === 'function') renderToday();
+
+  $('#spell-input').disabled = true;
+  $('#spell-submit').classList.add('hidden');
+  const res = $('#spell-result');
+  res.classList.remove('hidden');
+  if (ok) {
+    res.className = 'spell-verdict ok';
+    res.innerHTML = `✓ 拼对了：<b>${target}</b>`;
+    setTimeout(() => { if (test && test.mode === 'spell') { test.pos += 1; showCard(); } }, 650);
+    speak(item.word.w);
+  } else {
+    res.className = 'spell-verdict no';
+    res.innerHTML = `✗ 拼错了<br>你的：<span class="spell-you">${you}</span><br>正确：<span class="spell-right">${spellDiff(you, target)}</span>`;
+    $('#spell-next').classList.remove('hidden');
+    speak(item.word.w);
+  }
+}
+
+$('#spell-submit').addEventListener('click', spellSubmit);
+$('#spell-next').addEventListener('click', () => { test.pos += 1; showCard(); });
+$('#spell-speak').addEventListener('click', () => { if (test && test.queue[test.pos]) speak(test.queue[test.pos].word.w); });
+$('#spell-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); if (!$('#spell-submit').classList.contains('hidden')) spellSubmit(); }
+});
+$('#test-mode').addEventListener('click', () => {
+  if (!test) return;
+  test.mode = test.mode === 'spell' ? 'flash' : 'spell';
+  showCard();
+});
+
 function startTest(queue, title) {
   if (!queue.length) { toast('没有可检验的词'); return; }
-  test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [] };
+  test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: (test && test.mode) || 'flash' };
   $('#test-title').textContent = title;
   nav('test');
   showCard();
@@ -1373,6 +1457,10 @@ function showCard() {
   const w = item.word;
 
   $('#test-counter').textContent = `${pos + 1}/${queue.length}`;
+  if (test.mode === 'spell') { showSpell(item); return; }
+  $('#flashcard').classList.remove('hidden');
+  $('#spell-stage').classList.add('hidden');
+  $('#test-mode').textContent = 'Aa 拼写';
   $('#fc-word').textContent = w.w;
   $('#fc-phon').textContent = w.ph ? `[${w.ph}]` : '';
   $('#fc-defs').innerHTML = w.defs.map((d) => `<div><span class="pos">${d.pos || ''}</span>${d.cn || ''}</div>`).join('');

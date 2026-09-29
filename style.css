@@ -1000,3 +1000,41 @@ html.dark .heat-cell.l1 { background: #4a2739; }
 html.dark .heat-cell.l2 { background: #6e3450; }
 html.dark .heat-cell.l3 { background: #a04166; }
 html.dark .heat-cell.l4 { background: #e8447a; }
+
+/* ---------- 拼写检验模式 ---------- */
+.spell-card {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.spell-cn { font-size: 17px; line-height: 1.65; min-height: 46px; }
+.spell-cn .pos { color: var(--pink-deep); font-weight: 700; margin-right: 4px; }
+#spell-input {
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 20px;
+  letter-spacing: .5px;
+  text-align: center;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+}
+#spell-input:focus { border-color: var(--pink); }
+.spell-verdict { border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 15px; line-height: 1.9; }
+.spell-verdict.ok { background: #e5f7ec; color: #2f9e63; }
+.spell-verdict.no { background: #ffe9e9; color: #d84c4c; }
+.spell-right .ok { color: #2f9e63; font-weight: 700; }
+.spell-right .no { color: #d84c4c; font-weight: 700; text-decoration: underline; }
+.spell-you { text-decoration: line-through; opacity: .75; }
+#spell-next { margin-top: 10px; width: 100%; }
+html.dark #spell-input { background: #262832; border-color: #34363f; }
+html.dark .spell-verdict.ok { background: #1c2b21; color: #9fd8b2; }
+html.dark .spell-verdict.no { background: #2e1c1c; color: #f0a2a2; }
+html.dark .spell-right .ok { color: #9fd8b2; }
+html.dark .spell-right .no { color: #f0a2a2; }

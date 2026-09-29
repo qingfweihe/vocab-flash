@@ -86,11 +86,12 @@
     <div id="word-list"></div>
   </section>
 
-  <!-- 视图：检验（闪卡） -->
+  <!-- 视图：检验（闪卡 / 拼写） -->
   <section id="view-test" class="view hidden">
     <div class="subhead">
       <button class="back-btn" data-nav="units">‹ 退出</button>
       <div class="subhead-title" id="test-title">检验</div>
+      <button class="test-btn" id="test-mode">Aa 拼写</button>
       <div class="test-counter" id="test-counter">0/0</div>
     </div>
     <div id="test-stage">
@@ -109,6 +110,17 @@
         <button class="judge-btn no" id="btn-nope">✗ 忘了</button>
         <button class="judge-btn mid" id="btn-fuzzy">~ 模糊</button>
         <button class="judge-btn yes" id="btn-got">✓ 认得</button>
+      </div>
+      <div id="spell-stage" class="hidden">
+        <div class="spell-card">
+          <div class="spell-cn" id="spell-cn"></div>
+          <button class="ghost-btn" id="spell-speak">🔊 听发音</button>
+          <input id="spell-input" type="text" placeholder="拼写这个单词…" autocomplete="off"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="primary-btn" id="spell-submit">提交</button>
+        </div>
+        <div id="spell-result" class="hidden"></div>
+        <button class="ghost-btn hidden" id="spell-next">下一个 →</button>
       </div>
     </div>
     <div id="test-done" class="hidden">
