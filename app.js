@@ -1731,6 +1731,11 @@ const Reading = (() => {
   }
 
   function renderPage() {
+    // 先确保题库已加载：否则「做过的篇目」只能显示编号且点击无法定位文章（重做失灵的根因）
+    ensure().then((ok) => { if (ok) renderPageInner(); });
+  }
+
+  function renderPageInner() {
     const box = $('#reading-stats');
     if (!box) return;
     const s = stats();
@@ -2966,6 +2971,18 @@ async function boot() {
     META = m;
     $('#topbar-sub').textContent = (m.meta && m.meta.subtitle) || '';
   } catch (e) { /* 忽略，等全量 */ }
+
+  // 版本号：设置页常显；检测到新版本弹一次提示
+  try {
+    const v = await (await fetch('version.json', { cache: 'no-cache' })).json();
+    if (v && v.v) {
+      const line = $('#ver-line');
+      if (line) line.textContent = `当前版本 v${v.v} · 发布于 ${v.t || ''}`;
+      const seen = localStorage.getItem('sgwd_seen_ver');
+      if (seen && seen !== v.v) toast(`✨ 已更新到 v${v.v}`);
+      localStorage.setItem('sgwd_seen_ver', v.v);
+    }
+  } catch (e) { /* 版本信息可选，失败不影响使用 */ }
 
   applySettings();
   renderUnits();

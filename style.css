@@ -966,3 +966,6 @@ html.dark .wcbtn:active { background: #34363f; }
 html.dark .rd-w:active { background: #34363f; }
 html.dark .sr-sec { color: var(--ink-3); }
 html.dark .rd-tts-ctrl .rd-speak { background: #262832; border-color: #34363f; }
+
+/* ---------- 版本号行 ---------- */
+.ver-line { text-align: center; font-size: 11.5px; color: var(--ink-3); padding: 2px 0 8px; }

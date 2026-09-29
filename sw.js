@@ -1,6 +1,6 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
    听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
-const CACHE = 'sgwd-20260929-134440';
+const CACHE = 'sgwd-20260929-141453';
 const AUDIO_CACHE = 'sgwd-audio-v1';
 const ASSETS = [
   './',
@@ -71,7 +71,8 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   const isData = url.pathname.endsWith('/data/words.json') || url.pathname.endsWith('/data/meta.json')
-    || url.pathname.endsWith('/data/readings.json') || url.pathname.indexOf('/data/listening/') >= 0;
+    || url.pathname.endsWith('/data/readings.json') || url.pathname.endsWith('/version.json')
+    || url.pathname.indexOf('/data/listening/') >= 0;
 
   if (isData) {
     // 词表/索引/听力数据：网络优先，成功即刷新缓存；离线回落缓存
