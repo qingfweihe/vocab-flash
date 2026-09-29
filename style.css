@@ -1038,3 +1038,70 @@ html.dark .spell-verdict.ok { background: #1c2b21; color: #9fd8b2; }
 html.dark .spell-verdict.no { background: #2e1c1c; color: #f0a2a2; }
 html.dark .spell-right .ok { color: #9fd8b2; }
 html.dark .spell-right .no { color: #f0a2a2; }
+
+/* ---------- 今日任务：可配置清单 ---------- */
+.today-card-wrap { position: relative; }
+#today-cfg-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 34px; height: 34px;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--pink-deep);
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 2;
+}
+.today-list { margin: -4px 0 12px; }
+.today-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  margin-top: 6px;
+  font-size: 14.5px;
+  cursor: pointer;
+}
+.today-item .ti-ico { flex: none; font-size: 15px; }
+.today-item .ti-text { flex: 1; }
+.today-item .ti-num { flex: none; font-size: 12.5px; color: var(--ink-2); }
+.today-item.done { background: #f2fbf6; border-color: #bfe8d0; }
+.today-item.done .ti-text { color: #2f9e63; }
+.today-item.done .ti-num { color: #2f9e63; }
+#daily-cfg-mask { position: fixed; inset: 0; z-index: 95; background: rgba(45, 45, 58, .32); }
+#daily-cfg-sheet {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: calc(var(--safe-bottom) + 14px);
+  max-height: 78vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 8px 32px rgba(232, 68, 122, .25);
+}
+.dcfg-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #faf0f4; }
+.dcfg-main { flex: 1; min-width: 0; }
+.dcfg-label { font-size: 14.5px; font-weight: 600; }
+.dcfg-num {
+  width: 64px;
+  text-align: center;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 4px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+}
+#daily-task-input { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; color: var(--ink); background: #fff; outline: none; font-family: inherit; }
+html.dark .today-item { background: #1e2027; border-color: #34363f; }
+html.dark .today-item.done { background: #1c2b21; border-color: #2f5c42; }
+html.dark #today-cfg-btn { background: #262832; border-color: #34363f; }
+html.dark #daily-cfg-sheet { background: #1e2027; }
+html.dark .dcfg-num, html.dark #daily-task-input { background: #262832; border-color: #34363f; color: var(--ink); }
+html.dark .dcfg-row { border-bottom-color: #262832; }

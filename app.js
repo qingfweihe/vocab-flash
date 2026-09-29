@@ -204,7 +204,7 @@ const Sync = (() => {
     if (d === 'vocab') return { wrong: state.wrong, favorites: state.favorites, favStars: state.favStars || {} };
     if (d === 'reading') return { reading: { done: state.reading.done, vocab: state.reading.vocab } };
     if (d === 'listening') return { listen: { done: state.listen.done, vocab: state.listen.vocab } };
-    if (d === 'todo') return { todo: state.todo };
+    if (d === 'todo') return { todo: state.todo, dailyCfg: state.dailyCfg || {}, dailyTasks: state.dailyTasks || [] };
     if (d === 'srs') return { srs: state.srs || {}, dayLog: state.dayLog || {} };
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
@@ -325,7 +325,8 @@ const Sync = (() => {
             }
           }
         }
-        const incTodo = ((dom.todo || {}).data || {}).todo;        if (Array.isArray(incTodo)) {
+        const incTodo = ((dom.todo || {}).data || {}).todo;
+        if (Array.isArray(incTodo)) {
           const map = {};
           (state.todo || []).forEach(x => { map[x.id] = x; });
           incTodo.forEach(x => {
@@ -334,6 +335,23 @@ const Sync = (() => {
             else if ((x.done === true && cur.done !== true) || (x.createdAt || 0) > (cur.createdAt || 0)) { map[x.id] = x; changed = true; }
           });
           state.todo = Object.keys(map).map(k => map[k]).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        }
+        // 每日任务：cfg 按 _ts 新者胜（整体 LWW）；tasks 按 id 合并、done/doneTs 取 doneTs 大者
+        const dTodo = ((dom.todo || {}).data || {});
+        if (dTodo.dailyCfg && typeof dTodo.dailyCfg === 'object') {
+          const myTs = dailyCfg()._ts || 0;
+          if ((dTodo.dailyCfg._ts || 0) > myTs) { state.dailyCfg = dTodo.dailyCfg; changed = true; }
+        }
+        if (Array.isArray(dTodo.dailyTasks)) {
+          const dtMap = {};
+          dailyTasks().forEach((x) => { dtMap[x.id] = x; });
+          dTodo.dailyTasks.forEach((x) => {
+            if (!x || !x.id) return;
+            const cur = dtMap[x.id];
+            if (!cur) { dtMap[x.id] = x; changed = true; }
+            else if ((x.doneTs || 0) > (cur.doneTs || 0)) { cur.done = x.done || ''; cur.doneTs = x.doneTs || 0; changed = true; }
+          });
+          state.dailyTasks = Object.keys(dtMap).map((k) => dtMap[k]).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
         }
         // 墓碑合并：云端 tomb 并入本地（同 key 取 |ts| 更大者），再统一过滤删除项
         const localT = cfg().tomb;
@@ -1403,6 +1421,44 @@ function dayTotal(dateStr) {
 }
 function dailyGoal() { return Number((state.settings && state.settings.dailyGoal) || 20); }
 
+/* ---------- 每日任务配置（用户可配） ----------
+   state.dailyCfg = { newWords:{on,goal}, review:{on,cap}, reading:{on,goal}, listening:{on,goal} }
+   state.dailyTasks = [{ id, text, done:"日期"|"", createdAt }]  done 存"打勾当天"的北京日期 → 次日自动未勾 */
+function dailyCfg() {
+  if (!state.dailyCfg || typeof state.dailyCfg !== 'object') state.dailyCfg = {};
+  const c = state.dailyCfg;
+  if (!c.newWords) c.newWords = { on: true, goal: dailyGoal() }; // 老字段 dailyGoal 迁移
+  if (!c.review) c.review = { on: true, cap: 50 };
+  if (!c.reading) c.reading = { on: false, goal: 1 };
+  if (!c.listening) c.listening = { on: false, goal: 1 };
+  return c;
+}
+function dailyTasks() {
+  if (!Array.isArray(state.dailyTasks)) state.dailyTasks = [];
+  return state.dailyTasks;
+}
+function dailyTaskDone(t) { return t.done === bjDayStr(); }
+function dailyDoneCount() { return dailyTasks().filter(dailyTaskDone).length; }
+function srsDueCapped() { // 复习队列按到期先后排序 + 每日上限截断（防停几天后积压压垮）
+  const list = srsDueList().sort((a, b) => {
+    const ea = srsMap()[srsKeyOf(a.unitId, a.word.w)] || {};
+    const eb = srsMap()[srsKeyOf(b.unitId, b.word.w)] || {};
+    return (ea.due || 0) - (eb.due || 0);
+  });
+  const cap = Number(dailyCfg().review.cap) || 0;
+  return cap > 0 ? list.slice(0, cap) : list;
+}
+function readingDoneToday() { // 今天做过的阅读篇数
+  const r = (state.reading && state.reading.done) || {};
+  const d = bjDayStr();
+  return Object.keys(r).filter((k) => r[k] && bjDayStr(r[k].ts) === d).length;
+}
+function listeningDoneToday() {
+  const l = (state.listen && state.listen.done) || {};
+  const d = bjDayStr();
+  return Object.keys(l).filter((k) => l[k] && bjDayStr(l[k].ts) === d).length;
+}
+
 /* ================= 检验（闪卡） ================= */
 let test = null; // {queue:[{unitId,idx,word}], pos, phase, origin, correct, wrongCount}
 
@@ -1808,8 +1864,7 @@ function applySettings() {
   $('#set-rate').value = s.rate;
   $('#set-fontsize').value = s.fontSize;
   $('#set-sakura').checked = !!s.sakura;
-  const g = $('#set-goal');
-  if (g) g.value = dailyGoal();
+  dailyCfg(); // 迁移默认值（老 dailyGoal → dailyCfg.newWords.goal）
   Sakura.setEnabled(!!s.sakura);
   applyTheme();
 }
@@ -1849,14 +1904,6 @@ $('#set-fontsize').addEventListener('input', (e) => {
 });
 $('#set-sakura').addEventListener('change', (e) => {
   state.settings.sakura = e.target.checked; saveState(); Sakura.setEnabled(e.target.checked);
-});
-$('#set-goal').addEventListener('change', (e) => {
-  let v = Math.round(Number(e.target.value) || 20);
-  v = Math.max(5, Math.min(100, v));
-  e.target.value = v;
-  state.settings.dailyGoal = v;
-  saveState();
-  renderToday();
 });
 
 $('#btn-export').addEventListener('click', () => {
@@ -3301,20 +3348,149 @@ function renderToday() {
   const sub = $('#today-sub');
   const badge = $('#today-badge');
   if (!sub) return;
-  const due = srsDueList().length;
+  const c = dailyCfg();
+  const due = srsDueCapped().length;
   const t = todayCount();
-  const goal = dailyGoal();
-  const goalDone = t.n >= goal;
-  sub.textContent = `新词 ${t.n}/${goal}${goalDone ? ' ✓' : ''} · 待复习 ${due} 词 · 今日已复习 ${t.r}`;
+  const parts = [];
+  if (c.newWords.on) parts.push(`新词 ${t.n}/${c.newWords.goal}`);
+  if (c.review.on) parts.push(`待复习 ${due}`);
+  if (c.reading.on) parts.push(`阅读 ${readingDoneToday()}/${c.reading.goal}`);
+  if (c.listening.on) parts.push(`听力 ${listeningDoneToday()}/${c.listening.goal}`);
+  const dt = dailyTasks();
+  if (dt.length) parts.push(`事项 ${dailyDoneCount()}/${dt.length}`);
+  sub.textContent = parts.length ? parts.join(' · ') : '点右上角 ⚙ 配置你今天的目标';
   badge.textContent = due > 0 ? String(due) : '✓';
   badge.classList.remove('hidden');
-  badge.classList.toggle('today-clear', due === 0);
+  badge.classList.toggle('today-clear', due === 0 && (dt.length ? dailyDoneCount() === dt.length : true));
+  renderTodayList();
 }
 
+function renderTodayList() {
+  const box = $('#today-list');
+  if (!box) return;
+  const c = dailyCfg();
+  const rows = [];
+  if (c.newWords.on) {
+    const t = todayCount();
+    const ok = t.n >= c.newWords.goal;
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="newword"><span class="ti-ico">${ok ? '✅' : '📖'}</span><span class="ti-text">背新词</span><span class="ti-num">${t.n}/${c.newWords.goal}</span></div>`);
+  }
+  if (c.review.on) {
+    const due = srsDueCapped().length;
+    rows.push(`<div class="today-item ${due === 0 ? 'done' : ''}" data-go="review"><span class="ti-ico">${due === 0 ? '✅' : '🔁'}</span><span class="ti-text">复习到期词</span><span class="ti-num">${due}${c.review.cap > 0 && srsDueList().length > c.review.cap ? '（总' + srsDueList().length + '，今日上限' + c.review.cap + '）' : ''}</span></div>`);
+  }
+  if (c.reading.on) {
+    const n = readingDoneToday();
+    const ok = n >= c.reading.goal;
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="reading"><span class="ti-ico">${ok ? '✅' : '📖'}</span><span class="ti-text">阅读随手练</span><span class="ti-num">${n}/${c.reading.goal}</span></div>`);
+  }
+  if (c.listening.on) {
+    const n = listeningDoneToday();
+    const ok = n >= c.listening.goal;
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="listening"><span class="ti-ico">${ok ? '✅' : '🎧'}</span><span class="ti-text">听力精听</span><span class="ti-num">${n}/${c.listening.goal}</span></div>`);
+  }
+  dailyTasks().forEach((t) => {
+    const ok = dailyTaskDone(t);
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-dtask="${t.id}"><span class="ti-ico">${ok ? '✅' : '⬜'}</span><span class="ti-text">${esc(t.text)}</span><span class="ti-num">${ok ? '已完成' : '点一下打勾'}</span></div>`);
+  });
+  box.innerHTML = rows.join('');
+  box.classList.toggle('hidden', !rows.length);
+  box.querySelectorAll('[data-go]').forEach((el) => el.addEventListener('click', () => {
+    const g = el.dataset.go;
+    if (g === 'newword') {
+      if (state.lastUnit) openStudy(state.lastUnit);
+      else toast('选一个单元开始背吧');
+    } else if (g === 'review') {
+      const q = srsDueCapped();
+      if (!q.length) { toast('今日复习已清空 ✓'); return; }
+      startTest(q, `今日复习 ${q.length} 词`);
+    } else if (g === 'reading') nav('reading');
+    else if (g === 'listening') nav('listening');
+  }));
+  box.querySelectorAll('[data-dtask]').forEach((el) => el.addEventListener('click', () => {
+    const t = dailyTasks().find((x) => String(x.id) === el.dataset.dtask);
+    if (!t) return;
+    t.done = dailyTaskDone(t) ? '' : bjDayStr(); // 打勾/取消（次日自动未勾）
+    t.doneTs = Date.now();
+    saveState();
+    renderToday();
+  }));
+}
+
+/* ---------- 每日任务配置面板 ---------- */
+function renderDailyCfg() {
+  const body = $('#daily-cfg-body');
+  if (!body) return;
+  const c = dailyCfg();
+  const row = (key, label, hint, goalKey, min, max, step) => `
+    <div class="dcfg-row">
+      <div class="dcfg-main">
+        <div class="dcfg-label">${label}</div>
+        <div class="set-hint">${hint}</div>
+      </div>
+      <input type="number" class="dcfg-num" data-cfg="${key}" data-field="${goalKey}" min="${min}" max="${max}" step="${step}" value="${c[key][goalKey]}">
+      <label class="switch"><input type="checkbox" data-cfg-on="${key}" ${c[key].on ? 'checked' : ''}><span>${c[key].on ? '启用' : '关闭'}</span></label>
+    </div>`;
+  body.innerHTML =
+    row('newWords', '背新词', '每天新学多少个词', 'goal', 5, 200, 5) +
+    row('review', '复习到期词', '最多复习多少个（0=不限，防积压）', 'cap', 0, 500, 10) +
+    row('reading', '阅读随手练', '每天几篇（做一篇自动打勾）', 'goal', 1, 10, 1) +
+    row('listening', '听力精听', '每天几段（做一段自动打勾）', 'goal', 1, 10, 1);
+  body.querySelectorAll('[data-cfg]').forEach((inp) => inp.addEventListener('change', () => {
+    const key = inp.dataset.cfg, f = inp.dataset.field;
+    let v = Math.round(Number(inp.value) || 0);
+    v = Math.max(Number(inp.min), Math.min(Number(inp.max), v));
+    inp.value = v;
+    dailyCfg()[key][f] = v;
+    dailyCfg()._ts = Date.now();
+    saveState();
+    renderToday();
+  }));
+  body.querySelectorAll('[data-cfg-on]').forEach((sw) => sw.addEventListener('change', () => {
+    const key = sw.dataset.cfgOn;
+    dailyCfg()[key].on = sw.checked;
+    dailyCfg()._ts = Date.now();
+    saveState();
+    renderDailyCfg();
+    renderToday();
+  }));
+  const tr = $('#daily-task-rows');
+  if (tr) {
+    const ts = dailyTasks();
+    tr.innerHTML = ts.length
+      ? ts.map((t) => `<div class="rem-item"><div><div>${esc(t.text)}</div><div class="rem-when">${dailyTaskDone(t) ? '今天已打勾' : '今天还没打勾'}</div></div><button class="rem-del" data-dtask-del="${t.id}">删除</button></div>`).join('')
+      : '<div class="set-note">还没有自定义事项，下面加一条试试。</div>';
+    tr.querySelectorAll('[data-dtask-del]').forEach((b) => b.addEventListener('click', () => {
+      const id = b.dataset.dtaskDel;
+      state.dailyTasks = dailyTasks().filter((x) => String(x.id) !== id);
+      saveState();
+      renderDailyCfg();
+      renderToday();
+    }));
+  }
+}
+$('#today-cfg-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  renderDailyCfg();
+  $('#daily-cfg-mask').classList.remove('hidden');
+});
+$('#daily-cfg-close').addEventListener('click', () => $('#daily-cfg-mask').classList.add('hidden'));
+$('#daily-cfg-mask').addEventListener('click', (e) => { if (e.target.id === 'daily-cfg-mask') $('#daily-cfg-mask').classList.add('hidden'); });
+$('#daily-task-add').addEventListener('click', () => {
+  const el = $('#daily-task-input');
+  const text = (el.value || '').trim();
+  if (!text) { toast('先写点内容'); return; }
+  dailyTasks().push({ id: 'dt' + Date.now().toString(36), text, done: '', doneTs: 0, createdAt: Date.now() });
+  el.value = '';
+  saveState();
+  renderDailyCfg();
+  renderToday();
+});
+
 $('#today-card').addEventListener('click', () => {
-  const due = srsDueList().length;
-  if (!due) { toast('今日复习已清空 ✓ 去学几个新词吧'); return; }
-  startTest(buildQueueSrs(), `今日复习 ${due} 词`);
+  const q = srsDueCapped();
+  if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
+  startTest(q, `今日复习 ${q.length} 词`);
 });
 
 function heatLevel(total) {
