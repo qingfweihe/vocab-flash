@@ -331,6 +331,24 @@
         <label class="switch"><input type="checkbox" id="sync-on"><span>开启</span></label>
       </div>
       <div class="set-item">
+        <div class="set-label">账号密码<div class="set-hint">换新设备不用记同步码：输用户名密码就能取回全部进度</div></div>
+      </div>
+      <div style="padding:0 0 10px">
+        <div id="acct-logged" class="set-note hidden" style="margin:0 0 8px"></div>
+        <div id="acct-form">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="acct-user" type="text" placeholder="用户名（3~20位字母数字）" autocomplete="username" style="flex:1;font-size:13px">
+            <input id="acct-pass" type="password" placeholder="密码（至少6位）" autocomplete="current-password" style="flex:1;font-size:13px">
+          </div>
+          <button class="ghost-btn" id="acct-register">注册（绑定本机进度）</button>
+          <button class="ghost-btn" id="acct-login" style="margin-left:6px">登录（取回进度）</button>
+          <div class="set-note" style="margin-top:6px">注册会把本机当前进度绑到账号；换设备在新手机登录即可取回。忘记密码找作者重置。</div>
+        </div>
+        <div id="acct-out-wrap" class="hidden" style="margin-top:6px">
+          <button class="ghost-btn" id="acct-logout">退出账号（不影响云同步）</button>
+        </div>
+      </div>
+      <div class="set-item">
         <div class="set-label">本机同步码<div class="set-hint">这串码就是你的身份：复制发给朋友，他填进「伙伴同步码」你们就结对了；换新手机也用它接管进度</div></div>
         <div>
           <input type="text" id="sync-code" readonly style="width:42%;font-size:13px;letter-spacing:1px;text-align:center">

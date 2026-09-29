@@ -489,6 +489,77 @@ const Sync = (() => {
       } catch (e) { toast(String(e.message || e).slice(0, 60)); }
     });
 
+    // ---- 账号密码（同步码的友好登录入口） ----
+    const acctGet = () => { try { return JSON.parse(localStorage.getItem('sgwd_account') || 'null'); } catch (e) { return null; } };
+    const acctSet = (v) => { if (v) localStorage.setItem('sgwd_account', JSON.stringify(v)); else localStorage.removeItem('sgwd_account'); };
+    function renderAcct() {
+      const logged = $('#acct-logged'), form = $('#acct-form'), out = $('#acct-out-wrap');
+      if (!logged || !form || !out) return;
+      const a = acctGet();
+      if (a && a.user) {
+        logged.textContent = '已登录：' + a.user + ' ✓ 进度已绑定到账号（换设备登录即可取回）';
+        logged.classList.remove('hidden');
+        form.classList.add('hidden');
+        out.classList.remove('hidden');
+      } else {
+        logged.classList.add('hidden');
+        form.classList.remove('hidden');
+        out.classList.add('hidden');
+      }
+    }
+    async function accountTakeover(code) {
+      // 登录后把账号绑定的码接过来：合并云端进度到本地，再整体上传
+      await request('init', { code });
+      cfg().code = code; cfg().on = true;
+      saveState(); renderUI();
+      await pullMerge(); await pushAll(true);
+    }
+    $('#acct-register').addEventListener('click', async () => {
+      const user = ($('#acct-user').value || '').trim();
+      const pass = ($('#acct-pass').value || '');
+      if (!user || !pass) { status('填好用户名和密码再注册', 'err'); return; }
+      status('正在注册…');
+      try {
+        if (!cfg().code) { await ensureCode(); } // 没开同步的先本地生成码，注册时一并绑定
+        const r = await request('account.register', { user, pass, code: cfg().code });
+        acctSet({ user: r.user, ts: Date.now() });
+        cfg().code = r.code; cfg().on = true;
+        saveState(); renderUI(); renderAcct();
+        await pushAll(true);
+        status('已登录：' + r.user + ' ✓ 进度已绑定账号', 'ok');
+        toast('注册成功 ✓ 换设备登录即可取回进度', 3200);
+      } catch (e) {
+        const m2 = String(e.message || e).slice(0, 60);
+        status('注册失败：' + m2, 'err');
+        toast('注册失败：' + m2, 3000);
+      }
+    });
+    $('#acct-login').addEventListener('click', async () => {
+      const user = ($('#acct-user').value || '').trim();
+      const pass = ($('#acct-pass').value || '');
+      if (!user || !pass) { status('填好用户名和密码再登录', 'err'); return; }
+      status('正在登录并取回进度…');
+      try {
+        const r = await request('account.login', { user, pass });
+        await accountTakeover(r.code);
+        acctSet({ user: r.user, ts: Date.now() });
+        renderAcct();
+        status('已登录：' + r.user + ' ✓ 进度已取回', 'ok');
+        toast('登录成功 ✓ 进度已取回', 3000);
+      } catch (e) {
+        const msg = String(e.message || e);
+        const friendly = msg.indexOf('不存在') >= 0 ? '账号不存在，先点「注册」' : msg.slice(0, 60);
+        status('登录失败：' + friendly, 'err');
+        toast('登录失败：' + friendly, 3200);
+      }
+    });
+    $('#acct-logout').addEventListener('click', () => {
+      acctSet(null);
+      renderAcct();
+      status('已退出账号（云同步与进度不受影响）', 'ok');
+    });
+    renderAcct();
+
     // ---- 对方状态检查（让"他到底连没连上"一眼可见） ----
     function agoText(ts) {
       if (!ts) return '未知';
