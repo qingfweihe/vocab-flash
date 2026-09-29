@@ -626,11 +626,17 @@ body {
   background-attachment: fixed;
 }
 
-/* —— 通用按钮：按压缩放 + 过渡（克制微动效） —— */
+/* —— 通用按压反馈：变暗 + 轻微缩小（全局所有可点元素，iOS 风） —— */
+button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .rem-item, .rd-opt, .switch,
 .ghost-btn, .test-btn, .mini-btn, .fav-chip, .star-btn, .rem-del, .t-del {
-  transition: transform .12s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+  transition: transform .12s ease, filter .12s ease, box-shadow .18s ease,
+              background-color .18s ease, border-color .18s ease;
 }
-.ghost-btn:active, .test-btn:active, .mini-btn:active, .fav-chip:active, .star-btn:active, .unit-card:active, .todo-card:active, .tab:active {
+button:active, .unit-card:active, .todo-card:active, .tab:active, .rd-item:active,
+.sr-item:active, .rem-item:active, .rd-opt:active, .switch:active,
+.ghost-btn:active, .test-btn:active, .mini-btn:active, .fav-chip:active,
+.star-btn:active, .rem-del:active, .t-del:active {
+  filter: brightness(.86);
   transform: scale(.97);
 }
 

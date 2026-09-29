@@ -1731,6 +1731,11 @@ const Reading = (() => {
   }
 
   function renderPage() {
+    // 从别处切回阅读页时收起残留的做题界面——必须同步执行：
+    // start() 会先走这里再同步渲染新题，若放到异步回调会把刚弹出的题面藏掉（"随机来一篇点不动"回归的根因）
+    const q = $('#reading-quiz'), l = $('#reading-list');
+    if (q) q.classList.add('hidden');
+    if (l) l.classList.remove('hidden');
     // 先确保题库已加载：否则「做过的篇目」只能显示编号且点击无法定位文章（重做失灵的根因）
     ensure().then((ok) => { if (ok) renderPageInner(); });
   }
@@ -1738,9 +1743,6 @@ const Reading = (() => {
   function renderPageInner() {
     const box = $('#reading-stats');
     if (!box) return;
-    // 回到阅读页时收起上次残留的做题界面，显示列表
-    $('#reading-quiz').classList.add('hidden');
-    $('#reading-list').classList.remove('hidden');
     const s = stats();
     box.innerHTML = `<div class="rs-item"><b>${s.done}</b><span>已做</span></div>
       <div class="rs-item"><b>${s.done ? s.pct + '%' : '—'}</b><span>正确率</span></div>
@@ -2967,6 +2969,9 @@ $('#btn-continue').addEventListener('click', () => {
 });
 
 /* ================= 启动 ================= */
+// iOS Safari：挂一个 touch 监听后 :active 按压反馈才会生效
+document.addEventListener('touchstart', () => {}, { passive: true });
+
 async function boot() {
   // 阶段一：轻量索引，秒开首页
   try {
