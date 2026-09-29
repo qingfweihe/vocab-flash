@@ -1323,21 +1323,21 @@ $('#btn-test-wrong').addEventListener('click', () => {
 });
 
 /* ================= 收藏夹 ================= */
-/* 收藏筛选档位：全部 / 还没记牢（0~2★）/ 已熟练（3★）；检验收藏跟随当前档位 */
+/* 收藏筛选档位：全部 / 按星级一星一档（☆☆☆=未评，★★★=熟练）；检验收藏跟随当前档位 */
 let favFilter = 'all';
 const favOpen = new Set(); // 已展开详情的卡片 key（重渲染后保留展开状态）
 
 function favCounts() {
-  let all = 0, weak = 0, good = 0;
+  const c = { all: 0, s0: 0, s1: 0, s2: 0, s3: 0 };
   DATA.units.forEach((u) => {
     const m = state.favorites[String(u.id)] || {};
     if (Array.isArray(m)) return;
     Object.keys(m).forEach((k) => {
-      all++;
-      if (getFavStar(u.id, k) >= 3) good++; else weak++;
+      c.all++;
+      c['s' + getFavStar(u.id, k)]++;
     });
   });
-  return { all, weak, good };
+  return c;
 }
 function favStarHtml(v) { return '★'.repeat(v) + '☆'.repeat(3 - v); }
 
@@ -1345,8 +1345,9 @@ function renderFavChips() {
   const chips = $('#fav-filters');
   if (!chips) return;
   const c = favCounts();
-  chips.innerHTML = [['all', '全部', c.all], ['weak', '还没记牢', c.weak], ['good', '已熟练', c.good]]
-    .map(([k, label, n]) => `<button class="fav-chip${favFilter === k ? ' on' : ''}" data-ff="${k}">${label} ${n}</button>`).join('');
+  chips.innerHTML = [
+    ['all', '全部', c.all], ['s0', '☆☆☆', c.s0], ['s1', '★☆☆', c.s1], ['s2', '★★☆', c.s2], ['s3', '★★★', c.s3],
+  ].map(([k, label, n]) => `<button class="fav-chip${favFilter === k ? ' on' : ''}" data-ff="${k}">${label} ${n}</button>`).join('');
   chips.querySelectorAll('[data-ff]').forEach((b) => b.addEventListener('click', () => {
     favFilter = b.dataset.ff;
     renderFavorites();
@@ -1368,7 +1369,7 @@ function renderFavorites() {
       items.push({ u, w, k, star: getFavStar(u.id, k) });
     });
   });
-  const shown = items.filter((it) => favFilter === 'all' || (favFilter === 'weak' ? it.star < 3 : it.star >= 3));
+  const shown = items.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
   if (!shown.length) {
     box.innerHTML = items.length
       ? '<div class="empty-tip">这一档是空的 👌<br>点上面的「全部」看看其它词</div>'
@@ -1437,8 +1438,7 @@ function buildQueueFavorites() {
     if (!keys) return;
     keys.forEach((k) => {
       const star = getFavStar(u.id, k);
-      if (favFilter === 'weak' && star >= 3) return; // 检验「还没记牢」时不抽已熟练的
-      if (favFilter === 'good' && star < 3) return;
+      if (favFilter !== 'all' && star !== Number(favFilter.slice(1))) return; // 只考当前档位
       const idx = u.words.findIndex((w) => wordKey(w.w) === k);
       if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
     });
@@ -1450,7 +1450,7 @@ function buildQueueFavorites() {
 $('#btn-test-fav').addEventListener('click', () => {
   const q = buildQueueFavorites();
   if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
-  const title = favFilter === 'weak' ? '检验收藏 · 还没记牢' : (favFilter === 'good' ? '检验收藏 · 已熟练' : '检验收藏');
+  const title = favFilter === 'all' ? '检验收藏' : '检验收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
   startTest(q, title);
 });
 
