@@ -2252,9 +2252,9 @@ const Listening = (() => {
     const l = lState();
     const rec = l.done[task.id] || { picks: {} };
     const box = $('#ls-qs');
+    const cnOn = showCn; // 只看开关：unlocked 只表示"允许开"，隐藏必须真能藏掉
     box.innerHTML = task.questions.map((q) => {
       const pick = rec.picks ? rec.picks[q.n] : null;
-      const cnOn = showCn || unlocked;
       return `<div class="ls-q" data-q="${q.n}">
         <div class="ls-q-stem"><b>${q.n}.</b> ${esc(q.stem)}
           ${q.cn && cnOn ? `<span class="ls-q-cn">${esc(q.cn)}</span>` : ''}</div>
@@ -2289,8 +2289,8 @@ const Listening = (() => {
     // 答完本题即解锁中文（用户要求：答完题或手动打开才显示中文）
     unlocked = true;
     const allDone = rec.answered >= task.questions.length;
-    if (allDone) {
-      showCn = true;                                 // 整段答完，自动展开中文
+    if (allDone && !showCn) {                        // 整段答完，自动展开中文（手动关过则尊重用户选择）
+      showCn = true;
       renderTranscript();
       $('#ls-cn').textContent = '隐藏中文';
       updateTrHint();
@@ -2305,7 +2305,7 @@ const Listening = (() => {
   function renderTranscript() {
     const box = $('#ls-tr');
     if (!box) return;
-    const cnOn = showCn || unlocked;
+    const cnOn = showCn; // 只看开关：unlocked 只表示"允许开"，隐藏必须真能藏掉
     box.innerHTML = task.lines.map((ln, i) => `
       <div class="ls-line" data-i="${i}">
         <span class="ls-line-t">${fmtTime(ln.start)}</span>
@@ -2399,7 +2399,7 @@ const Listening = (() => {
   function updateTrHint() {
     const h = $('#ls-tr-hint');
     if (!h) return;
-    h.textContent = (showCn || unlocked) ? '点句重听 · 点词看释义/收藏' : '点句重听 · 点词看释义';
+    h.textContent = showCn ? '点句重听 · 点词看释义/收藏' : '点句重听 · 点词看释义';
   }
 
   /* ---------- 词卡 ---------- */
