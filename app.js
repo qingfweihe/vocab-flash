@@ -2981,6 +2981,24 @@ async function boot() {
       const seen = localStorage.getItem('sgwd_seen_ver');
       if (seen && seen !== v.v) toast(`✨ 已更新到 v${v.v}`);
       localStorage.setItem('sgwd_seen_ver', v.v);
+      // 安卓壳：比对安装包版本，有新版时红字提示重装（壳自己也会发系统通知）
+      try {
+        const sh = window.vfShell;
+        const local = sh && typeof sh.apkVer === 'function' ? String(sh.apkVer() || '') : null;
+        if (local !== null && v.apk && v.apk !== local) {
+          const st = $('#apk-ver-state');
+          if (st) {
+            st.textContent = '⚠ 检测到 App 有新版本，请点上方「下载 APK」重新安装（安装步骤不变，直接覆盖安装）';
+            st.style.color = '#d84c4c';
+            st.style.fontWeight = '700';
+          }
+          const seenApk = sessionStorage.getItem('sgwd_apk_toast');
+          if (!seenApk) {
+            sessionStorage.setItem('sgwd_apk_toast', '1');
+            toast('📲 App 有新版本，请到设置页重新下载安装');
+          }
+        }
+      } catch (e) { /* 壳接口不可用则跳过 */ }
     }
   } catch (e) { /* 版本信息可选，失败不影响使用 */ }
 
@@ -2999,10 +3017,10 @@ async function boot() {
   Listening.bind();
   Listening.renderHome();
 
-  // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units 直达对应页
+  // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units|settings 直达对应页
   try {
     const qv = new URLSearchParams(location.search).get('view');
-    if (qv && ['todo', 'favorites', 'wrong', 'units'].includes(qv)) nav(qv);
+    if (qv && ['todo', 'favorites', 'wrong', 'units', 'settings'].includes(qv)) nav(qv);
   } catch (e) { /* ignore */ }
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）
