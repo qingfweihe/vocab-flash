@@ -2766,7 +2766,14 @@ const Dict = (() => {
     if (!w || w.length > 24) return null;
     const ch = await load(w[0]);
     const e = ch[w];
-    return e ? { w, p: e.p, c: e.c } : null;
+    if (e) return { w, p: e.p, c: e.c };
+    // 所有格兜底：anybody's → anybody
+    if (w.endsWith("'s") && w.length > 3) {
+      const base = w.slice(0, -2);
+      const e2 = ch[base];
+      if (e2) return { w: base, p: e2.p, c: e2.c };
+    }
+    return null;
   }
   async function suggest(prefix, limit) {
     const p = String(prefix || '').toLowerCase().replace(/[^a-z'\-]/g, '');
