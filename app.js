@@ -208,7 +208,12 @@ const Sync = (() => {
     if (d === 'srs') return { srs: state.srs || {}, dayLog: state.dayLog || {} };
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
-    return { tomb: cfg().tomb, lastActive: Date.now(), learnedTotal };
+    const tc = todayCount();
+    return {
+      tomb: cfg().tomb, lastActive: Date.now(), learnedTotal,
+      streak: streakFrom(practiceDays()),          // 结对排行：连续打卡
+      todayCount: (tc.n || 0) + (tc.r || 0),        // 结对排行：今日学习量
+    };
   }
   function domainHash(d) {
     const p = domainPayload(d);
@@ -501,12 +506,22 @@ const Sync = (() => {
       try {
         const r = await request('partner.status', { partner: cfg().partner });
         const s = (r && r.partner) || {};
+        // 排行对比（我 vs 对方）：今日学习量 + 连续天数 + 总词量
+        const myStreak = streakFrom(practiceDays());
+        const mtc = todayCount();
+        const myToday = (mtc.n || 0) + (mtc.r || 0);
+        let myTotal = 0;
+        for (const k in state.learned) myTotal += countKeys(state.learned, k);
+        const win = (a, b) => a === b ? '' : (a > b ? ' 🏆' : '');
+        const rank = `🔥 今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ 他 ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
+          + ` · 连续：我 ${myStreak} 天${win(myStreak, s.streak || 0)} ⇄ 他 ${s.streak || 0} 天${win(s.streak || 0, myStreak)}`
+          + ` · 累计：我 ${myTotal} ⇄ 他 ${s.learnedTotal || 0}`;
         const bits = [];
         bits.push(s.hasNtfy ? '已连 ntfy ✓' : '未设置 ntfy（通知收不到）');
         if (s.pushCount) bits.push('网页推送 ' + s.pushCount + ' 台设备');
         if (s.reminderEnabled) bits.push('已开每日提醒');
         bits.push('最后活跃 ' + agoText(s.lastActive || s.lastSeen));
-        el.textContent = '对方状态：' + bits.join(' · ');
+        el.innerHTML = `对方状态：<br>${rank}<br>${bits.join(' · ')}`;
         el.className = 'set-note' + (s.hasNtfy ? ' ' : ' err');
       } catch (e) {
         el.textContent = '对方状态：读取失败（' + String(e.message || e).slice(0, 40) + '）';
