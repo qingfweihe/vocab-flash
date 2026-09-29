@@ -27,6 +27,14 @@
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
+    <button id="today-card" class="todo-card">
+      <div class="todo-card-ico">📅</div>
+      <div class="todo-card-main">
+        <div class="todo-card-title">今日任务</div>
+        <div class="todo-card-sub" id="today-sub">正在统计…</div>
+      </div>
+      <div class="reading-pct hidden" id="today-badge">0</div>
+    </button>
     <button id="reading-card" class="todo-card">
       <div class="todo-card-ico">📖</div>
       <div class="todo-card-main">
@@ -55,6 +63,11 @@
       <div id="search-results" class="hidden"></div>
     </div>
     <div id="unit-list"></div>
+    <details class="settings-box" id="heat-box">
+      <summary>📊 学习热力图（最近 12 周）</summary>
+      <div id="heat-grid" class="heat-grid"></div>
+      <div class="set-note" id="heat-week"></div>
+    </details>
   </section>
 
   <!-- 视图：学习页 -->
@@ -93,8 +106,9 @@
         <button class="reveal-btn" id="btn-reveal">点击显示释义</button>
       </div>
       <div class="fc-judge hidden" id="fc-judge">
-        <button class="judge-btn no" id="btn-nope">没记住</button>
-        <button class="judge-btn yes" id="btn-got">记住了</button>
+        <button class="judge-btn no" id="btn-nope">✗ 忘了</button>
+        <button class="judge-btn mid" id="btn-fuzzy">~ 模糊</button>
+        <button class="judge-btn yes" id="btn-got">✓ 认得</button>
       </div>
     </div>
     <div id="test-done" class="hidden">
@@ -345,6 +359,10 @@
           <button class="fav-chip theme-chip" data-theme="light" style="font-size:12px;padding:5px 10px">浅色</button>
           <button class="fav-chip theme-chip" data-theme="dark" style="font-size:12px;padding:5px 10px">深色</button>
         </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">每日新词目标<div class="set-hint">首页「今日任务」按这个数算进度</div></div>
+        <input type="number" id="set-goal" min="5" max="100" step="5" value="20" style="width:76px;text-align:center">
       </div>
       <div class="set-item">
         <div class="set-label">发音语速</div>

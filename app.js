@@ -157,7 +157,7 @@ function countKeys(store, id) {
 const Sync = (() => {
   const API_DEFAULT = 'https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api';
   const PUSH_DELAY = 30000;
-  const DOMAINS = ['progress', 'vocab', 'reading', 'listening', 'todo', 'meta'];
+  const DOMAINS = ['progress', 'vocab', 'reading', 'listening', 'todo', 'meta', 'srs'];
   let API = localStorage.getItem('sgwd_api') || API_DEFAULT;
   if (!API || /deno\.(dev|net)/.test(API)) API = API_DEFAULT; // Deno 后端已停用
   let applyingRemote = false;
@@ -205,6 +205,7 @@ const Sync = (() => {
     if (d === 'reading') return { reading: { done: state.reading.done, vocab: state.reading.vocab } };
     if (d === 'listening') return { listen: { done: state.listen.done, vocab: state.listen.vocab } };
     if (d === 'todo') return { todo: state.todo };
+    if (d === 'srs') return { srs: state.srs || {}, dayLog: state.dayLog || {} };
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
     return { tomb: cfg().tomb, lastActive: Date.now(), learnedTotal };
@@ -299,8 +300,27 @@ const Sync = (() => {
             if (!cur || (inc.ts || 0) > (cur.ts || 0)) { state[key].vocab[w] = inc; changed = true; }
           }
         }
-        const incTodo = ((dom.todo || {}).data || {}).todo;
-        if (Array.isArray(incTodo)) {
+        // SRS：按条目 last 新者胜；dayLog 按天取各字段 max（合并双设备不会丢计数）
+        const srsInc = ((dom.srs || {}).data || {});
+        if (srsInc.srs) {
+          const m = srsMap();
+          for (const k in srsInc.srs) {
+            const inc = srsInc.srs[k], cur = m[k];
+            if (!cur || (inc.last || 0) > (cur.last || 0)) { m[k] = inc; changed = true; }
+          }
+        }
+        if (srsInc.dayLog) {
+          const g = todayLog();
+          for (const d2 in srsInc.dayLog) {
+            const inc = srsInc.dayLog[d2] || {}, cur = g[d2];
+            if (!cur) { g[d2] = inc; changed = true; }
+            else {
+              const n = Math.max(cur.n || 0, inc.n || 0), r = Math.max(cur.r || 0, inc.r || 0);
+              if (n !== (cur.n || 0) || r !== (cur.r || 0)) { g[d2] = { n, r }; changed = true; }
+            }
+          }
+        }
+        const incTodo = ((dom.todo || {}).data || {}).todo;        if (Array.isArray(incTodo)) {
           const map = {};
           (state.todo || []).forEach(x => { map[x.id] = x; });
           incTodo.forEach(x => {
@@ -892,6 +912,7 @@ function nav(view) {
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
+  if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
   if (view === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
   if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#fav-list', 'fav'); }
@@ -1174,9 +1195,16 @@ function renderWordList() {
       ev.stopPropagation();
       const on = ev.target.checked;
       setLearned(studyUnitId, w.w, on);
-      if (on) setWrong(studyUnitId, w.w, false); // 学会后从错词本移除
+      if (on) {
+        setWrong(studyUnitId, w.w, false); // 学会后从错词本移除
+        srsInit(studyUnitId, w.w);         // 进 SRS 复习排期（明天首轮）
+        logLearn('n');
+      } else {
+        srsRemove(studyUnitId, w.w);
+      }
       saveState();
       renderUnits();
+      if (typeof renderToday === 'function') renderToday();
     });
     card.querySelector('[data-fav]').addEventListener('click', (ev) => {
       ev.stopPropagation();
@@ -1211,6 +1239,84 @@ $('#btn-mark-all').addEventListener('click', () => {
   saveState(); renderWordList(); renderUnits();
 });
 
+/* ================= SRS 间隔复习（简化 SM-2） =================
+   数据 state.srs = { "unitId:wordKey": { n: 连对次数, due: 到期ts(北京日0点), last: 上次ts } }
+   间隔（天）按连对次数取：[1,2,4,7,15,30,60,120]；模糊降一级且明天再来；忘了归零明天重来 */
+const SRS_DAYS = [1, 2, 4, 7, 15, 30, 60, 120];
+
+function srsMap() { if (!state.srs || typeof state.srs !== 'object') state.srs = {}; return state.srs; }
+function srsKeyOf(unitId, w) { return unitId + ':' + wordKey(w); }
+function bjDayStr(ts) { return new Date(((ts || Date.now()) + 8 * 3600e3)).toISOString().slice(0, 10); }
+function dayStartTs(offsetDays) { // 北京日 0 点的 ts（offset=0 今天，1 明天…）
+  const t = Date.now() + 8 * 3600e3 + (offsetDays || 0) * 86400e3;
+  return Math.floor(t / 86400e3) * 86400e3 - 8 * 3600e3;
+}
+function srsInit(unitId, w) { // 新学会的词入库：明天首轮复习
+  if (unitId == null || !w) return;
+  const m = srsMap();
+  const k = srsKeyOf(unitId, w);
+  if (!m[k]) m[k] = { n: 0, due: dayStartTs(1), last: 0 };
+}
+function srsRemove(unitId, w) {
+  const m = srsMap();
+  delete m[srsKeyOf(unitId, w)];
+}
+function srsGrade(unitId, w, mode) { // mode: got 认得 / fuzzy 模糊 / nope 忘了
+  if (unitId == null || !w) return;
+  const m = srsMap();
+  const k = srsKeyOf(unitId, w);
+  const cur = m[k] || { n: 0, due: 0, last: 0 };
+  if (mode === 'got') cur.n = Math.min(SRS_DAYS.length - 1, (cur.n || 0) + 1);
+  else if (mode === 'fuzzy') cur.n = Math.max(0, (cur.n || 0) - 1);
+  else cur.n = 0;
+  cur.due = dayStartTs(mode === 'got' ? SRS_DAYS[cur.n] : 1);
+  cur.last = Date.now();
+  m[k] = cur;
+}
+function srsDueList() { // 今日到期（含逾期）
+  const m = srsMap();
+  const today = dayStartTs(0);
+  const out = [];
+  for (const k in m) {
+    const e = m[k];
+    if (!e || !e.due || e.due > today) continue;
+    const p = k.split(':');
+    const u = unitById(Number(p[0]));
+    if (!u) continue;
+    const idx = u.words.findIndex((x) => wordKey(x.w) === p[1]);
+    if (idx >= 0) out.push({ unitId: u.id, idx, word: u.words[idx] });
+  }
+  return out;
+}
+function srsMigrateLearned() { // 老数据兜底：已学过但没进 SRS 的词，一次性入库（明天开始复习，不爆发）
+  if (state.srsInitAt) return;
+  const m = srsMap();
+  for (const u in state.learned) {
+    const bag = state.learned[u] || {};
+    for (const wk in bag) {
+      const k = u + ':' + wk;
+      if (!m[k]) m[k] = { n: 0, due: dayStartTs(1), last: 0 };
+    }
+  }
+  state.srsInitAt = Date.now();
+  saveState();
+}
+
+/* 每日学习量（热力图数据源）：state.dayLog = { "2026-09-29": { n: 新词数, r: 复习数 } } */
+function todayLog() { if (!state.dayLog || typeof state.dayLog !== 'object') state.dayLog = {}; return state.dayLog; }
+function logLearn(kind) { // kind: 'n' 新词 / 'r' 复习
+  const g = todayLog();
+  const d = bjDayStr();
+  g[d] = g[d] || { n: 0, r: 0 };
+  g[d][kind] = (g[d][kind] || 0) + 1;
+}
+function todayCount() { const g = todayLog()[bjDayStr()] || {}; return { n: g.n || 0, r: g.r || 0 }; }
+function dayTotal(dateStr) {
+  const g = todayLog()[dateStr] || {};
+  return (g.n || 0) + (g.r || 0);
+}
+function dailyGoal() { return Number((state.settings && state.settings.dailyGoal) || 20); }
+
 /* ================= 检验（闪卡） ================= */
 let test = null; // {queue:[{unitId,idx,word}], pos, phase, origin, correct, wrongCount}
 
@@ -1244,6 +1350,12 @@ function shuffle(a) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
+}
+
+function buildQueueSrs() {
+  const q = srsDueList();
+  shuffle(q);
+  return q;
 }
 
 function startTest(queue, title) {
@@ -1286,25 +1398,34 @@ $('#btn-reveal').addEventListener('click', () => {
 
 $('#fc-speak').addEventListener('click', () => speak(test.queue[test.pos].word.w));
 
-$('#btn-got').addEventListener('click', () => judge(true));
-$('#btn-nope').addEventListener('click', () => judge(false));
+$('#btn-got').addEventListener('click', () => judge('got'));
+$('#btn-fuzzy').addEventListener('click', () => judge('fuzzy'));
+$('#btn-nope').addEventListener('click', () => judge('nope'));
 
-function judge(remembered) {
+function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   const item = test.queue[test.pos];
+  const remembered = mode === 'got';
   state.stats.tested += 1;
   if (remembered) state.stats.correct += 1;
 
+  // SRS 调度（词库外的自由词不进 SRS）
+  if (item.unitId != null && item.word) {
+    srsGrade(item.unitId, item.word.w, mode);
+    logLearn('r');
+  }
   if (remembered) {
     setWrong(item.unitId, item.word.w, false); // 从错词本移除
     test.right += 1;
   } else {
-    setWrong(item.unitId, item.word.w, true);
+    if (mode === 'nope') setWrong(item.unitId, item.word.w, true); // 只有"忘了"进错词本
     test.miss.push(item);
   }
   saveState();
 
   test.pos += 1;
   showCard();
+  if (typeof renderToday === 'function') renderToday();
+  if (currentView === 'units') renderHeat();
 }
 
 function finishTest() {
@@ -1513,6 +1634,8 @@ function applySettings() {
   $('#set-rate').value = s.rate;
   $('#set-fontsize').value = s.fontSize;
   $('#set-sakura').checked = !!s.sakura;
+  const g = $('#set-goal');
+  if (g) g.value = dailyGoal();
   Sakura.setEnabled(!!s.sakura);
   applyTheme();
 }
@@ -1552,6 +1675,14 @@ $('#set-fontsize').addEventListener('input', (e) => {
 });
 $('#set-sakura').addEventListener('change', (e) => {
   state.settings.sakura = e.target.checked; saveState(); Sakura.setEnabled(e.target.checked);
+});
+$('#set-goal').addEventListener('change', (e) => {
+  let v = Math.round(Number(e.target.value) || 20);
+  v = Math.max(5, Math.min(100, v));
+  e.target.value = v;
+  state.settings.dailyGoal = v;
+  saveState();
+  renderToday();
 });
 
 $('#btn-export').addEventListener('click', () => {
@@ -2991,6 +3122,70 @@ $('#btn-continue').addEventListener('click', () => {
   if (state.lastUnit) openStudy(state.lastUnit);
 });
 
+/* ================= 今日任务 & 学习热力图 ================= */
+function renderToday() {
+  const sub = $('#today-sub');
+  const badge = $('#today-badge');
+  if (!sub) return;
+  const due = srsDueList().length;
+  const t = todayCount();
+  const goal = dailyGoal();
+  const goalDone = t.n >= goal;
+  sub.textContent = `新词 ${t.n}/${goal}${goalDone ? ' ✓' : ''} · 待复习 ${due} 词 · 今日已复习 ${t.r}`;
+  badge.textContent = due > 0 ? String(due) : '✓';
+  badge.classList.remove('hidden');
+  badge.classList.toggle('today-clear', due === 0);
+}
+
+$('#today-card').addEventListener('click', () => {
+  const due = srsDueList().length;
+  if (!due) { toast('今日复习已清空 ✓ 去学几个新词吧'); return; }
+  startTest(buildQueueSrs(), `今日复习 ${due} 词`);
+});
+
+function heatLevel(total) {
+  if (!total) return 0;
+  if (total < 10) return 1;
+  if (total < 30) return 2;
+  if (total < 60) return 3;
+  return 4;
+}
+
+function renderHeat() {
+  const grid = $('#heat-grid');
+  if (!grid) return;
+  const WEEKS = 12;
+  const practice = practiceDays(); // 阅读/听力练过的日子（无词量计数，记 1 点活动）
+  const today = bjDayStr();
+  // 列=周（上行周一、下行周日）：终点 = 本周日，起点 = 11 周前的周一，共 84 格
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7; // 0=周一 … 6=周日
+  const cells = [];
+  for (let i = 77 + dow; i >= -(6 - dow); i--) {
+    const ts = Date.now() + 8 * 3600e3 - i * 86400e3;
+    const d = new Date(ts).toISOString().slice(0, 10);
+    const total = dayTotal(d) + (practice.has(d) && !dayTotal(d) ? 1 : 0);
+    cells.push({ d, total, future: d > today });
+  }
+  grid.innerHTML = cells.map((c) => c.future
+    ? '<span class="heat-cell hidden-cell"></span>'
+    : `<span class="heat-cell l${heatLevel(c.total)}" title="${c.d} · ${c.total ? c.total + ' 次学习' : '未学习'}"></span>`
+  ).join('');
+  // 本周统计（周一至今）
+  let wn = 0, wr = 0, days = 0;
+  for (let i = dow; i >= 0; i--) {
+    const d = bjDayStr(Date.now() - i * 86400e3);
+    const g = todayLog()[d] || {};
+    wn += g.n || 0;
+    wr += g.r || 0;
+    if ((g.n || 0) + (g.r || 0) > 0 || practice.has(d)) days++;
+  }
+  const week = $('#heat-week');
+  if (week) {
+    week.textContent = `本周：新学 ${wn} 词 · 复习 ${wr} 词 · 打卡 ${days} 天 · 连续 ${streakFrom(practice)} 天`;
+  }
+}
+
 /* ================= 启动 ================= */
 // iOS Safari：挂一个 touch 监听后 :active 按压反馈才会生效
 document.addEventListener('touchstart', () => {}, { passive: true });
@@ -3047,6 +3242,7 @@ async function boot() {
   renderContinue();
   renderWrongList();
   nav('units');
+  srsMigrateLearned(); // 老数据：已学过的词一次性纳入复习排期（明天首轮，不爆发）
   Reminder.init();
   Sync.init();
   migrateTodo();
