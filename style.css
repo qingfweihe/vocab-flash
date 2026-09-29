@@ -1105,3 +1105,94 @@ html.dark #today-cfg-btn { background: #262832; border-color: #34363f; }
 html.dark #daily-cfg-sheet { background: #1e2027; }
 html.dark .dcfg-num, html.dark #daily-task-input { background: #262832; border-color: #34363f; color: var(--ink); }
 html.dark .dcfg-row { border-bottom-color: #262832; }
+
+/* ══════════════════════════════════════════════════════════
+   v4 布局重排（2026-09-29）—— 全页走查问题修复
+   首页：今日任务归并一卡 / 练习入口双列 / hero 紧凑
+   测试：判定按钮贴卡 / 例句对比度 / 顶栏按钮瘦身
+   收藏：chips 收一行 / 星级按钮去虚线 / 释义行距
+   待办：列表优先 / 删除图标化 / 提醒设置归组
+   修复：subhead 深色刺眼 / 单元标签深色适配 / 错词红标
+   ══════════════════════════════════════════════════════════ */
+
+/* —— 单元名标签（原 JS 内联色 → 类，深色可适配） —— */
+.mini-btn.tag-y { border: none; background: #fff3d6; color: #b8860b; }
+.mini-btn.tag-r { border: none; background: #fdeaea; color: #c66; }
+html.dark .mini-btn.tag-y { background: rgba(184, 134, 11, .16); color: #e8c46a; }
+html.dark .mini-btn.tag-r { background: rgba(200, 102, 102, .16); color: #f0a2a2; }
+
+/* —— 错词红标：默认隐藏，卡片挂 .is-wrong 才显示（勾已学即时显隐） —— */
+.wc-wrong-badge { display: none; color: #d84c4c; font-size: .7em; font-weight: 600; letter-spacing: 1px; }
+.word-card.is-wrong .wc-wrong-badge { display: inline; }
+html.dark .wc-wrong-badge { color: #ff8fa3; }
+
+/* —— 深色下 subhead 的刺眼浅粉底（设置页截图里那块"浅色空块"） —— */
+html.dark .subhead {
+  background: linear-gradient(180deg, rgba(21, 22, 27, .96) 78%, rgba(21, 22, 27, 0));
+}
+
+/* ══ 首页 ══ */
+/* 今日任务：标题行与任务清单归并为一张卡（原来四行任务裸露在卡外） */
+.today-card-wrap {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 3px 12px rgba(232, 68, 122, .06);
+  padding: 0 12px 12px;
+  margin: 6px 0 12px;
+}
+.today-card-wrap #today-card {
+  background: none; border: none; box-shadow: none;
+  padding: 13px 4px 6px; margin: 0;
+}
+.today-card-wrap #today-cfg-btn { top: 8px; right: 8px; width: 30px; height: 30px; font-size: 14px; }
+.today-card-wrap .today-list { margin: 0; }
+.today-card-wrap .today-item:not(.done) { background: var(--pink-bg); border-color: transparent; }
+html.dark .today-card-wrap .today-item:not(.done) { background: #262832; }
+
+/* 阅读/听力入口：两卡并排（原来各占一整行） */
+.home-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 12px; }
+.home-duo .duo-card {
+  position: relative;
+  flex-direction: column; align-items: flex-start; gap: 6px;
+  padding: 12px 12px 11px; margin: 0;
+}
+.home-duo .duo-card .todo-card-ico { font-size: 22px; }
+.home-duo .duo-card .todo-card-title { font-size: 15px; }
+.home-duo .duo-card .todo-card-sub { font-size: 11px; line-height: 1.45; }
+.home-duo .duo-card .reading-pct { position: absolute; top: 10px; right: 10px; padding: 2px 8px; font-size: 11px; }
+
+/* 进度总览：紧凑化 + 环文本基线修正 */
+.progress-hero { padding: 12px 16px; margin: 6px 0 12px; gap: 14px; }
+.ph-ring { width: 72px; height: 72px; }
+#ring-text { line-height: 1; font-size: 15.5px; }
+
+/* ══ 测试页 ══ */
+.subhead .test-btn { padding: 6px 10px; font-size: 12.5px; box-shadow: none; }
+.subhead .test-counter { min-width: 40px; }
+#flashcard { padding: 22px 18px 18px; }
+.fc-judge { margin-top: 10px; gap: 10px; }
+.judge-btn { padding: 16px 0; border-radius: 13px; font-size: 15.5px; }
+.fc-exs { color: var(--ink); font-size: .95em; line-height: 1.7; }
+.fc-exs div { border-left-color: var(--pink); }
+
+/* ══ 收藏页 ══ */
+#fav-filters { gap: 6px; padding: 6px 12px 8px; }
+.fav-chip { padding: 5.5px 10px; font-size: 12.5px; }
+.star-btn { border: 1.5px solid var(--line); background: var(--card); }
+.star-btn:active { background: var(--pink-soft); border-color: var(--pink); }
+html.dark .star-btn { background: #221a1f; }
+.wc-cn { line-height: 1.62; }
+
+/* ══ 待办页 ══ */
+.todo-item .t-del { color: var(--ink-3); font-size: 15px; padding: 4px 6px; }
+.todo-item .t-del:active { color: #d84c4c; }
+.todo-rem-group { margin-top: 14px; }
+.todo-rem-group .set-section-title { padding-top: 2px; }
+.todo-rem-group .todo-rem-bar { margin-bottom: 6px; }
+.ghost-btn.mini-inline { display: inline-block; width: auto; padding: 8px 16px; font-size: 13.5px; }
+
+/* 收藏筛选 chips：单行横向滑动（收紧后 5 枚仍放不下一行，滑动比换行干净） */
+#fav-filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+#fav-filters::-webkit-scrollbar { display: none; }
+.fav-chip { flex: none; }

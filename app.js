@@ -50,9 +50,12 @@ function bjDateOf(ts) { return new Date((ts || Date.now()) + 8 * 3600e3).toISOSt
 function practiceDays() {
   const days = new Set();
   const r = (state && state.reading) || {};
-  Object.keys(r.done || {}).forEach((k) => days.add(bjDateOf(r.done[k] && r.done[k].ts)));
+  Object.keys(r.done || {}).forEach((k) => { const ts = r.done[k] && r.done[k].ts; if (ts) days.add(bjDateOf(ts)); });
   const l = (state && state.listen) || {};
-  Object.keys(l.done || {}).forEach((k) => days.add(bjDateOf(l.done[k] && l.done[k].ts)));
+  Object.keys(l.done || {}).forEach((k) => { const ts = l.done[k] && l.done[k].ts; if (ts) days.add(bjDateOf(ts)); });
+  // 背词（新学+复习）也算打卡：dayLog 的键即北京日期串
+  const g = (state && state.dayLog) || {};
+  Object.keys(g).forEach((d) => { const e = g[d] || {}; if ((e.n || 0) + (e.r || 0) > 0) days.add(d); });
   return days;
 }
 function streakFrom(days) {
@@ -66,28 +69,39 @@ function streakFrom(days) {
   return streak;
 }
 
+/** 存档 → state 的完整字段重建。loadState 与「导入备份」共用。
+ *  曾缺 srs/dayLog/srsInitAt/dailyCfg/dailyTasks 五个键：启动后惰性函数会把它们
+ *  重建为空，saveState 再覆盖存档 → 每次重启 SRS 复习进度与热力图历史全部清零。 */
+function normalizeProgress(s) {
+  s = s || {};
+  const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+  return {
+    learned: obj(s.learned),
+    wrong: obj(s.wrong),
+    favorites: obj(s.favorites),
+    stats: obj(s.stats),
+    settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
+    scrolls: obj(s.scrolls),
+    lastUnit: s.lastUnit || null,
+    reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
+    todo: Array.isArray(s.todo) ? s.todo : [],
+    reading: normalizeReading(s.reading),
+    listen: normalizeListen(s.listen),
+    favStars: obj(s.favStars),
+    sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '', pushplusToken: '' }, s.sync || {}),
+    srs: obj(s.srs),
+    dayLog: obj(s.dayLog),
+    srsInitAt: s.srsInitAt || 0,
+    dailyCfg: obj(s.dailyCfg),
+    dailyTasks: Array.isArray(s.dailyTasks) ? s.dailyTasks : [],
+  };
+}
 function loadState() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
-    const s = JSON.parse(raw);
-    return {
-      learned: s.learned || {},
-      wrong: s.wrong || {},
-      favorites: s.favorites || {},
-      stats: s.stats || { tested: 0, correct: 0 },
-      settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
-      scrolls: s.scrolls || {},
-      lastUnit: s.lastUnit || null,
-      reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
-      todo: Array.isArray(s.todo) ? s.todo : [],
-      reading: normalizeReading(s.reading),
-      listen: normalizeListen(s.listen),
-      favStars: (s.favStars && typeof s.favStars === 'object' && !Array.isArray(s.favStars)) ? s.favStars : {},
-      sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
-    };
+    return normalizeProgress(raw ? JSON.parse(raw) : null);
   } catch (e) {
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return normalizeProgress(null);
   }
 }
 function saveState() {
@@ -624,7 +638,7 @@ const Sync = (() => {
       const c = ($('#sync-takeover').value || '').trim().toUpperCase();
       if (!/^[A-Z2-7]{12}$/.test(c)) { status('同步码应为 12 位大写字母数字', 'err'); return; }
       if (c === cfg().code) { status('这就是本机的同步码', 'err'); return; }
-      if (!confirm('接管会把云端那份进度的与本机现有进度合并（取并集），继续？')) return;
+      if (!confirm('接管会把云端那份进度与本机现有进度合并（取并集），继续？')) return;
       status('正在接管…');
       try {
         await request('init', { code: c }); // 校验云端存在
@@ -869,7 +883,7 @@ function renderTodo() {
           <div class="t-text">${esc(it.text)}</div>
           <div class="t-when">${whenHtml}${it.type === 'daily' || it.type === 'weekly' ? ` · 勾选=今天不再提醒` : ''}</div>
         </div>
-        <button class="t-del" data-del="${esc(it.id)}">删除</button>
+        <button class="t-del" data-del="${esc(it.id)}" aria-label="删除">✕</button>
       </div>`;
   }).join('');
 }
@@ -1259,6 +1273,7 @@ function renderWordList() {
   u.words.forEach((w, idx) => {
     const card = document.createElement('div');
     card.className = 'word-card';
+    if (isWrong(studyUnitId, w.w)) card.classList.add('is-wrong');
     card.dataset.idx = idx;
 
     const defsHtml = w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>');
@@ -1268,7 +1283,7 @@ function renderWordList() {
       <div class="wc-head">
         <div class="wc-main">
           <div class="wc-word-row">
-            <span class="wc-word">${w.w}${isWrong(studyUnitId, w.w) ? ' <span style="color:#d84c4c;font-size:.7em">错词</span>' : ''}</span>
+            <span class="wc-word">${w.w} <span class="wc-wrong-badge">错词</span></span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
             <button class="fav-btn${isFav(studyUnitId, w.w) ? ' on' : ''}" data-fav="${idx}" aria-label="收藏">${isFav(studyUnitId, w.w) ? '★' : '☆'}</button>
           </div>
@@ -1307,6 +1322,7 @@ function renderWordList() {
         srsRemove(studyUnitId, w.w);
       }
       saveState();
+      card.classList.toggle('is-wrong', isWrong(studyUnitId, w.w)); // 红标即时跟随
       renderUnits();
       if (typeof renderToday === 'function') renderToday();
     });
@@ -1333,14 +1349,16 @@ $('#btn-mark-all').addEventListener('click', () => {
   const cur = countKeys(state.learned, studyUnitId);
   if (cur === u.words.length) {
     state.learned[String(studyUnitId)] = {};
+    u.words.forEach((w) => srsRemove(studyUnitId, w.w)); // 取消全标同步退出复习排期
     toast('已取消全部标记');
   } else {
     const m = {};
-    u.words.forEach((w) => { m[wordKey(w.w)] = true; });
+    u.words.forEach((w) => { m[wordKey(w.w)] = true; srsInit(studyUnitId, w.w); }); // 全标与逐个勾选同样进 SRS
     state.learned[String(studyUnitId)] = m;
     toast('已全部标记为已学');
   }
   saveState(); renderWordList(); renderUnits();
+  if (typeof renderToday === 'function') renderToday();
 });
 
 /* ================= SRS 间隔复习（简化 SM-2） =================
@@ -1528,6 +1546,9 @@ function spellDiff(you, right) {
       ? `<span class="ok">${c}</span>`
       : `<span class="no">${c}</span>`;
   }
+  if (you.length > right.length) { // 多拼的部分也显示（红），不再静默截断
+    html += `<span class="no">${esc(you.slice(right.length))}</span>`;
+  }
   return html;
 }
 
@@ -1633,6 +1654,7 @@ $('#btn-fuzzy').addEventListener('click', () => judge('fuzzy'));
 $('#btn-nope').addEventListener('click', () => judge('nope'));
 
 function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
+  if (!test || !test.queue[test.pos]) return; // 防重入：快速双击判定按钮时不重复计分
   const item = test.queue[test.pos];
   const remembered = mode === 'got';
   state.stats.tested += 1;
@@ -1746,7 +1768,7 @@ function renderFavorites() {
         <div class="wc-main">
           <div class="wc-word-row">
             <span class="wc-word">${w.w}</span>
-            <span class="mini-btn" style="border:none;background:#fff3d6;color:#b8860b">${u.name}</span>
+            <span class="mini-btn tag-y">${u.name}</span>
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
@@ -1817,6 +1839,22 @@ $('#btn-test-fav').addEventListener('click', () => {
 function renderWrongList() {
   const box = $('#wrong-list');
   box.innerHTML = '';
+  // 顶部统计行：错词数 / 涉及单元 / 累计正确率
+  let total = 0, units = 0;
+  DATA.units.forEach((u) => {
+    const m = state.wrong[String(u.id)] || {};
+    const n = Array.isArray(m) ? m.length : Object.keys(m).length;
+    if (n) { total += n; units++; }
+  });
+  if (total) {
+    const pct = state.stats.tested ? Math.round(state.stats.correct / state.stats.tested * 100) : 0;
+    const st = document.createElement('div');
+    st.className = 'reading-stats';
+    st.innerHTML = `<div class="rs-item"><b>${total}</b><span>错词</span></div>
+      <div class="rs-item"><b>${units}</b><span>涉及单元</span></div>
+      <div class="rs-item"><b>${pct ? pct + '%' : '—'}</b><span>累计正确率</span></div>`;
+    box.appendChild(st);
+  }
   let count = 0;
   DATA.units.forEach((u) => {
     const m = state.wrong[String(u.id)] || {};
@@ -1834,7 +1872,7 @@ function renderWrongList() {
           <div class="wc-main">
             <div class="wc-word-row">
               <span class="wc-word">${w.w}</span>
-              <span class="mini-btn tag-w" style="border:none;background:#fdeaea;color:#c66">${u.name}</span>
+              <span class="mini-btn tag-r">${u.name}</span>
             </div>
             ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
             <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
@@ -1925,22 +1963,9 @@ $('#file-import').addEventListener('change', (e) => {
   r.onload = () => {
     try {
       const s = JSON.parse(r.result);
-      state = {
-        learned: s.learned || {}, wrong: s.wrong || {},
-        favorites: s.favorites || {},
-        stats: s.stats || { tested: 0, correct: 0 },
-        settings: Object.assign({}, DEFAULT_STATE.settings, s.settings || {}),
-        scrolls: s.scrolls || {},
-        lastUnit: s.lastUnit || null,
-        reminder: Object.assign({}, DEFAULT_STATE.reminder, s.reminder || {}),
-        todo: Array.isArray(s.todo) ? s.todo : [],
-        reading: normalizeReading(s.reading),
-        listen: normalizeListen(s.listen),
-        favStars: (s.favStars && typeof s.favStars === 'object' && !Array.isArray(s.favStars)) ? s.favStars : {},
-        sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {} }, s.sync || {}),
-      };
+      state = normalizeProgress(s); // 与 loadState 同一套字段重建（含 srs/dayLog/dailyCfg/dailyTasks，导入不丢复习进度）
       if (DATA.units.length) migrateProgress();
-      saveState(); applySettings(); renderUnits(); renderWrongList();
+      saveState(); applySettings(); renderUnits(); renderWrongList(); renderFavorites();
       renderTodo(); Reading.renderHome(); Reading.renderWrongVocab();
       Listening.renderHome(); Listening.renderWrongVocab();
       Reminder.sync(true); renderTodoRemBar(); // 恢复的提醒设置/待办同步到服务端
@@ -2905,14 +2930,13 @@ const Reminder = (() => {
   }
 
   function setStatus(msg, cls) {
+    // 只写设置页的状态行；待办页副标题由 renderTodoRemBar() 独立渲染，
+    // 这里串写会把两页文案互相覆盖（"正在开启…"盖掉"每日 20:00 提醒"）
     const el = $('#rem-status');
     if (el) {
       el.textContent = msg;
       el.className = 'set-note' + (cls ? ' ' + cls : '');
     }
-    // 待办页状态条同步显示（该页操作时设置页不可见）
-    const sub2 = $('#todo-rem-sub');
-    if (sub2) sub2.textContent = msg;
   }
 
   async function api(path, opts) {

@@ -52,22 +52,24 @@
         <div class="set-note" style="margin-top:8px">自定义事项每天自动重置打勾；关掉的学习项不出现在今日清单里。</div>
       </div>
     </div>
-    <button id="reading-card" class="todo-card">
-      <div class="todo-card-ico">📖</div>
-      <div class="todo-card-main">
-        <div class="todo-card-title">阅读随手练</div>
-        <div class="todo-card-sub" id="reading-card-sub">六级真题 · 一篇一题 · 随手刷</div>
-      </div>
-      <div class="reading-pct hidden" id="reading-card-pct">0%</div>
-    </button>
-    <button id="listening-card" class="todo-card">
-      <div class="todo-card-ico">🎧</div>
-      <div class="todo-card-main">
-        <div class="todo-card-title">六级听力精听</div>
-        <div class="todo-card-sub" id="listening-card-sub">真题 36 套 · 逐段逐句 · 先听后看</div>
-      </div>
-      <div class="reading-pct hidden" id="listening-card-pct">0%</div>
-    </button>
+    <div class="home-duo">
+      <button id="reading-card" class="todo-card duo-card">
+        <div class="todo-card-ico">📖</div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">阅读随手练</div>
+          <div class="todo-card-sub" id="reading-card-sub">六级真题 · 一篇一题 · 随手刷</div>
+        </div>
+        <div class="reading-pct hidden" id="reading-card-pct">0%</div>
+      </button>
+      <button id="listening-card" class="todo-card duo-card">
+        <div class="todo-card-ico">🎧</div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">听力精听</div>
+          <div class="todo-card-sub" id="listening-card-sub">真题 36 套 · 逐段逐句 · 先听后看</div>
+        </div>
+        <div class="reading-pct hidden" id="listening-card-pct">0%</div>
+      </button>
+    </div>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -157,14 +159,18 @@
       <div class="subhead-title">待办清单</div>
       <button class="test-btn" id="btn-todo-new">＋ 新建</button>
     </div>
-    <div class="todo-rem-bar">
-      <div class="trb-main">
-        <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
-        <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
+    <div id="todo-list"></div>
+    <div class="todo-rem-group">
+      <div class="set-section-title">🔔 提醒开关</div>
+      <div class="todo-rem-bar">
+        <div class="trb-main">
+          <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
+          <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
       </div>
-      <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
+      <button class="ghost-btn mini-inline" id="todo-rem-test">发送测试通知</button>
     </div>
-    <button class="ghost-btn" id="todo-rem-test">发送测试通知</button>
     <div id="todo-form" class="todo-form hidden">
       <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
       <div class="todo-type-row" id="todo-type-row">
@@ -187,7 +193,6 @@
       <button class="primary-btn" id="todo-save">保存待办</button>
       <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
     </div>
-    <div id="todo-list"></div>
   </section>
 
   <!-- 视图：阅读随手练 -->
