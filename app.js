@@ -869,6 +869,7 @@ let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据�
 const TAB_VIEWS = ['units', 'favorites', 'todo', 'wrong', 'settings'];
 
 function nav(view) {
+  if (window.speechSynthesis) speechSynthesis.cancel(); // 切页即停朗读
   if (currentView === 'study' && view !== 'study') {
     saveStudyPos();                    // 离开学习页前保存精确位置（词级）
     if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
@@ -1769,13 +1770,24 @@ const Reading = (() => {
     });
   }
 
+  function wrapWords(t) {
+    return t.replace(/[A-Za-z][A-Za-z'’\-]*/g, (m) => `<span class="rd-w">${m}</span>`);
+  }
+
   function renderQuiz(it, redo) {
+    if (window.speechSynthesis) speechSynthesis.cancel(); // 换篇时停掉上一篇朗读
     $('#reading-list').classList.add('hidden');
     const box = $('#reading-quiz');
     box.classList.remove('hidden');
     box.innerHTML = `
-      <div class="rd-src-line">${it.src} · 约 ${it.words} 词 <button class="rd-speak" id="rd-speak">🔊 朗读</button></div>
-      <div class="rd-text">${it.text.replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
+      <div class="rd-src-line">${it.src} · 约 ${it.words} 词
+        <button class="rd-speak" id="rd-speak">🔊 朗读</button>
+        <span class="rd-tts-ctrl hidden" id="rd-tts-ctrl">
+          <button class="rd-speak" id="rd-pause">⏸ 暂停</button>
+          <button class="rd-speak" id="rd-stop">⏹ 停止</button>
+        </span>
+      </div>
+      <div class="rd-text">${wrapWords(it.text).replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
       <div class="rd-q">${it.q.stem}</div>
       <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => `
         <button class="rd-opt" data-opt="${c}"><b>${c}</b> ${it.q.options[i]}</button>`).join('')}
@@ -1786,9 +1798,43 @@ const Reading = (() => {
         <button class="ghost-btn" id="rd-back">返回阅读页</button>
       </div>`;
     box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', () => pick(it, b.dataset.opt)));
-    $('#rd-speak').addEventListener('click', () => speak(it.text.replace(/\n/g, ' ')));
+    // 点词查释义（文章内任意单词）
+    box.querySelector('.rd-text').addEventListener('click', (ev) => {
+      const s = ev.target.closest('.rd-w');
+      if (s) WordCard.show(s.textContent);
+    });
+    // 朗读：播放中可暂停/继续/停止
+    const speakBtn = $('#rd-speak');
+    const ttsCtrl = $('#rd-tts-ctrl');
+    const pauseBtn = $('#rd-pause');
+    let ttsPaused = false;
+    const ttsReset = () => {
+      ttsCtrl.classList.add('hidden');
+      speakBtn.classList.remove('hidden');
+      ttsPaused = false;
+    };
+    speakBtn.addEventListener('click', () => {
+      if (!window.speechSynthesis) { toast('当前浏览器不支持语音'); return; }
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(it.text.replace(/\n/g, ' '));
+      u.lang = 'en-US';
+      u.rate = Number(state.settings.rate) || 0.9;
+      if (enVoice) u.voice = enVoice;
+      u.onend = ttsReset;
+      u.onerror = ttsReset;
+      speechSynthesis.speak(u);
+      speakBtn.classList.add('hidden');
+      ttsCtrl.classList.remove('hidden');
+      pauseBtn.textContent = '⏸ 暂停';
+    });
+    pauseBtn.addEventListener('click', () => {
+      if (ttsPaused) { speechSynthesis.resume(); pauseBtn.textContent = '⏸ 暂停'; }
+      else { speechSynthesis.pause(); pauseBtn.textContent = '▶ 继续'; }
+      ttsPaused = !ttsPaused;
+    });
+    $('#rd-stop').addEventListener('click', () => { speechSynthesis.cancel(); ttsReset(); });
     $('#rd-next').addEventListener('click', () => { start(); });
-    $('#rd-back').addEventListener('click', () => { box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
+    $('#rd-back').addEventListener('click', () => { speechSynthesis.cancel(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
     window.scrollTo({ top: 0 });
   }
 
@@ -2701,9 +2747,125 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+/* ================= 离线词典（ECDICT 精选 1.8 万学习词，按首字母分片懒加载） ================= */
+const Dict = (() => {
+  const cache = {};
+  const loading = {};
+  function load(letter) {
+    if (cache[letter]) return Promise.resolve(cache[letter]);
+    if (!loading[letter]) {
+      loading[letter] = fetch('data/dict/' + letter + '.json', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((j) => { cache[letter] = j || {}; return cache[letter]; })
+        .catch(() => { cache[letter] = {}; return cache[letter]; });
+    }
+    return loading[letter];
+  }
+  async function lookup(word) {
+    const w = String(word || '').toLowerCase().replace(/[^a-z'\-]/g, '');
+    if (!w || w.length > 24) return null;
+    const ch = await load(w[0]);
+    const e = ch[w];
+    return e ? { w, p: e.p, c: e.c } : null;
+  }
+  async function suggest(prefix, limit) {
+    const p = String(prefix || '').toLowerCase().replace(/[^a-z'\-]/g, '');
+    if (!p || p.length < 2) return [];
+    const ch = await load(p[0]);
+    const out = [];
+    for (const k of Object.keys(ch)) {
+      if (k !== p && k.startsWith(p)) { out.push({ w: k, p: ch[k].p, c: ch[k].c }); if (out.length >= (limit || 8)) break; }
+    }
+    out.sort((a, b) => a.w.length - b.w.length); // 短词（更常用）在前
+    return out.slice(0, limit || 8);
+  }
+  return { lookup, suggest };
+})();
+
+/* ================= 词卡弹层（阅读点词 / 搜索查词共用） ================= */
+const WordCard = (() => {
+  let el = null;
+  function ensure() {
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'word-card';
+    el.innerHTML = `
+      <div class="wcmask"></div>
+      <div class="wcsheet">
+        <div class="wchead"><span class="wcword"></span><button class="wcclose">✕</button></div>
+        <div class="wcphon"></div>
+        <div class="wccn"></div>
+        <div class="wcacts">
+          <button class="wcbtn wcspeak">🔊 发音</button>
+          <button class="wcbtn wcfav">☆ 收藏生词</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    el.querySelector('.wcmask').addEventListener('click', hide);
+    el.querySelector('.wcclose').addEventListener('click', hide);
+    el.querySelector('.wcspeak').addEventListener('click', () => { if (el.dataset.w) speak(el.dataset.w); });
+    el.querySelector('.wcfav').addEventListener('click', toggleFav);
+    return el;
+  }
+  function inVocab(w) {
+    return !!(state.reading && state.reading.vocab && state.reading.vocab[w]);
+  }
+  function toggleFav() {
+    if (!el || !el.dataset.w) return;
+    const w = el.dataset.w;
+    if (!state.reading || typeof state.reading !== 'object') state.reading = {};
+    if (!state.reading.vocab) state.reading.vocab = {};
+    const btn = el.querySelector('.wcfav');
+    if (state.reading.vocab[w]) {
+      delete state.reading.vocab[w];
+      if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w);
+      btn.textContent = '☆ 收藏生词';
+      btn.classList.remove('on');
+      toast('已取消收藏');
+    } else {
+      state.reading.vocab[w] = { cn: el.dataset.cn || '', ts: Date.now() };
+      if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w);
+      btn.textContent = '★ 已收藏';
+      btn.classList.add('on');
+      toast('已收藏到错词本·阅读生词');
+    }
+    saveState();
+    if (typeof Reading !== 'undefined' && currentView === 'wrong') Reading.renderWrongVocab();
+  }
+  async function show(word) {
+    const box = ensure();
+    const w = String(word || '').toLowerCase().replace(/[^a-z'\-]/g, '');
+    if (!w) return;
+    box.dataset.w = w;
+    box.dataset.cn = '';
+    box.querySelector('.wcword').textContent = w;
+    box.querySelector('.wcphon').textContent = '…';
+    box.querySelector('.wccn').textContent = '';
+    const faved = inVocab(w);
+    const fav = box.querySelector('.wcfav');
+    fav.classList.toggle('on', faved);
+    fav.textContent = faved ? '★ 已收藏' : '☆ 收藏生词';
+    box.classList.add('open');
+    const e = await Dict.lookup(w);
+    if (box.dataset.w !== w) return; // 期间已切到别的词
+    if (e) {
+      box.querySelector('.wcphon').textContent = e.p || '';
+      box.querySelector('.wccn').textContent = e.c;
+      box.dataset.cn = e.c;
+    } else {
+      box.querySelector('.wcphon').textContent = '';
+      box.querySelector('.wccn').textContent = '词典暂未收录，仍可发音与收藏。';
+    }
+  }
+  function hide() { if (el) el.classList.remove('open'); }
+  return { show, hide };
+})();
+
 /* ================= 搜索 & 继续学习 ================= */
-function renderSearch(q) {
+let searchSeq = 0;
+async function renderSearch(q) {
   const box = $('#search-results');
+  const seq = ++searchSeq;
   q = q.trim().toLowerCase();
   if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   const hits = [];
@@ -2718,16 +2880,39 @@ function renderSearch(q) {
     }
     if (hits.length >= 40) break;
   }
-  if (!hits.length) {
-    box.innerHTML = '<div class="sr-empty">没有找到相关单词</div>';
-    box.classList.remove('hidden');
-    return;
-  }
-  box.innerHTML = hits.map((h) => `
+  let html = '';
+  if (hits.length) {
+    html += '<div class="sr-sec">应用词库 · 点击去学习</div>' + hits.map((h) => `
     <div class="sr-item" data-unit="${h.u.id}" data-idx="${h.idx}">
       <div><span class="sr-word">${h.w.w}</span><span class="sr-unit">${h.u.name}</span></div>
       <div class="sr-cn">${(h.w.defs[0] && h.w.defs[0].cn) || ''}</div>
     </div>`).join('');
+  }
+  // 离线词典：任意英文词都能查（精确 + 前缀建议）
+  if (/^[a-z][a-z'\-]*$/.test(q)) {
+    const exact = await Dict.lookup(q);
+    if (seq !== searchSeq) return;
+    const dictRows = [];
+    if (exact && !hits.some((h) => h.w.w.toLowerCase() === exact.w)) dictRows.push(exact);
+    const sugs = await Dict.suggest(q, 8);
+    if (seq !== searchSeq) return;
+    for (const s of sugs) {
+      if (s.w !== q && !dictRows.some((d) => d.w === s.w) && !hits.some((h) => h.w.w.toLowerCase() === s.w)) dictRows.push(s);
+    }
+    if (dictRows.length) {
+      html += '<div class="sr-sec">词典 · 点击看释义</div>' + dictRows.map((d) => `
+        <div class="sr-item sr-dict" data-dw="${d.w}">
+          <div><span class="sr-word">${d.w}</span>${d.p ? `<span class="sr-phon">${d.p}</span>` : ''}</div>
+          <div class="sr-cn">${d.c}</div>
+        </div>`).join('');
+    }
+  }
+  if (!html) {
+    box.innerHTML = '<div class="sr-empty">没有找到相关单词</div>';
+    box.classList.remove('hidden');
+    return;
+  }
+  box.innerHTML = html;
   box.classList.remove('hidden');
 }
 
@@ -2736,6 +2921,8 @@ $('#search-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
 });
 $('#search-results').addEventListener('click', (e) => {
+  const d = e.target.closest('.sr-dict');
+  if (d) { WordCard.show(d.dataset.dw); return; }
   const item = e.target.closest('.sr-item');
   if (!item) return;
   $('#search-input').value = '';
