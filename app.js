@@ -886,8 +886,8 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
-  if (view === 'wrong') { renderWrongList(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#wrong-list', 'wrong'); }
-  if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
+  if (view === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
+  if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#fav-list', 'fav'); }
   if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
   if (view === 'reading') Reading.renderPage();
   if (view === 'listening') Listening.renderPage();
@@ -1869,7 +1869,7 @@ const Reading = (() => {
           const faved = !!r.vocab[v.w];
           return `<div class="rd-vword" data-w="${v.w}">
             <button class="vw-main" data-w="${v.w}"><span class="vw-face">${v.w}</span><span class="vw-back hidden">${v.cn}</span></button>
-            <button class="vw-fav ${faved ? 'on' : ''}" data-w="${v.w}" data-cn="${v.cn}" title="收藏到错词本">${faved ? '★' : '☆'}</button>
+            <button class="vw-fav ${faved ? 'on' : ''}" data-w="${v.w}" data-cn="${v.cn}" title="收藏到收藏夹">${faved ? '★' : '☆'}</button>
           </div>`;
         }).join('')}</div>
       </div>` : '';
@@ -1897,7 +1897,7 @@ const Reading = (() => {
     res.querySelectorAll('.vw-fav').forEach((b) => b.addEventListener('click', () => {
       const w = b.dataset.w;
       if (r.vocab[w]) { delete r.vocab[w]; if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w); b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
-      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到错词本·阅读生词'); }
+      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到收藏夹·阅读生词'); }
       saveState();
     }));
     const cnT = $('#rd-cn-toggle');
@@ -1910,16 +1910,17 @@ const Reading = (() => {
     renderHome();
   }
 
-  /** 错词本页的阅读生词分区 */
+  /** 收藏夹：阅读生词折叠分区 */
   function renderWrongVocab() {
-    const box = $('#read-vocab-list');
+    const box = $('#fav-read-list');
     if (!box) return;
+    const wrap = $('#fav-read-box');
+    const head = $('#fav-read-head');
     const r = rState();
     const words = Object.keys(r.vocab);
-    if (!words.length) {
-      box.innerHTML = '<div class="set-note">暂无。在阅读随手练的生词环节点 ★ 收藏的词，会出现在这里。</div>';
-      return;
-    }
+    if (wrap) wrap.classList.toggle('hidden', !words.length);
+    if (head) head.textContent = `📖 阅读生词（${words.length}）`;
+    if (!words.length) return;
     box.innerHTML = words.map((w) => `
       <div class="rem-item"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
       <button class="rem-del" data-rvw="${w}">认识</button></div>`).join('');
@@ -2414,7 +2415,7 @@ const Listening = (() => {
     if (fav) fav.addEventListener('click', () => {
       const w = fav.dataset.lw;
       if (l.vocab[w.toLowerCase()]) { delete l.vocab[w.toLowerCase()]; if (typeof Sync !== 'undefined') Sync.tomb('lv:' + w.toLowerCase()); fav.classList.remove('on'); fav.textContent = '☆'; toast('已取消收藏'); }
-      else { l.vocab[w.toLowerCase()] = { cn: fav.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('lv:' + w.toLowerCase()); fav.classList.add('on'); fav.textContent = '★'; toast('已收藏到错词本·听力生词'); }
+      else { l.vocab[w.toLowerCase()] = { cn: fav.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('lv:' + w.toLowerCase()); fav.classList.add('on'); fav.textContent = '★'; toast('已收藏到收藏夹·听力生词'); }
       saveState();
     });
   }
@@ -2491,16 +2492,17 @@ const Listening = (() => {
     });
   }
 
-  /* ---------- 错词本：听力生词分区 ---------- */
+  /* ---------- 收藏夹：听力生词折叠分区 ---------- */
   function renderWrongVocab() {
-    const box = $('#listen-vocab-list');
+    const box = $('#fav-listen-list');
     if (!box) return;
+    const wrap = $('#fav-listen-box');
+    const head = $('#fav-listen-head');
     const l = lState();
     const ws = Object.keys(l.vocab);
-    if (!ws.length) {
-      box.innerHTML = '<div class="set-note">暂无。在听力原文里点词 → 点 ★ 收藏的词会出现在这里。</div>';
-      return;
-    }
+    if (wrap) wrap.classList.toggle('hidden', !ws.length); // 没收藏就整块藏起来
+    if (head) head.textContent = `🎧 听力生词（${ws.length}）`;
+    if (!ws.length) return;
     box.innerHTML = ws.map((w) => `
       <div class="rem-item"><div><div>${esc(w)}</div><div class="rem-when">${esc(l.vocab[w].cn || '')}</div></div>
       <button class="rem-del" data-lvw="${esc(w)}">认识</button></div>`).join('');
@@ -2844,10 +2846,10 @@ const WordCard = (() => {
       if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w);
       btn.textContent = '★ 已收藏';
       btn.classList.add('on');
-      toast('已收藏到错词本·阅读生词');
+      toast('已收藏到收藏夹·阅读生词');
     }
     saveState();
-    if (typeof Reading !== 'undefined' && currentView === 'wrong') Reading.renderWrongVocab();
+    if (typeof Reading !== 'undefined' && currentView === 'favorites') Reading.renderWrongVocab();
   }
   async function show(word) {
     const box = ensure();
@@ -2996,14 +2998,20 @@ async function boot() {
         if (local !== null && v.apk && v.apk !== local) {
           const st = $('#apk-ver-state');
           if (st) {
-            st.textContent = '⚠ 检测到 App 有新版本，请点上方「下载 APK」重新安装（安装步骤不变，直接覆盖安装）';
+            st.innerHTML = '⚠ 检测到 App 有新版本 <button class="ghost-btn" id="apk-update-now" style="padding:5px 14px">⬇️ 一键更新</button>';
             st.style.color = '#d84c4c';
             st.style.fontWeight = '700';
+            const ub = $('#apk-update-now');
+            if (ub) ub.addEventListener('click', () => {
+              try {
+                if (window.vfShell && typeof window.vfShell.updateNow === 'function') window.vfShell.updateNow();
+              } catch (e) { toast('更新失败，请手动下载 APK 安装'); }
+            });
           }
           const seenApk = sessionStorage.getItem('sgwd_apk_toast');
           if (!seenApk) {
             sessionStorage.setItem('sgwd_apk_toast', '1');
-            toast('📲 App 有新版本，请到设置页重新下载安装');
+            toast('📲 App 有新版本，可到设置页一键更新');
           }
         }
       } catch (e) { /* 壳接口不可用则跳过 */ }
