@@ -854,6 +854,13 @@ if (window.speechSynthesis) {
   speechSynthesis.onvoiceschanged = pickVoice;
 }
 function speak(word) {
+  // 安卓壳（WebView 无 speechSynthesis）：发音走壳内系统 TTS
+  try {
+    if (window.vfShell && typeof window.vfShell.speak === 'function') {
+      window.vfShell.speak(String(word));
+      return;
+    }
+  } catch (e) { /* 退化到网页 TTS */ }
   if (!window.speechSynthesis) { toast('当前浏览器不支持语音'); return; }
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(word);
@@ -1817,22 +1824,36 @@ const Reading = (() => {
     const speakBtn = $('#rd-speak');
     const ttsCtrl = $('#rd-tts-ctrl');
     const pauseBtn = $('#rd-pause');
+    const inShell = !!(window.vfShell && typeof window.vfShell.speak === 'function');
     let ttsPaused = false;
     const ttsReset = () => {
       ttsCtrl.classList.add('hidden');
       speakBtn.classList.remove('hidden');
       ttsPaused = false;
     };
+    const stopAll = () => {
+      try { if (inShell && window.vfShell.stopSpeak) window.vfShell.stopSpeak(); } catch (e) { }
+      if (window.speechSynthesis) speechSynthesis.cancel();
+    };
     speakBtn.addEventListener('click', () => {
+      const text = it.text.replace(/\n/g, ' ');
+      if (inShell) { // 壳内走系统 TTS（无暂停能力，只给停止）
+        pauseBtn.classList.add('hidden');
+        window.vfShell.speak(text);
+        speakBtn.classList.add('hidden');
+        ttsCtrl.classList.remove('hidden');
+        return;
+      }
       if (!window.speechSynthesis) { toast('当前浏览器不支持语音'); return; }
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(it.text.replace(/\n/g, ' '));
+      const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = Number(state.settings.rate) || 0.9;
       if (enVoice) u.voice = enVoice;
       u.onend = ttsReset;
       u.onerror = ttsReset;
       speechSynthesis.speak(u);
+      pauseBtn.classList.remove('hidden');
       speakBtn.classList.add('hidden');
       ttsCtrl.classList.remove('hidden');
       pauseBtn.textContent = '⏸ 暂停';
@@ -1842,9 +1863,9 @@ const Reading = (() => {
       else { speechSynthesis.pause(); pauseBtn.textContent = '▶ 继续'; }
       ttsPaused = !ttsPaused;
     });
-    $('#rd-stop').addEventListener('click', () => { speechSynthesis.cancel(); ttsReset(); });
+    $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
     $('#rd-next').addEventListener('click', () => { start(); });
-    $('#rd-back').addEventListener('click', () => { speechSynthesis.cancel(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
+    $('#rd-back').addEventListener('click', () => { stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
     window.scrollTo({ top: 0 });
   }
 
@@ -3004,7 +3025,10 @@ async function boot() {
             const ub = $('#apk-update-now');
             if (ub) ub.addEventListener('click', () => {
               try {
-                if (window.vfShell && typeof window.vfShell.updateNow === 'function') window.vfShell.updateNow();
+                const sh = window.vfShell;
+                if (sh && typeof sh.updateNow === 'function') { sh.updateNow(); return; }
+                // 旧壳没有 updateNow：转系统浏览器下载安装包（装上一次新壳后就有一键更新了）
+                location.href = './android/vocab-flash.apk';
               } catch (e) { toast('更新失败，请手动下载 APK 安装'); }
             });
           }
