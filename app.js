@@ -1738,6 +1738,9 @@ const Reading = (() => {
   function renderPageInner() {
     const box = $('#reading-stats');
     if (!box) return;
+    // 回到阅读页时收起上次残留的做题界面，显示列表
+    $('#reading-quiz').classList.add('hidden');
+    $('#reading-list').classList.remove('hidden');
     const s = stats();
     box.innerHTML = `<div class="rs-item"><b>${s.done}</b><span>已做</span></div>
       <div class="rs-item"><b>${s.done ? s.pct + '%' : '—'}</b><span>正确率</span></div>
