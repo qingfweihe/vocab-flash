@@ -307,8 +307,37 @@ main {
 .sr-item:active { background: var(--pink-bg); }
 .sr-item .sr-word { font-weight: 700; }
 .sr-item .sr-unit { font-size: 11.5px; color: var(--pink-deep); margin-left: 6px; }
+.sr-item .sr-phon { font-size: 11.5px; color: var(--ink-3); margin-left: 6px; }
 .sr-item .sr-cn { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-sec { padding: 8px 14px 3px; font-size: 11px; color: var(--ink-3); letter-spacing: .3px; }
 .sr-empty { padding: 16px; text-align: center; color: var(--ink-3); font-size: 13.5px; }
+
+/* ---------- 词卡弹层（点词查义） ---------- */
+.rd-w { cursor: pointer; border-radius: 4px; padding: 0 1px; }
+.rd-w:active { background: var(--pink-soft); }
+#word-card { position: fixed; inset: 0; z-index: 90; display: none; }
+#word-card.open { display: block; }
+.wcmask { position: absolute; inset: 0; background: rgba(45, 45, 58, .32); }
+.wcsheet {
+  position: absolute; left: 12px; right: 12px;
+  bottom: calc(var(--safe-bottom) + 14px);
+  background: var(--card);
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 8px 32px rgba(232, 68, 122, .25);
+  animation: wcup .18s ease-out;
+}
+@keyframes wcup { from { transform: translateY(26px); opacity: .35; } to { transform: none; opacity: 1; } }
+.wchead { display: flex; align-items: center; justify-content: space-between; }
+.wcword { font-size: 21px; font-weight: 800; color: var(--pink-deep); word-break: break-all; }
+.wcclose { border: 0; background: none; font-size: 15px; color: var(--ink-3); padding: 4px 6px; }
+.wcphon { font-size: 13px; color: var(--ink-2); margin-top: 2px; min-height: 16px; }
+.wccn { font-size: 14.5px; line-height: 1.65; color: var(--ink); margin-top: 6px; white-space: pre-wrap; max-height: 34vh; overflow-y: auto; }
+.wcacts { display: flex; gap: 10px; margin-top: 12px; }
+.wcbtn { flex: 1; border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 9px 0; font-size: 14px; color: var(--ink); cursor: pointer; }
+.wcbtn:active { background: var(--pink-soft); }
+.wcbtn.on { border-color: var(--pink); color: var(--pink-deep); font-weight: 700; }
+.rd-tts-ctrl { display: inline-flex; gap: 6px; }
 
 /* 单词定位高亮 */
 .word-card.locate { animation: locate-glow 2.2s ease; }
@@ -929,3 +958,11 @@ html.dark .word-card.locate { animation-name: locate-glow-dark; }
 html.dark #fav-filters {
   background: rgba(16, 17, 22, .88);
 }
+
+/* ---------- 词卡 & 词典深色 ---------- */
+html.dark .wcsheet { background: #1e2027; box-shadow: 0 8px 32px rgba(0, 0, 0, .5); }
+html.dark .wcbtn { background: #262832; border-color: #34363f; color: var(--ink); }
+html.dark .wcbtn:active { background: #34363f; }
+html.dark .rd-w:active { background: #34363f; }
+html.dark .sr-sec { color: var(--ink-3); }
+html.dark .rd-tts-ctrl .rd-speak { background: #262832; border-color: #34363f; }
