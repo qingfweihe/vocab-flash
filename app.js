@@ -250,18 +250,21 @@ const Sync = (() => {
     inFlight = true;
     try {
       const hs = hashes();
+      const failed = [];
       for (const d of DOMAINS) {
         const h = domainHash(d);
         if (!force && hs[d] === h) continue;
-        await request('state.put', { domain: d, data: domainPayload(d) });
-        setHash(d, h);
+        try {
+          await request('state.put', { domain: d, data: domainPayload(d) });
+          setHash(d, h);
+        } catch (e) {
+          failed.push(d); // 单域失败（如超限）不阻断其它域同步
+        }
       }
       cfg().lastSync = Date.now();
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
-      status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
-    } catch (e) {
-      status('同步失败：' + String(e.message || e).slice(0, 70), 'err');
-      throw e;
+      if (failed.length) status('部分域同步失败：' + failed.join('、') + '（其它已同步）', 'err');
+      else status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
     } finally { inFlight = false; }
   }
 
@@ -411,6 +414,8 @@ const Sync = (() => {
       renderUnits(); renderWrongList(); renderTodo();
       if (typeof renderFavorites === 'function') { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
       Reading.renderWrongVocab(); Listening.renderWrongVocab();
+      if (typeof renderToday === 'function') renderToday(); // 今日任务/热力图随同步数据刷新
+      if (typeof renderHeat === 'function' && currentView === 'units') renderHeat();
     } catch (e) { /* 当前视图未挂载时忽略 */ }
   }
 
@@ -1353,8 +1358,14 @@ $('#btn-mark-all').addEventListener('click', () => {
     toast('已取消全部标记');
   } else {
     const m = {};
-    u.words.forEach((w) => { m[wordKey(w.w)] = true; srsInit(studyUnitId, w.w); }); // 全标与逐个勾选同样进 SRS
+    let newly = 0;
+    u.words.forEach((w) => {
+      if (!state.learned[String(studyUnitId)] || !state.learned[String(studyUnitId)][wordKey(w.w)]) newly++;
+      m[wordKey(w.w)] = true;
+      srsInit(studyUnitId, w.w); // 全标与逐个勾选同样进 SRS
+    });
     state.learned[String(studyUnitId)] = m;
+    if (newly > 0) logLearn('n', newly); // 今日任务的新词计数与逐个勾选一致
     toast('已全部标记为已学');
   }
   saveState(); renderWordList(); renderUnits();
@@ -1426,11 +1437,11 @@ function srsMigrateLearned() { // 老数据兜底：已学过但没进 SRS 的�
 
 /* 每日学习量（热力图数据源）：state.dayLog = { "2026-09-29": { n: 新词数, r: 复习数 } } */
 function todayLog() { if (!state.dayLog || typeof state.dayLog !== 'object') state.dayLog = {}; return state.dayLog; }
-function logLearn(kind) { // kind: 'n' 新词 / 'r' 复习
+function logLearn(kind, n) { // kind: 'n' 新词 / 'r' 复习；n 默认 1（批量标记时传数量）
   const g = todayLog();
   const d = bjDayStr();
   g[d] = g[d] || { n: 0, r: 0 };
-  g[d][kind] = (g[d][kind] || 0) + 1;
+  g[d][kind] = (g[d][kind] || 0) + (n || 1);
 }
 function todayCount() { const g = todayLog()[bjDayStr()] || {}; return { n: g.n || 0, r: g.r || 0 }; }
 function dayTotal(dateStr) {
