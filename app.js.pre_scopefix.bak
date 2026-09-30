@@ -464,83 +464,6 @@ const Sync = (() => {
     try { if (isShell() && cfg().code) window.vfShell.setSyncCode(cfg().code); } catch (e) { /* 老壳无此方法 */ }
   }
 
-  // ---- 对方状态检查（让"他到底连没连上"一眼可见） ----
-  function agoText(ts) {
-    if (!ts) return '未知';
-    const m = Math.floor((Date.now() - ts) / 60000);
-    if (m < 2) return '刚刚';
-    if (m < 60) return m + ' 分钟前';
-    const h = Math.floor(m / 60);
-    if (h < 24) return h + ' 小时前';
-    return Math.floor(h / 24) + ' 天前';
-  }
-  async function refreshPartnerStatus() {
-    const el = $('#partner-status');
-    if (!el) return;
-    if (!cfg().partner) { el.textContent = ''; return; }
-    try {
-      const r = await request('partner.status', { partner: cfg().partner });
-      const s = (r && r.partner) || {};
-      // 排行对比（我 vs 对方）：今日学习量 + 连续天数 + 总词量
-      const myStreak = streakFrom(practiceDays());
-      const mtc = todayCount();
-      const myToday = (mtc.n || 0) + (mtc.r || 0);
-      let myTotal = 0;
-      for (const k in state.learned) myTotal += countKeys(state.learned, k);
-      const win = (a, b) => a === b ? '' : (a > b ? ' [赢]' : '');
-      const who = friendName() || 'TA';
-      const rank = `今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ ${who} ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
-        + ` · 连续：我 ${myStreak} 天${win(myStreak, s.streak || 0)} ⇄ ${who} ${s.streak || 0} 天${win(s.streak || 0, myStreak)}`
-        + ` · 累计：我 ${myTotal} ⇄ ${who} ${s.learnedTotal || 0}`;
-      // 通知能力判定：App 系统通知（壳）/ ntfy / 微信 / 网页推送，任一即可达
-      const bits = [];
-      if (s.hasShell) bits.push('App 系统通知 ✓');
-      else if (s.hasNtfy) bits.push('已连 ntfy ✓');
-      if (s.hasWechat) bits.push('已连微信 ✓');
-      if (s.pushCount) bits.push('网页推送 ' + s.pushCount + ' 台设备');
-      if (s.reminderEnabled) bits.push('已开每日提醒');
-      bits.push('最后活跃 ' + agoText(s.lastActive || s.lastSeen));
-      const canRecv = s.hasShell || s.hasNtfy || s.hasWechat || s.pushCount > 0;
-      if (!canRecv) bits.unshift('还没有可用通知通道');
-      el.innerHTML = `${who}的状态：<br>${rank}<br>${bits.join(' · ')}`;
-      el.className = 'set-note' + (canRecv ? ' ' : ' err');
-    } catch (e) {
-      el.textContent = '对方状态：读取失败（' + String(e.message || e).slice(0, 40) + '）';
-    }
-  }
-
-  // ---- 好友卡（备注名 + 状态；界面按列表设计，为将来多好友预留） ----
-  const friendName = () => (state.sync && state.sync.partnerName) || '';
-  function renderFriends() {
-    const box = $('#friend-list');
-    if (!box) return;
-    if (!cfg().partner) {
-      box.innerHTML = '<div class="set-note">还没有好友——在下面「伙伴同步码」里填对方的码，点结对即可。</div>';
-      return;
-    }
-    const nm = friendName();
-    const initial = nm ? nm.slice(0, 1) : '友';
-    box.innerHTML = `
-      <div class="friend-card">
-        <div class="friend-avatar">${esc(initial)}</div>
-        <div class="friend-main">
-          <div class="friend-name">${nm ? esc(nm) : '未命名好友'} <button class="mini-btn" id="friend-rename">${nm ? '改名' : '起个名字'}</button></div>
-          <div class="friend-code">已结对 · ${esc(cfg().partner)}</div>
-        </div>
-      </div>`;
-    const rb = $('#friend-rename');
-    if (rb) rb.addEventListener('click', () => {
-      const v = prompt('给 TA 起个名字（12 字以内，互戳提示和通知里都用它）：', nm || '');
-      if (v === null) return;
-      state.sync.partnerName = String(v).trim().slice(0, 12);
-      saveState();
-      if (typeof Reminder !== 'undefined') Reminder.sync(true); // 备注名随提醒设置上传（通知文案用）
-      renderFriends();
-      refreshPartnerStatus();
-      toast(state.sync.partnerName ? '备注已保存：' + state.sync.partnerName : '已清除备注');
-    });
-  }
-
   function renderUI() {
     const c = cfg();
     tellShell();
@@ -570,6 +493,37 @@ const Sync = (() => {
       try { await navigator.clipboard.writeText(v); toast('同步码已复制'); }
       catch (e) { const el = $('#sync-code'); el.select(); try { document.execCommand('copy'); toast('同步码已复制'); } catch (e2) { toast('复制失败，请手动长按选择'); } }
     });
+    // ---- 好友卡（备注名 + 状态；界面按列表设计，为将来多好友预留） ----
+    const friendName = () => (state.sync && state.sync.partnerName) || '';
+    function renderFriends() {
+      const box = $('#friend-list');
+      if (!box) return;
+      if (!cfg().partner) {
+        box.innerHTML = '<div class="set-note">还没有好友——在下面「伙伴同步码」里填对方的码，点结对即可。</div>';
+        return;
+      }
+      const nm = friendName();
+      const initial = nm ? nm.slice(0, 1) : '友';
+      box.innerHTML = `
+        <div class="friend-card">
+          <div class="friend-avatar">${esc(initial)}</div>
+          <div class="friend-main">
+            <div class="friend-name">${nm ? esc(nm) : '未命名好友'} <button class="mini-btn" id="friend-rename">${nm ? '改名' : '起个名字'}</button></div>
+            <div class="friend-code">已结对 · ${esc(cfg().partner)}</div>
+          </div>
+        </div>`;
+      const rb = $('#friend-rename');
+      if (rb) rb.addEventListener('click', () => {
+        const v = prompt('给 TA 起个名字（12 字以内，互戳提示和通知里都用它）：', nm || '');
+        if (v === null) return;
+        state.sync.partnerName = String(v).trim().slice(0, 12);
+        saveState();
+        if (typeof Reminder !== 'undefined') Reminder.sync(true); // 备注名随提醒设置上传（通知文案用）
+        renderFriends();
+        refreshPartnerStatus();
+        toast(state.sync.partnerName ? '备注已保存：' + state.sync.partnerName : '已清除备注');
+      });
+    }
     $('#sync-pair').addEventListener('click', async () => {
       const p = $('#sync-partner').value.trim().toUpperCase();
       if (!cfg().code) { status('先开启云同步', 'err'); return; }
@@ -679,6 +633,50 @@ const Sync = (() => {
     });
     renderAcct();
 
+    // ---- 对方状态检查（让"他到底连没连上"一眼可见） ----
+    function agoText(ts) {
+      if (!ts) return '未知';
+      const m = Math.floor((Date.now() - ts) / 60000);
+      if (m < 2) return '刚刚';
+      if (m < 60) return m + ' 分钟前';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' 小时前';
+      return Math.floor(h / 24) + ' 天前';
+    }
+    async function refreshPartnerStatus() {
+      const el = $('#partner-status');
+      if (!el) return;
+      if (!cfg().partner) { el.textContent = ''; return; }
+      try {
+        const r = await request('partner.status', { partner: cfg().partner });
+        const s = (r && r.partner) || {};
+        // 排行对比（我 vs 对方）：今日学习量 + 连续天数 + 总词量
+        const myStreak = streakFrom(practiceDays());
+        const mtc = todayCount();
+        const myToday = (mtc.n || 0) + (mtc.r || 0);
+        let myTotal = 0;
+        for (const k in state.learned) myTotal += countKeys(state.learned, k);
+        const win = (a, b) => a === b ? '' : (a > b ? ' [赢]' : '');
+        const who = friendName() || 'TA';
+        const rank = `今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ ${who} ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
+          + ` · 连续：我 ${myStreak} 天${win(myStreak, s.streak || 0)} ⇄ ${who} ${s.streak || 0} 天${win(s.streak || 0, myStreak)}`
+          + ` · 累计：我 ${myTotal} ⇄ ${who} ${s.learnedTotal || 0}`;
+        // 通知能力判定：App 系统通知（壳）/ ntfy / 微信 / 网页推送，任一即可达
+        const bits = [];
+        if (s.hasShell) bits.push('App 系统通知 ✓');
+        else if (s.hasNtfy) bits.push('已连 ntfy ✓');
+        if (s.hasWechat) bits.push('已连微信 ✓');
+        if (s.pushCount) bits.push('网页推送 ' + s.pushCount + ' 台设备');
+        if (s.reminderEnabled) bits.push('已开每日提醒');
+        bits.push('最后活跃 ' + agoText(s.lastActive || s.lastSeen));
+        const canRecv = s.hasShell || s.hasNtfy || s.hasWechat || s.pushCount > 0;
+        if (!canRecv) bits.unshift('还没有可用通知通道');
+        el.innerHTML = `${who}的状态：<br>${rank}<br>${bits.join(' · ')}`;
+        el.className = 'set-note' + (canRecv ? ' ' : ' err');
+      } catch (e) {
+        el.textContent = '对方状态：读取失败（' + String(e.message || e).slice(0, 40) + '）';
+      }
+    }
     const refreshBtn = $('#partner-refresh');
     if (refreshBtn) refreshBtn.addEventListener('click', refreshPartnerStatus);
     // ---- 已有同步码接管（第二台设备） ----

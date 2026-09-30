@@ -1005,3 +1005,21 @@ html.dark .wc-detail .lab { color: var(--brand-deep); }
   .ph-ring { width: 60px; height: 60px; }
 }
 
+
+/* ---------- 好友卡（备注名 + 状态） ---------- */
+.friend-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 12px 14px; margin: 2px 0 6px;
+  box-shadow: var(--shadow-1);
+}
+.friend-avatar {
+  flex: none; width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-soft); color: var(--brand);
+  font-size: 18px; font-weight: 700;
+}
+.friend-main { flex: 1; min-width: 0; }
+.friend-name { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.friend-name .mini-btn { font-size: 11px; padding: 3px 8px; }
+.friend-code { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; letter-spacing: .5px; font-family: var(--mono); }
