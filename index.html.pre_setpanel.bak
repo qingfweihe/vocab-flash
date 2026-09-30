@@ -251,38 +251,11 @@
 
   <!-- 视图：设置 -->
   <section id="view-settings" class="view hidden">
-    <!-- 设置主页：条目列表（点进二级面板）；标题随主页一起显示/隐藏 -->
-    <div id="settings-home">
-      <div class="subhead no-back">
-        <div class="subhead-title">设置</div>
-      </div>
-      <div class="settings-box set-entries">
-      <button class="set-entry" data-setpanel="remind">
-        <span class="ico set-entry-ico" style="--ico:var(--ico-bell)"></span>
-        <span class="set-entry-main"><b>提醒与通知</b><i>每日提醒 · 安卓 App · 微信/ntfy 备选</i></span>
-        <span class="set-entry-arrow">›</span>
-      </button>
-      <button class="set-entry" data-setpanel="sync">
-        <span class="ico set-entry-ico" style="--ico:var(--ico-cloud)"></span>
-        <span class="set-entry-main"><b>云同步</b><i>账号密码 · 同步码 · 好友结对与互戳</i></span>
-        <span class="set-entry-arrow">›</span>
-      </button>
-      <button class="set-entry" data-setpanel="general">
-        <span class="ico set-entry-ico" style="--ico:var(--ico-gear)"></span>
-        <span class="set-entry-main"><b>通用</b><i>夜间模式 · 发音语速 · 字号 · 樱花</i></span>
-        <span class="set-entry-arrow">›</span>
-      </button>
-      <button class="set-entry" data-setpanel="data">
-        <span class="ico set-entry-ico" style="--ico:var(--ico-download)"></span>
-        <span class="set-entry-main"><b>数据备份</b><i>导出 · 导入 · 清空进度</i></span>
-        <span class="set-entry-arrow">›</span>
-      </button>
-      </div>
-      <div class="ver-line" id="ver-line"></div>
+    <div class="subhead no-back">
+      <div class="subhead-title">设置</div>
     </div>
+    <div class="ver-line" id="ver-line"></div>
 
-  <div id="setpanel-remind" class="set-panel hidden">
-    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">提醒与通知</div></div>
     <!-- 提醒与通知 -->
     <div class="settings-box">
       <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>提醒</div>
@@ -372,10 +345,7 @@
         </div>
       </details>
     </div>
-  </div>
 
-  <div id="setpanel-sync" class="set-panel hidden">
-    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">云同步</div></div>
     <!-- 云同步 -->
     <div class="settings-box">
       <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17.5 19a4.5 4.5 0 0 0 .38-8.98 7 7 0 0 0-13.76 1.99A4 4 0 0 0 6 19.5h11.5z%27/%3E%3C/svg%3E&quot;)"></i>云同步</div>
@@ -437,10 +407,7 @@
         开启后，本机改动约每半分钟自动上传，打开应用时自动拉取合并。两台设备同时改不冲突：进度取并集，删除会同步删除。同步码就是钥匙，别发给陌生人。
       </div>
     </div>
-  </div>
 
-  <div id="setpanel-general" class="set-panel hidden">
-    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">通用</div></div>
     <div class="settings-box">
       <div class="set-item" style="border-bottom:none">
         <div class="set-label">夜间模式<div class="set-hint">黑色系界面，夜间护眼</div></div>
@@ -462,11 +429,6 @@
         <div class="set-label">樱花飘落</div>
         <label class="switch"><input type="checkbox" id="set-sakura" checked><span>开启</span></label>
       </div>
-  </div>
-
-  <div id="setpanel-data" class="set-panel hidden">
-    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">数据备份</div></div>
-    <div class="settings-box">
       <div class="set-btns">
         <button class="ghost-btn" id="btn-export">导出备份（进度文件）</button>
         <button class="ghost-btn" id="btn-import">导入备份</button>
@@ -477,7 +439,7 @@
         进度保存在本机浏览器中。换手机或清除 Safari 数据前，请先「导出备份」保存文件。
       </div>
     </div>
-  </div>
+
   </section>
 
 </main>

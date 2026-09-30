@@ -1080,6 +1080,7 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
+  if (view === 'settings' && typeof showSetPanel === 'function') showSetPanel(null); // 进设置页回到主页列表
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
   if (view === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
   if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#fav-list', 'fav'); }
@@ -1998,6 +1999,23 @@ $('#set-fontsize').addEventListener('input', (e) => {
 $('#set-sakura').addEventListener('change', (e) => {
   state.settings.sakura = e.target.checked; saveState(); Sakura.setEnabled(e.target.checked);
 });
+
+/* ================= 设置页二级面板（主页条目 → 面板切换） ================= */
+function showSetPanel(name) {
+  const home = $('#settings-home');
+  if (!home) return;
+  $$('.set-panel').forEach((p) => p.classList.add('hidden'));
+  if (!name) { home.classList.remove('hidden'); return; }
+  home.classList.add('hidden');
+  const el = $('#setpanel-' + name);
+  if (el) el.classList.remove('hidden');
+  window.scrollTo({ top: 0 });
+}
+$('#settings-home').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-setpanel]');
+  if (b) showSetPanel(b.dataset.setpanel);
+});
+$$('.set-panel [data-setback]').forEach((b) => b.addEventListener('click', () => showSetPanel(null)));
 
 $('#btn-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
