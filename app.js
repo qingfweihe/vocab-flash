@@ -2949,7 +2949,18 @@ const Reminder = (() => {
     const r = rem();
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
-    return { time: r.time || '20:00', smart: r.smart !== false, enabled: !!r.enabled, lastActive: Date.now(), learnedTotal };
+    // 待办事项上传服务端：关闭软件后的到点提醒由服务端定时器负责（此前迁移遗漏的能力缺口）
+    const todo = (Array.isArray(state.todo) ? state.todo : []).map((x) => ({
+      id: String(x.id || ''),
+      text: String(x.text || '').slice(0, 40),
+      type: x.type === 'once' || x.type === 'weekly' ? x.type : 'daily',
+      date: String(x.date || '').slice(0, 10),
+      time: String(x.time || '20:00').slice(0, 5),
+      wd: Number(x.wd) || 0,
+      done: !!x.done,
+      todayDone: String(x.todayDone || '').slice(0, 10),
+    })).filter((x) => x.id);
+    return { time: r.time || '20:00', smart: r.smart !== false, enabled: !!r.enabled, lastActive: Date.now(), learnedTotal, todo };
   }
 
   function urlBase64ToUint8Array(base64String) {
@@ -3137,6 +3148,8 @@ const Reminder = (() => {
     if (r.enabled && state.sync && state.sync.code) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
     else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
     if (r.enabled) repairPush(); // 启动自愈：旧订阅密钥不匹配时自动重建（换后端后必备）
+    // 启动即上传一次待办（关闭软件后的待办到点提醒由服务端负责；不碰待办也要保证服务端有最新数据）
+    if (state.sync && state.sync.code) setTimeout(() => sync(true), 3000);
   }
 
   return { init, ping, sync, isStandalone, pushSupported, enable, disable, sendTest, repairPush };
