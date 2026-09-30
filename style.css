@@ -1064,3 +1064,13 @@ html.dark .wc-detail .lab { color: var(--brand-deep); }
 .poke-tpl { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .poke-tpl .mini-btn { font-size: 12px; }
 #poke-text { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; color: var(--ink); background: var(--card); outline: none; font-family: inherit; }
+
+/* ---------- 首页条目列表：卡片融入容器（去双层卡） ---------- */
+#home-main .set-entries .todo-card {
+  background: none; border: none; border-bottom: 1px solid var(--line);
+  border-radius: 0; box-shadow: none; margin: 0; padding: 14px 16px;
+}
+#home-main .set-entries .todo-card:last-child { border-bottom: none; }
+#home-main .set-entries .todo-card .todo-card-title { font-size: 15px; font-weight: 600; }
+#home-main .set-entries .todo-card .todo-card-ico { width: 22px; height: 22px; font-size: 18px; color: var(--brand); display: flex; align-items: center; justify-content: center; }
+#home-main .set-entries .todo-card .reading-pct { position: static; }

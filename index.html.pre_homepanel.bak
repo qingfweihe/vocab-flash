@@ -26,14 +26,8 @@
 
   <!-- 视图：单元列表 -->
   <section id="view-units" class="view">
-    <!-- 主页：搜索 + 继续学习 + 整行入口列表 -->
-    <div id="home-main">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
-      <div class="search-box">
-      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off">
-      <div id="search-results" class="hidden"></div>
-    </div>
-      <div class="settings-box set-entries">
+    <div class="today-card-wrap">
       <button id="today-card" class="todo-card">
         <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%276%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27/%3E%3C/svg%3E&quot;)"></i></div>
         <div class="todo-card-main">
@@ -42,6 +36,23 @@
         </div>
         <div class="reading-pct hidden" id="today-badge">0</div>
       </button>
+      <button id="today-cfg-btn" class="today-cfg-btn" aria-label="每日任务配置"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27/%3E%3C/svg%3E&quot;)"></i></button>
+      <div id="today-list" class="today-list"></div>
+    </div>
+    <div id="daily-cfg-mask" class="hidden">
+      <div id="daily-cfg-sheet">
+        <div class="wchead"><span class="wcword" style="font-size:17px">每日任务配置</span><button class="wcclose" id="daily-cfg-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
+        <div id="daily-cfg-body"></div>
+        <div class="set-section-title" style="margin-top:10px"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z%27/%3E%3C/svg%3E&quot;)"></i>自定义事项</div>
+        <div id="daily-task-rows"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="daily-task-input" type="text" maxlength="20" placeholder="加一条，如：做 1 组真题" style="flex:1;font-size:14px">
+          <button class="ghost-btn" id="daily-task-add">添加</button>
+        </div>
+        <div class="set-note" style="margin-top:8px">自定义事项每天自动重置打勾；关掉的学习项不出现在今日清单里。</div>
+      </div>
+    </div>
+    <div class="home-duo">
       <button id="reading-card" class="todo-card duo-card">
         <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></i></div>
         <div class="todo-card-main">
@@ -58,45 +69,7 @@
         </div>
         <div class="reading-pct hidden" id="listening-card-pct">0%</div>
       </button>
-        <button id="home-words-card" class="set-entry" data-homepanel="words">
-          <span class="ico set-entry-ico" style="--ico:var(--ico-book)"></span>
-          <span class="set-entry-main"><b>背单词</b><i id="home-words-sub">选择单元开始学习</i></span>
-          <span class="set-entry-arrow">›</span>
-        </button>
-        <button id="home-heat-card" class="set-entry" data-homepanel="heat">
-          <span class="ico set-entry-ico" style="--ico:var(--ico-chart)"></span>
-          <span class="set-entry-main"><b>学习热力图</b><i>最近 12 周的学习记录</i></span>
-          <span class="set-entry-arrow">›</span>
-        </button>
-      </div>
     </div>
-
-    <!-- 二级面板：今日任务 -->
-    <div id="homepanel-today" class="set-panel hidden">
-      <div class="subhead"><button class="back-btn" data-homeback>‹ 首页</button><div class="subhead-title">今日任务</div></div>
-      <div class="today-card-wrap">
-      <button id="today-cfg-btn" class="today-cfg-btn" aria-label="每日任务配置"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27/%3E%3C/svg%3E&quot;)"></i></button>
-      <div id="today-list" class="today-list"></div>
-      </div>
-      <button class="primary-btn" id="today-start-review" style="width:100%;margin-top:6px">开始复习</button>
-    <div id="daily-cfg-mask" class="hidden">
-      <div id="daily-cfg-sheet">
-        <div class="wchead"><span class="wcword" style="font-size:17px">每日任务配置</span><button class="wcclose" id="daily-cfg-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
-        <div id="daily-cfg-body"></div>
-        <div class="set-section-title" style="margin-top:10px"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z%27/%3E%3C/svg%3E&quot;)"></i>自定义事项</div>
-        <div id="daily-task-rows"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="daily-task-input" type="text" maxlength="20" placeholder="加一条，如：做 1 组真题" style="flex:1;font-size:14px">
-          <button class="ghost-btn" id="daily-task-add">添加</button>
-        </div>
-        <div class="set-note" style="margin-top:8px">自定义事项每天自动重置打勾；关掉的学习项不出现在今日清单里。</div>
-      </div>
-    </div>
-    </div>
-
-    <!-- 二级面板：背单词（进度 + 单元列表） -->
-    <div id="homepanel-words" class="set-panel hidden">
-      <div class="subhead"><button class="back-btn" data-homeback>‹ 首页</button><div class="subhead-title">选择单元</div></div>
     <div class="progress-hero">
       <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
       <div class="ph-info">
@@ -104,17 +77,16 @@
         <div class="ph-line2">错词本 <b id="stat-wrong">0</b> 词 · 已检验 <b id="stat-tested">0</b> 词</div>
       </div>
     </div>
-    <div id="unit-list"></div>
+    <div class="search-box">
+      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off">
+      <div id="search-results" class="hidden"></div>
     </div>
-
-    <!-- 二级面板：学习热力图 -->
-    <div id="homepanel-heat" class="set-panel hidden">
-      <div class="subhead"><button class="back-btn" data-homeback>‹ 首页</button><div class="subhead-title">学习热力图</div></div>
-      <div id="heat-box" class="settings-box">
+    <div id="unit-list"></div>
+    <details class="settings-box" id="heat-box">
+      <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 20V10M10 20V4M16 20v-7M22 20H2%27/%3E%3C/svg%3E&quot;)"></i>学习热力图（最近 12 周）</summary>
       <div id="heat-grid" class="heat-grid"></div>
       <div class="set-note" id="heat-week"></div>
-      </div>
-    </div>
+    </details>
   </section>
 
   <!-- 视图：学习页 -->

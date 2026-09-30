@@ -1122,6 +1122,7 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
+  if (view === 'units' && typeof showHomePanel === 'function') showHomePanel(null); // 回首页回到主页列表
   if (view === 'settings' && typeof showSetPanel === 'function') showSetPanel(null); // 进设置页回到主页列表
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
   if (view === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
@@ -2046,7 +2047,7 @@ $('#set-sakura').addEventListener('change', (e) => {
 function showSetPanel(name) {
   const home = $('#settings-home');
   if (!home) return;
-  $$('.set-panel').forEach((p) => p.classList.add('hidden'));
+  $$('#view-settings .set-panel').forEach((p) => p.classList.add('hidden'));
   if (!name) { home.classList.remove('hidden'); return; }
   home.classList.add('hidden');
   const el = $('#setpanel-' + name);
@@ -3481,6 +3482,7 @@ $('#search-results').addEventListener('click', (e) => {
 function renderContinue() {
   const b = $('#btn-continue');
   const u = state.lastUnit && unitById(state.lastUnit);
+  const wordsSub = $('#home-words-sub');
   if (u) {
     const l = countKeys(state.learned, u.id);
     const rec = state.scrolls && state.scrolls[String(u.id)];
@@ -3491,8 +3493,12 @@ function renderContinue() {
     }
     b.textContent = `继续学习 · ${u.name}${pos}（已学 ${l}/${u.words.length}）`;
     b.classList.remove('hidden');
+    let learnedTotal = 0;
+    for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
+    if (wordsSub) wordsSub.textContent = `已学 ${learnedTotal}/1007 · 继续 ${u.name}${pos}`;
   } else {
     b.classList.add('hidden');
+    if (wordsSub) wordsSub.textContent = '选择单元开始学习';
   }
 }
 $('#btn-continue').addEventListener('click', () => {
@@ -3514,10 +3520,12 @@ function renderToday() {
   if (c.listening.on) parts.push(`听力 ${listeningDoneToday()}/${c.listening.goal}`);
   const dt = dailyTasks();
   if (dt.length) parts.push(`事项 ${dailyDoneCount()}/${dt.length}`);
-  sub.textContent = parts.length ? parts.join(' · ') : '点右上角配置你今天的目标';
+  sub.textContent = parts.length ? parts.join(' · ') : '点进去配置你今天的目标';
   badge.textContent = due > 0 ? String(due) : '✓';
   badge.classList.remove('hidden');
   badge.classList.toggle('today-clear', due === 0 && (dt.length ? dailyDoneCount() === dt.length : true));
+  const rb = $('#today-start-review');
+  if (rb) rb.textContent = due > 0 ? `开始复习（${due} 词）` : '今日复习已清空 ✓';
   renderTodayList();
 }
 
@@ -3643,7 +3651,25 @@ $('#daily-task-add').addEventListener('click', () => {
   renderToday();
 });
 
-$('#today-card').addEventListener('click', () => {
+/* ================= 首页二级面板（主页条目 → 面板切换） ================= */
+function showHomePanel(name) {
+  const home = $('#home-main');
+  if (!home) return;
+  $$('#view-units .set-panel').forEach((p) => p.classList.add('hidden'));
+  if (!name) { home.classList.remove('hidden'); return; }
+  home.classList.add('hidden');
+  const el = $('#homepanel-' + name);
+  if (el) el.classList.remove('hidden');
+  window.scrollTo({ top: 0 });
+}
+$('#home-main').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-homepanel]');
+  if (b) showHomePanel(b.dataset.homepanel);
+});
+$$('#view-units [data-homeback]').forEach((b) => b.addEventListener('click', () => showHomePanel(null)));
+// 今日任务卡：改为进面板（面板里有清单与「开始复习」）
+$('#today-card').addEventListener('click', () => showHomePanel('today'));
+$('#today-start-review').addEventListener('click', () => {
   const q = srsDueCapped();
   if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
   startTest(q, `今日复习 ${q.length} 词`);
