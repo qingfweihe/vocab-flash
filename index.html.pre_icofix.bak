@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="闪过背单词">
+<meta name="theme-color" content="#f2f3f5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+<title>闪过背单词</title>
+</head>
+<body>
+<canvas id="sakura"></canvas>
+
+<!-- 顶部标题栏 -->
+<header id="topbar">
+  <div id="topbar-title">闪过背单词</div>
+  <div id="topbar-sub"></div>
+</header>
+
+<main id="main">
+
+  <!-- 视图：单元列表 -->
+  <section id="view-units" class="view">
+    <button id="btn-continue" class="continue-btn hidden">继续学习</button>
+    <div class="today-card-wrap">
+      <button id="today-card" class="todo-card">
+        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%276%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27/%3E%3C/svg%3E&quot;)"></i></div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">今日任务</div>
+          <div class="todo-card-sub" id="today-sub">正在统计…</div>
+        </div>
+        <div class="reading-pct hidden" id="today-badge">0</div>
+      </button>
+      <button id="today-cfg-btn" class="today-cfg-btn" aria-label="每日任务配置"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27%3C/svg%3E&quot;)"></i></button>
+      <div id="today-list" class="today-list"></div>
+    </div>
+    <div id="daily-cfg-mask" class="hidden">
+      <div id="daily-cfg-sheet">
+        <div class="wchead"><span class="wcword" style="font-size:17px">每日任务配置</span><button class="wcclose" id="daily-cfg-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
+        <div id="daily-cfg-body"></div>
+        <div class="set-section-title" style="margin-top:10px"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z%27/%3E%3C/svg%3E&quot;)"></i>自定义事项</div>
+        <div id="daily-task-rows"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="daily-task-input" type="text" maxlength="20" placeholder="加一条，如：做 1 组真题" style="flex:1;font-size:14px">
+          <button class="ghost-btn" id="daily-task-add">添加</button>
+        </div>
+        <div class="set-note" style="margin-top:8px">自定义事项每天自动重置打勾；关掉的学习项不出现在今日清单里。</div>
+      </div>
+    </div>
+    <div class="home-duo">
+      <button id="reading-card" class="todo-card duo-card">
+        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27%3C/svg%3E&quot;)"></i></div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">阅读随手练</div>
+          <div class="todo-card-sub" id="reading-card-sub">六级真题 · 一篇一题 · 随手刷</div>
+        </div>
+        <div class="reading-pct hidden" id="reading-card-pct">0%</div>
+      </button>
+      <button id="listening-card" class="todo-card duo-card">
+        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M3 18v-6a9 9 0 0 1 18 0v6%27/%3E%3Cpath d=%27M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z%27%3C/svg%3E&quot;)"></i></div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">听力精听</div>
+          <div class="todo-card-sub" id="listening-card-sub">真题 36 套 · 逐段逐句 · 先听后看</div>
+        </div>
+        <div class="reading-pct hidden" id="listening-card-pct">0%</div>
+      </button>
+    </div>
+    <div class="progress-hero">
+      <div class="ph-ring"><svg viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="42"/><circle id="ring-fg" class="ring-fg" cx="50" cy="50" r="42"/></svg><div id="ring-text">0%</div></div>
+      <div class="ph-info">
+        <div class="ph-line1">已学 <b id="stat-learned">0</b> / <b id="stat-total">0</b> 词</div>
+        <div class="ph-line2">错词本 <b id="stat-wrong">0</b> 词 · 已检验 <b id="stat-tested">0</b> 词</div>
+      </div>
+    </div>
+    <div class="search-box">
+      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off">
+      <div id="search-results" class="hidden"></div>
+    </div>
+    <div id="unit-list"></div>
+    <details class="settings-box" id="heat-box">
+      <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 20V10M10 20V4M16 20v-7M22 20H2%27/%3E%3C/svg%3E&quot;)"></i>学习热力图（最近 12 周）</summary>
+      <div id="heat-grid" class="heat-grid"></div>
+      <div class="set-note" id="heat-week"></div>
+    </details>
+  </section>
+
+  <!-- 视图：学习页 -->
+  <section id="view-study" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 返回</button>
+      <div class="subhead-title" id="study-title">Word List 1</div>
+      <button class="test-btn" id="btn-test-unit">检验本单元</button>
+    </div>
+    <div class="toolbar">
+      <label class="switch"><input type="checkbox" id="chk-hide-cn"><span>遮住中文（自测）</span></label>
+      <div class="toolbar-right">
+        <button class="mini-btn" id="btn-mark-all">全部标记已学</button>
+      </div>
+    </div>
+    <div id="word-list"></div>
+  </section>
+
+  <!-- 视图：检验（闪卡 / 拼写） -->
+  <section id="view-test" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 退出</button>
+      <div class="subhead-title" id="test-title">检验</div>
+      <button class="test-btn" id="test-mode">Aa 拼写</button>
+      <div class="test-counter" id="test-counter">0/0</div>
+    </div>
+    <div id="test-stage">
+      <div id="flashcard">
+        <div class="fc-word" id="fc-word">word</div>
+        <div class="fc-phon" id="fc-phon"></div>
+        <button class="speak-btn big" id="fc-speak" aria-label="发音"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
+        <div class="fc-answer hidden" id="fc-answer">
+          <div class="fc-defs" id="fc-defs"></div>
+          <div class="fc-root" id="fc-root"></div>
+          <div class="fc-exs" id="fc-exs"></div>
+        </div>
+        <button class="reveal-btn" id="btn-reveal">点击显示释义</button>
+      </div>
+      <div class="fc-judge hidden" id="fc-judge">
+        <button class="judge-btn no" id="btn-nope"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i>忘了</button>
+        <button class="judge-btn mid" id="btn-fuzzy">~ 模糊</button>
+        <button class="judge-btn yes" id="btn-got"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M20 6L9 17l-5-5%27/%3E%3C/svg%3E&quot;)"></i>认得</button>
+      </div>
+      <div id="spell-stage" class="hidden">
+        <div class="spell-card">
+          <div class="spell-cn" id="spell-cn"></div>
+          <button class="ghost-btn" id="spell-speak"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i>听发音</button>
+          <input id="spell-input" type="text" placeholder="拼写这个单词…" autocomplete="off"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button class="primary-btn" id="spell-submit">提交</button>
+        </div>
+        <div id="spell-result" class="hidden"></div>
+        <button class="ghost-btn hidden" id="spell-next">下一个 →</button>
+      </div>
+    </div>
+    <div id="test-done" class="hidden">
+      <div class="done-card">
+        <div class="done-emoji"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M20 6L9 17l-5-5%27/%3E%3C/svg%3E&quot;)"></i></div>
+        <div class="done-title">本组检验完成</div>
+        <div class="done-body" id="done-body"></div>
+        <button class="primary-btn" id="btn-test-again">再测没记住的</button>
+        <button class="ghost-btn" data-nav="units">返回单元列表</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 视图：待办清单 -->
+  <section id="view-todo" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">待办清单</div>
+      <button class="test-btn" id="btn-todo-new">＋ 新建</button>
+    </div>
+    <div id="todo-list"></div>
+    <div class="todo-rem-group">
+      <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>提醒开关</div>
+      <div class="todo-rem-bar">
+        <div class="trb-main">
+          <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
+          <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
+      </div>
+      <button class="ghost-btn mini-inline" id="todo-rem-test">发送测试通知</button>
+    </div>
+    <div id="todo-form" class="todo-form hidden">
+      <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
+      <div class="todo-type-row" id="todo-type-row">
+        <button class="todo-type active" data-type="once">一次性</button>
+        <button class="todo-type" data-type="daily">每天</button>
+        <button class="todo-type" data-type="weekly">每周</button>
+      </div>
+      <div class="todo-when-row">
+        <input type="datetime-local" id="todo-when-once">
+        <input type="time" id="todo-when-daily" value="20:00" class="hidden">
+        <div id="todo-when-weekly" class="hidden">
+          <select id="todo-wd">
+            <option value="1">周一</option><option value="2">周二</option><option value="3">周三</option>
+            <option value="4">周四</option><option value="5">周五</option><option value="6">周六</option>
+            <option value="0">周日</option>
+          </select>
+          <input type="time" id="todo-when-weekly-time" value="20:00">
+        </div>
+      </div>
+      <button class="primary-btn" id="todo-save">保存待办</button>
+      <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
+    </div>
+  </section>
+
+  <!-- 视图：阅读随手练 -->
+  <section id="view-reading" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" data-nav="units">‹ 返回</button>
+      <div class="subhead-title">阅读随手练</div>
+      <button class="test-btn" id="btn-reading-start">随机来一篇</button>
+    </div>
+    <div class="reading-stats" id="reading-stats"></div>
+    <div id="reading-quiz" class="hidden"></div>
+    <div id="reading-list"></div>
+  </section>
+
+  <!-- 视图：六级听力精听 -->
+  <section id="view-listening" class="view hidden">
+    <div class="subhead">
+      <button class="back-btn" id="ls-back">‹ 返回</button>
+      <div class="subhead-title" id="ls-title">六级听力精听</div>
+      <button class="test-btn" id="ls-cache-btn">缓存</button>
+    </div>
+    <div class="reading-stats" id="ls-stats"></div>
+    <div id="ls-body"></div>
+  </section>
+
+  <!-- 视图：收藏夹 -->
+  <section id="view-favorites" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">收藏夹</div>
+      <button class="test-btn" id="btn-test-fav">检验收藏</button>
+    </div>
+    <div id="fav-filters"></div>
+    <div id="fav-list"></div>
+    <div class="settings-box" id="fav-read-box">
+      <details class="ntfy-help">
+        <summary id="fav-read-head"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27%3C/svg%3E&quot;)"></i>阅读生词</summary>
+        <div id="fav-read-list"></div>
+      </details>
+    </div>
+    <div class="settings-box" id="fav-listen-box">
+      <details class="ntfy-help">
+        <summary id="fav-listen-head"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M3 18v-6a9 9 0 0 1 18 0v6%27/%3E%3Cpath d=%27M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z%27%3C/svg%3E&quot;)"></i>听力生词</summary>
+        <div id="fav-listen-list"></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 视图：错词本 -->
+  <section id="view-wrong" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">错词本</div>
+      <button class="test-btn" id="btn-test-wrong">检验错词</button>
+    </div>
+    <div id="wrong-list"></div>
+  </section>
+
+  <!-- 视图：设置 -->
+  <section id="view-settings" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">设置</div>
+    </div>
+    <div class="ver-line" id="ver-line"></div>
+
+    <!-- 提醒与通知 -->
+    <div class="settings-box">
+      <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>提醒</div>
+      <div class="set-item">
+        <div class="set-label">每日背单词提醒</div>
+        <label class="switch"><input type="checkbox" id="rem-enabled"><span>开启</span></label>
+      </div>
+      <div class="set-item">
+        <div class="set-label">提醒时间</div>
+        <input type="time" id="rem-time" value="20:00">
+      </div>
+      <div class="set-item">
+        <div class="set-label">智能模式<div class="set-hint">今天已背过就不打扰</div></div>
+        <label class="switch"><input type="checkbox" id="rem-smart" checked><span>开启</span></label>
+      </div>
+      <div id="rem-status" class="set-note"></div>
+      <button class="ghost-btn" id="rem-test" style="margin-top:8px">发送测试通知</button>
+
+      <div class="set-section-title" style="margin-top:16px"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Crect x=%275%27 y=%272%27 width=%2714%27 height=%2720%27 rx=%273%27/%3E%3Cpath d=%27M12 18h.01%27/%3E%3C/svg%3E&quot;)"></i>安卓：装成 App（推荐，通知最稳）</div>
+      <div class="set-item" style="border-bottom:none">
+        <div class="set-label">下载安装包（33KB）<div class="set-hint">不依赖 ntfy / 微信 / 谷歌；后台每 15 分钟自动取提醒和互戳；内容自动更新</div></div>
+      </div>
+      <div style="margin:4px 0 2px">
+        <a class="ghost-btn" id="apk-dl" href="./android/vocab-flash.apk" download style="text-decoration:none;display:inline-block">下载 APK</a>
+      </div>
+      <div id="apk-ver-state" class="set-note" style="margin-top:4px"></div>
+      <details class="ntfy-help">
+        <summary>安装步骤（约 1 分钟，可转发给朋友）</summary>
+        <ol>
+          <li>安卓手机用「浏览器」打开本页，点「下载 APK」；<span style="color:#c66">微信里点不了</span>，要用系统浏览器。</li>
+          <li>下载完点开安装包 → 允许「未知来源/本浏览器安装应用」→ 安装。</li>
+          <li>打开「闪过背单词」App → 允许「应用发送通知」。</li>
+          <li>App 里：开启云同步（同步码发给我）→ 打开提醒开关（通道显示「App 通知」）。</li>
+          <li>放行后台：手机设置 → 应用 → 闪过背单词 → 启动管理改手动（允许自启动/后台活动）；电池选不受限制。</li>
+          <li>验证：让我戳你一下，或自己点「发送测试」——通知栏弹出即成功（后台取件最长 15 分钟延迟，前台即时）。</li>
+        </ol>
+        <div class="set-note">内容与网页版一致且自动更新（App 只是外壳）；卸载不影响网页版，数据靠云同步互通。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%27/%3E%3C/svg%3E&quot;)"></i>备选：微信通知（不想装 App 用这个，需一次实名）</summary>
+        <div class="set-item">
+          <div class="set-label">PushPlus 口令</div>
+          <div>
+            <input type="text" id="wx-token" style="font-size:12px" placeholder="粘贴 PushPlus 的 token">
+            <button class="ghost-btn" id="wx-save" style="padding:4px 10px;margin-left:6px">保存</button>
+          </div>
+        </div>
+        <div id="wx-status" class="set-note"></div>
+        <button class="ghost-btn" id="wx-test" style="margin-top:8px">发送测试（微信）</button>
+        <ol style="margin:8px 0 2px 18px;padding:0;line-height:1.75">
+          <li>手机浏览器打开 <code>https://www.pushplus.plus/</code>，微信扫码登录；</li>
+          <li>完成一次实名（姓名＋身份证＋手机号＋验证码）；</li>
+          <li>复制「一对一消息」页的 token → 粘贴保存 → 发送测试，微信里立刻收到「服务通知」。</li>
+        </ol>
+        <div class="set-note">没收到：确认实名已完成（未实名返回 905）；再看微信是否关了「服务通知」。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z%27/%3E%3C/svg%3E&quot;)"></i>给朋友的说明（一键复制全文）</summary>
+        <button class="ghost-btn" id="ntfy-copyhelp" style="border-color:var(--pink);color:var(--pink-deep)">复制「安卓安装 + 通知设置」全文</button>
+        <div class="set-note">点一下复制全文，微信粘贴发给朋友即可；内含 APK 下载与微信通知的完整步骤。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>备用：ntfy 主题（网络不稳时可能延迟）</summary>
+        <div class="set-item">
+          <div class="set-label">本机 ntfy 主题</div>
+          <div>
+            <input type="text" id="ntfy-topic" readonly style="font-size:12px;letter-spacing:.5px">
+            <button class="ghost-btn" id="ntfy-gen" style="padding:4px 10px;margin-left:6px">生成</button>
+          </div>
+        </div>
+        <div id="ntfy-status" class="set-note"></div>
+        <div style="margin-top:8px">
+          <button class="ghost-btn" id="ntfy-copy">复制主题</button>
+          <button class="ghost-btn" id="ntfy-test" style="margin-left:6px">发送测试（ntfy）</button>
+        </div>
+        <div class="set-note">ntfy 服务器在国外，长连接可能失败重试；已装 App 壳的可忽略本区。</div>
+      </details>
+
+      <details class="ntfy-help">
+        <summary><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27%3C/svg%3E&quot;)"></i>高级：后端地址（一般不动）</summary>
+        <div class="set-item" style="border-bottom:none">
+          <input type="text" id="rem-api" style="font-size:12px" placeholder="https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/api">
+        </div>
+      </details>
+    </div>
+
+    <!-- 云同步 -->
+    <div class="settings-box">
+      <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17.5 19a4.5 4.5 0 0 0 .38-8.98 7 7 0 0 0-13.76 1.99A4 4 0 0 0 6 19.5h11.5z%27/%3E%3C/svg%3E&quot;)"></i>云同步</div>
+      <div class="set-item">
+        <div class="set-label">开启云同步<div class="set-hint">多台设备共用进度 · 双人互戳</div></div>
+        <label class="switch"><input type="checkbox" id="sync-on"><span>开启</span></label>
+      </div>
+      <div class="set-item">
+        <div class="set-label">账号密码<div class="set-hint">换新设备不用记同步码：输用户名密码就能取回全部进度</div></div>
+      </div>
+      <div style="padding:0 0 10px">
+        <div id="acct-logged" class="set-note hidden" style="margin:0 0 8px"></div>
+        <div id="acct-form">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="acct-user" type="text" placeholder="用户名（3~20位字母数字）" autocomplete="username" style="flex:1;font-size:13px">
+            <input id="acct-pass" type="password" placeholder="密码（至少6位）" autocomplete="current-password" style="flex:1;font-size:13px">
+          </div>
+          <button class="ghost-btn" id="acct-register">注册（绑定本机进度）</button>
+          <button class="ghost-btn" id="acct-login" style="margin-left:6px">登录（取回进度）</button>
+          <div class="set-note" style="margin-top:6px">注册会把本机当前进度绑到账号；换设备在新手机登录即可取回。忘记密码找作者重置。</div>
+        </div>
+        <div id="acct-out-wrap" class="hidden" style="margin-top:6px">
+          <button class="ghost-btn" id="acct-logout">退出账号（不影响云同步）</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">本机同步码<div class="set-hint">这串码就是你的身份：复制发给朋友，他填进「伙伴同步码」你们就结对了；换新手机也用它接管进度</div></div>
+        <div>
+          <input type="text" id="sync-code" readonly style="width:42%;font-size:13px;letter-spacing:1px;text-align:center">
+          <button class="ghost-btn" id="sync-copy" style="padding:4px 10px;margin-left:6px">复制</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">伙伴同步码<div class="set-hint">粘贴朋友发给你的码，点「结对」（他那边不用再操作，会自动认到）</div></div>
+        <div>
+          <input type="text" id="sync-partner" maxlength="12" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
+          <button class="ghost-btn" id="sync-pair" style="padding:4px 10px;margin-left:6px">结对</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">已有同步码？<div class="set-hint">第二台设备输入第一台的码，接管同一份进度</div></div>
+        <div>
+          <input type="text" id="sync-takeover" maxlength="12" placeholder="输入 12 位码" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
+          <button class="ghost-btn" id="sync-takeover-btn" style="padding:4px 10px;margin-left:6px">接管</button>
+        </div>
+      </div>
+      <div id="sync-status" class="set-note"></div>
+      <div style="margin-top:8px">
+        <button class="ghost-btn" id="sync-push">立即同步</button>
+        <button class="ghost-btn" id="sync-poke" style="margin-left:6px">戳一下伙伴</button>
+        <button class="ghost-btn" id="partner-refresh" style="margin-left:6px">查对方状态</button>
+      </div>
+      <div id="partner-status" class="set-note"></div>
+      <div class="set-note">
+        开启后，本机改动约每半分钟自动上传，打开应用时自动拉取合并。两台设备同时改不冲突：进度取并集，删除会同步删除。同步码就是钥匙，别发给陌生人。
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <div class="set-item" style="border-bottom:none">
+        <div class="set-label">夜间模式<div class="set-hint">黑色系界面，夜间护眼</div></div>
+        <div id="theme-chips" style="display:flex;gap:6px">
+          <button class="fav-chip theme-chip" data-theme="auto" style="font-size:12px;padding:5px 10px">跟随系统</button>
+          <button class="fav-chip theme-chip" data-theme="light" style="font-size:12px;padding:5px 10px">浅色</button>
+          <button class="fav-chip theme-chip" data-theme="dark" style="font-size:12px;padding:5px 10px">深色</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">发音语速</div>
+        <input type="range" id="set-rate" min="0.5" max="1.2" step="0.05" value="0.9">
+      </div>
+      <div class="set-item">
+        <div class="set-label">字号</div>
+        <input type="range" id="set-fontsize" min="14" max="22" step="1" value="17">
+      </div>
+      <div class="set-item">
+        <div class="set-label">樱花飘落</div>
+        <label class="switch"><input type="checkbox" id="set-sakura" checked><span>开启</span></label>
+      </div>
+      <div class="set-btns">
+        <button class="ghost-btn" id="btn-export">导出备份（进度文件）</button>
+        <button class="ghost-btn" id="btn-import">导入备份</button>
+        <input type="file" id="file-import" accept=".json" hidden>
+        <button class="ghost-btn danger" id="btn-reset">清空全部进度</button>
+      </div>
+      <div class="set-note">
+        进度保存在本机浏览器中。换手机或清除 Safari 数据前，请先「导出备份」保存文件。
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- 底部导航 -->
+<nav id="tabbar">
+  <button class="tab active" data-nav="units"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27%3C/svg%3E&quot;)"></span><span>单词</span></button>
+  <button class="tab" data-nav="favorites"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z%27%3C/svg%3E&quot;)"></span><span>收藏</span></button>
+  <button class="tab" data-nav="todo"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M9 11l2 2 4-4%27/%3E%3Crect x=%273%27 y=%274%27 width=%2718%27 height=%2717%27 rx=%272.5%27/%3E%3Cpath d=%27M8 2v4M16 2v4%27/%3E%3C/svg%3E&quot;)"></span><span>待办</span></button>
+  <button class="tab" data-nav="wrong"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%279%27/%3E%3Cpath d=%27M5.6 5.6l12.8 12.8%27/%3E%3C/svg%3E&quot;)"></span><span>错词本</span></button>
+  <button class="tab" data-nav="settings"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27%3C/svg%3E&quot;)"></span><span>设置</span></button>
+</nav>
+
+<div id="toast" class="hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

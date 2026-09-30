@@ -1,6 +1,6 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
    听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
-const CACHE = 'sgwd-20260930-110638';
+const CACHE = 'sgwd-20260930-164954';
 const AUDIO_CACHE = 'sgwd-audio-v1';
 const ASSETS = [
   './',
@@ -35,7 +35,7 @@ self.addEventListener('activate', (e) => {
 
 /* ---------- Web Push：接收推送并显示通知 ---------- */
 self.addEventListener('push', (e) => {
-  let data = { title: '🌸 该背单词了', body: '点开继续', url: './' };
+  let data = { title: '该背单词了', body: '点开继续', url: './' };
   try { if (e.data) data = Object.assign(data, e.data.json()); } catch (err) { /* 纯文本忽略 */ }
   e.waitUntil(
     self.registration.showNotification(data.title, {

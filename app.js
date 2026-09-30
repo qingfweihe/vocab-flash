@@ -620,8 +620,8 @@ const Sync = (() => {
         const myToday = (mtc.n || 0) + (mtc.r || 0);
         let myTotal = 0;
         for (const k in state.learned) myTotal += countKeys(state.learned, k);
-        const win = (a, b) => a === b ? '' : (a > b ? ' 🏆' : '');
-        const rank = `🔥 今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ 他 ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
+        const win = (a, b) => a === b ? '' : (a > b ? ' [赢]' : '');
+        const rank = `今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ 他 ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
           + ` · 连续：我 ${myStreak} 天${win(myStreak, s.streak || 0)} ⇄ 他 ${s.streak || 0} 天${win(s.streak || 0, myStreak)}`
           + ` · 累计：我 ${myTotal} ⇄ 他 ${s.learnedTotal || 0}`;
         const bits = [];
@@ -888,7 +888,7 @@ function renderTodo() {
           <div class="t-text">${esc(it.text)}</div>
           <div class="t-when">${whenHtml}${it.type === 'daily' || it.type === 'weekly' ? ` · 勾选=今天不再提醒` : ''}</div>
         </div>
-        <button class="t-del" data-del="${esc(it.id)}" aria-label="删除">✕</button>
+        <button class="t-del" data-del="${esc(it.id)}" aria-label="删除"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z%27/%3E%3C/svg%3E&quot;)"></i></button>
       </div>`;
   }).join('');
 }
@@ -1296,7 +1296,7 @@ function renderWordList() {
           <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${defsHtml}</div>
         </div>
         <div class="wc-actions">
-          <button class="speak-btn" data-speak="${idx}">🔊</button>
+          <button class="speak-btn" data-speak="${idx}"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
           <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${isLearned(studyUnitId, w.w) ? 'checked' : ''}></label>
         </div>
       </div>
@@ -1338,7 +1338,7 @@ function renderWordList() {
       saveState();
       ev.target.classList.toggle('on', on);
       ev.target.textContent = on ? '★' : '☆';
-      toast(on ? '已收藏 ⭐ 之后可在「收藏」里复习' : '已取消收藏');
+      toast(on ? '已收藏，之后可在「收藏」里复习' : '已取消收藏');
     });
 
     box.appendChild(card);
@@ -1568,7 +1568,7 @@ function spellSubmit() {
   const item = test.queue[test.pos];
   const target = String(item.word.w).toLowerCase();
   const you = String($('#spell-input').value || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!you) { toast('先拼一下再提交 🌸'); return; }
+  if (!you) { toast('先输入字母再提交'); return; }
   const ok = you === target;
 
   state.stats.tested += 1;
@@ -1696,12 +1696,12 @@ function finishTest() {
   $('#test-done').classList.remove('hidden');
   const n = test.queue.length;
   const r = test.right;
-  $('#done-body').innerHTML = `本组共 ${n} 词<br>✅ 记住 ${r} · ❌ 没记住 ${n - r}<br>正确率 ${n ? Math.round((r / n) * 100) : 0}%`;
+  $('#done-body').innerHTML = `本组共 ${n} 词<br><b class="ok">✓</b> 记住 ${r} · <b class="no">✗</b> 没记住 ${n - r}<br>正确率 ${n ? Math.round((r / n) * 100) : 0}%`;
   renderUnits();
 }
 
 $('#btn-test-again').addEventListener('click', () => {
-  if (!test || !test.miss.length) { toast('没有需要重测的词 🌸'); return; }
+  if (!test || !test.miss.length) { toast('没有需要重测的词'); return; }
   startTest(test.miss.slice(), '重测没记住的');
 });
 
@@ -1764,8 +1764,8 @@ function renderFavorites() {
   const shown = items.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
   if (!shown.length) {
     box.innerHTML = items.length
-      ? '<div class="empty-tip">这一档是空的 👌<br>点上面的「全部」看看其它词</div>'
-      : '<div class="empty-tip">收藏夹是空的 ⭐<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
+      ? '<div class="empty-tip">这一档是空的<br>点上面的「全部」看看其它词<br>点上面的「全部」看看其它词</div>'
+      : '<div class="empty-tip">收藏夹是空的<br>学习时点单词旁的「☆」把不熟的词收进来<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
     return;
   }
   shown.forEach((it) => {
@@ -1786,7 +1786,7 @@ function renderFavorites() {
           <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
         </div>
         <div class="wc-actions">
-          <button class="speak-btn">🔊</button>
+          <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
           <button class="mini-btn" data-unfav>取消收藏</button>
         </div>
       </div>
@@ -1889,7 +1889,7 @@ function renderWrongList() {
             <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
           </div>
           <div class="wc-actions">
-            <button class="speak-btn">🔊</button>
+            <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
             <button class="mini-btn" data-remove>掌握</button>
           </div>
         </div>`;
@@ -1903,7 +1903,7 @@ function renderWrongList() {
       box.appendChild(card);
     });
   });
-  if (!count) box.innerHTML = '<div class="empty-tip">错词本是空的 🌸<br>检验时「没记住」的词会出现在这里</div>';
+  if (!count) box.innerHTML = '<div class="empty-tip">错词本还是空的<br>检验时「没记住」的词会出现在这里<br>检验时「没记住」的词会出现在这里</div>';
 }
 
 /* ================= 设置 ================= */
@@ -1930,7 +1930,7 @@ function applyTheme() {
     meta.name = 'theme-color';
     document.head.appendChild(meta);
   }
-  meta.content = dark ? '#15161b' : '#ff6b9d';
+  meta.content = dark ? '#15161b' : '#ffffff';
   // 更新三档 chips 的选中态
   document.querySelectorAll('.theme-chip').forEach((b) => {
     b.classList.toggle('on', b.dataset.theme === t);
@@ -2186,10 +2186,10 @@ const Reading = (() => {
     box.classList.remove('hidden');
     box.innerHTML = `
       <div class="rd-src-line">${it.src} · 约 ${it.words} 词
-        <button class="rd-speak" id="rd-speak">🔊 朗读</button>
+        <button class="rd-speak" id="rd-speak"> 朗读</button>
         <span class="rd-tts-ctrl hidden" id="rd-tts-ctrl">
-          <button class="rd-speak" id="rd-pause">⏸ 暂停</button>
-          <button class="rd-speak" id="rd-stop">⏹ 停止</button>
+          <button class="rd-speak" id="rd-pause"><i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停</button>
+          <button class="rd-speak" id="rd-stop"><i class="ico ls-ico" style="--ico:url(undefined)"></i>停止</button>
         </span>
       </div>
       <div class="rd-text">${wrapWords(it.text).replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
@@ -2244,11 +2244,11 @@ const Reading = (() => {
       pauseBtn.classList.remove('hidden');
       speakBtn.classList.add('hidden');
       ttsCtrl.classList.remove('hidden');
-      pauseBtn.textContent = '⏸ 暂停';
+      pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停';
     });
     pauseBtn.addEventListener('click', () => {
-      if (ttsPaused) { speechSynthesis.resume(); pauseBtn.textContent = '⏸ 暂停'; }
-      else { speechSynthesis.pause(); pauseBtn.textContent = '▶ 继续'; }
+      if (ttsPaused) { speechSynthesis.resume(); pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停'; }
+      else { speechSynthesis.pause(); pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>继续'; }
       ttsPaused = !ttsPaused;
     });
     $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
@@ -2328,7 +2328,7 @@ const Reading = (() => {
     const r = rState();
     const words = Object.keys(r.vocab);
     if (wrap) wrap.classList.toggle('hidden', !words.length);
-    if (head) head.textContent = `📖 阅读生词（${words.length}）`;
+    if (head) head.textContent = `阅读生词（${words.length}）`;
     if (!words.length) return;
     box.innerHTML = words.map((w) => `
       <div class="rem-item"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
@@ -2560,8 +2560,8 @@ const Listening = (() => {
         audio.dataset.bound = '1';
         audio.addEventListener('timeupdate', onTick);
         audio.addEventListener('ended', () => { loopLine = -1; updateLoopBtn(); });
-        audio.addEventListener('play', () => { const b = $('#ls-play'); if (b) b.textContent = '❚❚ 暂停'; });
-        audio.addEventListener('pause', () => { const b = $('#ls-play'); if (b) b.textContent = '▶ 播放'; });
+        audio.addEventListener('play', () => { const b = $('#ls-play'); if (b) b.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停'; });
+        audio.addEventListener('pause', () => { const b = $('#ls-play'); if (b) b.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>播放'; });
       }
       return audio;
     }
@@ -2599,7 +2599,7 @@ const Listening = (() => {
         <audio id="ls-audio" controls preload="metadata"></audio>
         <div class="ls-ctl">
           <button class="mini-btn" id="ls-back5">« 5s</button>
-          <button class="mini-btn" id="ls-play">▶ 播放</button>
+          <button class="mini-btn" id="ls-play"><i class="ico ls-ico" style="--ico:url(undefined)"></i>播放</button>
           <button class="mini-btn" id="ls-fwd5">5s »</button>
           <button class="mini-btn" id="ls-rate">1.0×</button>
           <button class="mini-btn" id="ls-loop">单句循环</button>
@@ -2806,11 +2806,11 @@ const Listening = (() => {
       card.innerHTML = `<div class="lw-head"><b>${esc(hit.w.w)}</b>
           <span class="lw-ph">${esc(hit.w.ph || '')}</span>
           <button class="vw-fav ${faved ? 'on' : ''}" data-lw="${esc(hit.w.w)}" data-cn="${esc(cn)}">${faved ? '★' : '☆'}</button>
-          <button class="lw-close">✕</button></div>
+          <button class="lw-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
         <div class="lw-cn">${esc(cn)}</div>
         <div class="lw-root">${esc((hit.w.root || '').slice(0, 90))}</div>`;
     } else {
-      card.innerHTML = `<div class="lw-head"><b>${esc(raw)}</b><button class="lw-close">✕</button></div>
+      card.innerHTML = `<div class="lw-head"><b>${esc(raw)}</b><button class="lw-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
         <div class="lw-cn">词库（1007 词）里没有这个词，先按发音记一下。</div>`;
     }
     document.body.appendChild(card);
@@ -2866,7 +2866,7 @@ const Listening = (() => {
     $('#ls-next').addEventListener('click', () => {
       const i = paperData.tasks.findIndex((t) => t.id === task.id);
       const nxt = paperData.tasks[i + 1];
-      if (nxt) { stopAudio(); openTask(nxt); } else { toast('这一套练完了 🎉'); stopAudio(); renderGroups(); }
+      if (nxt) { stopAudio(); openTask(nxt); } else { toast('这一套练完了'); stopAudio(); renderGroups(); }
     });
   }
 
@@ -2910,7 +2910,7 @@ const Listening = (() => {
     const l = lState();
     const ws = Object.keys(l.vocab);
     if (wrap) wrap.classList.toggle('hidden', !ws.length); // 没收藏就整块藏起来
-    if (head) head.textContent = `🎧 听力生词（${ws.length}）`;
+    if (head) head.textContent = `听力生词（${ws.length}）`;
     if (!ws.length) return;
     box.innerHTML = ws.map((w) => `
       <div class="rem-item"><div><div>${esc(w)}</div><div class="rem-when">${esc(l.vocab[w].cn || '')}</div></div>
@@ -3062,7 +3062,7 @@ const Reminder = (() => {
         why = '还没把本应用「添加到主屏幕」';
       }
       if (!pushOK && !ntfyOn && !state.sync.pushplusToken && !Sync.isShell()) {
-        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机可以：装「📲 安卓 App 安装包」（最省心），或到下面「💬 微信通知」粘贴 PushPlus 口令；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
+        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机可以：装「 安卓 App 安装包」（最省心），或到下面「 微信通知」粘贴 PushPlus 口令；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
         return false;
       }
       rem().enabled = true;
@@ -3124,7 +3124,7 @@ const Reminder = (() => {
       if (chans.length) {
         setStatus('测试通知已发出（' + chans.join(' + ') + '），几秒内到', 'ok');
       } else if (!(state.sync && state.sync.ntfyTopic)) {
-        setStatus('这台设备两条通道都还没配：安卓请到「📱 安卓通知(ntfy)」生成主题并在 ntfy App 里订阅；iPhone 请重新开启上面的提醒开关', 'err');
+        setStatus('这台设备两条通道都还没配：安卓请到「 安卓通知(ntfy)」生成主题并在 ntfy App 里订阅；iPhone 请重新开启上面的提醒开关', 'err');
       } else if (push.total > 0 && first.status === 403) {
         setStatus('苹果拒收（订阅是旧服务器密钥建的）——关掉再打开上面的开关即可自动修复', 'err');
       } else {
@@ -3236,7 +3236,7 @@ const WordCard = (() => {
         <div class="wcphon"></div>
         <div class="wccn"></div>
         <div class="wcacts">
-          <button class="wcbtn wcspeak">🔊 发音</button>
+          <button class="wcbtn wcspeak"> 发音</button>
           <button class="wcbtn wcfav">☆ 收藏生词</button>
         </div>
       </div>`;
@@ -3406,7 +3406,7 @@ function renderToday() {
   if (c.listening.on) parts.push(`听力 ${listeningDoneToday()}/${c.listening.goal}`);
   const dt = dailyTasks();
   if (dt.length) parts.push(`事项 ${dailyDoneCount()}/${dt.length}`);
-  sub.textContent = parts.length ? parts.join(' · ') : '点右上角 ⚙ 配置你今天的目标';
+  sub.textContent = parts.length ? parts.join(' · ') : '点右上角配置你今天的目标';
   badge.textContent = due > 0 ? String(due) : '✓';
   badge.classList.remove('hidden');
   badge.classList.toggle('today-clear', due === 0 && (dt.length ? dailyDoneCount() === dt.length : true));
@@ -3421,25 +3421,25 @@ function renderTodayList() {
   if (c.newWords.on) {
     const t = todayCount();
     const ok = t.n >= c.newWords.goal;
-    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="newword"><span class="ti-ico">${ok ? '✅' : '📖'}</span><span class="ti-text">背新词</span><span class="ti-num">${t.n}/${c.newWords.goal}</span></div>`);
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="newword"><span class="ti-ico">${ok ? '<b class="ok">✓</b>' : '<i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></i>'}</span><span class="ti-text">背新词</span><span class="ti-num">${t.n}/${c.newWords.goal}</span></div>`);
   }
   if (c.review.on) {
     const due = srsDueCapped().length;
-    rows.push(`<div class="today-item ${due === 0 ? 'done' : ''}" data-go="review"><span class="ti-ico">${due === 0 ? '✅' : '🔁'}</span><span class="ti-text">复习到期词</span><span class="ti-num">${due}${c.review.cap > 0 && srsDueList().length > c.review.cap ? '（总' + srsDueList().length + '，今日上限' + c.review.cap + '）' : ''}</span></div>`);
+    rows.push(`<div class="today-item ${due === 0 ? 'done' : ''}" data-go="review"><span class="ti-ico">${due === 0 ? '<b class="ok">✓</b>' : ''}</span><span class="ti-text">复习到期词</span><span class="ti-num">${due}${c.review.cap > 0 && srsDueList().length > c.review.cap ? '（总' + srsDueList().length + '，今日上限' + c.review.cap + '）' : ''}</span></div>`);
   }
   if (c.reading.on) {
     const n = readingDoneToday();
     const ok = n >= c.reading.goal;
-    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="reading"><span class="ti-ico">${ok ? '✅' : '📖'}</span><span class="ti-text">阅读随手练</span><span class="ti-num">${n}/${c.reading.goal}</span></div>`);
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="reading"><span class="ti-ico">${ok ? '<b class="ok">✓</b>' : '<i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></i>'}</span><span class="ti-text">阅读随手练</span><span class="ti-num">${n}/${c.reading.goal}</span></div>`);
   }
   if (c.listening.on) {
     const n = listeningDoneToday();
     const ok = n >= c.listening.goal;
-    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="listening"><span class="ti-ico">${ok ? '✅' : '🎧'}</span><span class="ti-text">听力精听</span><span class="ti-num">${n}/${c.listening.goal}</span></div>`);
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="listening"><span class="ti-ico">${ok ? '<b class="ok">✓</b>' : '<i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M3 18v-6a9 9 0 0 1 18 0v6%27/%3E%3Cpath d=%27M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z%27/%3E%3C/svg%3E&quot;)"></i>'}</span><span class="ti-text">听力精听</span><span class="ti-num">${n}/${c.listening.goal}</span></div>`);
   }
   dailyTasks().forEach((t) => {
     const ok = dailyTaskDone(t);
-    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-dtask="${t.id}"><span class="ti-ico">${ok ? '✅' : '⬜'}</span><span class="ti-text">${esc(t.text)}</span><span class="ti-num">${ok ? '已完成' : '点一下打勾'}</span></div>`);
+    rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-dtask="${t.id}"><span class="ti-ico">${ok ? '<b class="ok">✓</b>' : ''}</span><span class="ti-text">${esc(t.text)}</span><span class="ti-num">${ok ? '已完成' : '点一下打勾'}</span></div>`);
   });
   box.innerHTML = rows.join('');
   box.classList.toggle('hidden', !rows.length);
@@ -3603,7 +3603,7 @@ async function boot() {
       const line = $('#ver-line');
       if (line) line.textContent = `当前版本 v${v.v} · 发布于 ${v.t || ''}`;
       const seen = localStorage.getItem('sgwd_seen_ver');
-      if (seen && seen !== v.v) toast(`✨ 已更新到 v${v.v}`);
+      if (seen && seen !== v.v) toast(` 已更新到 v${v.v}`);
       localStorage.setItem('sgwd_seen_ver', v.v);
       // 安卓壳：比对安装包版本，有新版时红字提示重装（壳自己也会发系统通知）
       try {
@@ -3612,7 +3612,7 @@ async function boot() {
         if (local !== null && v.apk && v.apk !== local) {
           const st = $('#apk-ver-state');
           if (st) {
-            st.innerHTML = '⚠ 检测到 App 有新版本 <button class="ghost-btn" id="apk-update-now" style="padding:5px 14px">⬇️ 一键更新</button>';
+            st.innerHTML = ' 检测到 App 有新版本 <button class="ghost-btn" id="apk-update-now" style="padding:5px 14px"> 一键更新</button>';
             st.style.color = '#d84c4c';
             st.style.fontWeight = '700';
             const ub = $('#apk-update-now');
@@ -3628,7 +3628,7 @@ async function boot() {
           const seenApk = sessionStorage.getItem('sgwd_apk_toast');
           if (!seenApk) {
             sessionStorage.setItem('sgwd_apk_toast', '1');
-            toast('📲 App 有新版本，可到设置页一键更新');
+            toast('App 有新版本，可到设置页一键更新');
           }
         }
       } catch (e) { /* 壳接口不可用则跳过 */ }
