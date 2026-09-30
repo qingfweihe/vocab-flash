@@ -500,10 +500,14 @@ const Sync = (() => {
       if (s.pushCount) bits.push('网页推送 ' + s.pushCount + ' 台设备');
       if (s.reminderEnabled) bits.push('已开每日提醒');
       bits.push('最后活跃 ' + agoText(s.lastActive || s.lastSeen));
-      const canRecv = s.hasShell || s.hasNtfy || s.hasWechat || s.pushCount > 0;
-      if (!canRecv) bits.unshift('还没有可用通知通道');
-      el.innerHTML = `${who}的状态：<br>${rank}<br>${bits.join(' · ')}`;
-      el.className = 'set-note' + (canRecv ? ' ' : ' err');
+        const canRecv = s.hasShell || s.hasNtfy || s.hasWechat || s.pushCount > 0;
+        if (!canRecv) bits.unshift('还没有可用通知通道');
+        el.innerHTML = `${who}的状态：<br>${rank}<br>${bits.join(' · ')}`;
+        el.className = 'set-note' + (canRecv ? ' ' : ' err');
+        // 缓存徽章数据供好友卡展示
+        state.sync.partnerMeta = { streak: s.streak || 0, learnedTotal: s.learnedTotal || 0, todayCount: s.todayCount || 0, ts: Date.now() };
+        saveState();
+        renderFriends();
     } catch (e) {
       el.textContent = '对方状态：读取失败（' + String(e.message || e).slice(0, 40) + '）';
     }
@@ -511,6 +515,7 @@ const Sync = (() => {
 
   // ---- 好友卡（备注名 + 状态；界面按列表设计，为将来多好友预留） ----
   const friendName = () => (state.sync && state.sync.partnerName) || '';
+  const AVATARS = ['🌸', '⭐', '🔥', '🏆', '🐱', '🐶', '🐼', '🦊'];
   function renderFriends() {
     const box = $('#friend-list');
     if (!box) return;
@@ -519,14 +524,25 @@ const Sync = (() => {
       return;
     }
     const nm = friendName();
-    const initial = nm ? nm.slice(0, 1) : '友';
+    const av = (state.sync && state.sync.partnerAvatar) || '';
+    const initial = av || (nm ? nm.slice(0, 1) : '友');
+    const meta = (state.sync && state.sync.partnerMeta) || {};
+    const badges = [];
+    if (meta.streak) badges.push('🔥 连胜 ' + meta.streak + ' 天');
+    if (meta.learnedTotal) badges.push('📚 累计 ' + meta.learnedTotal + ' 词');
+    if (meta.todayCount) badges.push('今日 ' + meta.todayCount + ' 词');
     box.innerHTML = `
       <div class="friend-card">
-        <div class="friend-avatar">${esc(initial)}</div>
+        <button class="friend-avatar" id="friend-avatar-btn" title="点头像换一个">${esc(initial)}</button>
         <div class="friend-main">
           <div class="friend-name">${nm ? esc(nm) : '未命名好友'} <button class="mini-btn" id="friend-rename">${nm ? '改名' : '起个名字'}</button></div>
           <div class="friend-code">已结对 · ${esc(cfg().partner)}</div>
+          ${badges.length ? `<div class="friend-badges">${badges.join(' · ')}</div>` : ''}
         </div>
+      </div>
+      <div id="avatar-pick" class="avatar-pick hidden">
+        ${AVATARS.map((a) => `<button class="avatar-opt" data-av="${a}">${a}</button>`).join('')}
+        <button class="avatar-opt" data-av="">首字</button>
       </div>`;
     const rb = $('#friend-rename');
     if (rb) rb.addEventListener('click', () => {
@@ -539,6 +555,14 @@ const Sync = (() => {
       refreshPartnerStatus();
       toast(state.sync.partnerName ? '备注已保存：' + state.sync.partnerName : '已清除备注');
     });
+    const ab = $('#friend-avatar-btn');
+    if (ab) ab.addEventListener('click', () => $('#avatar-pick').classList.toggle('hidden'));
+    $$('#avatar-pick [data-av]').forEach((b) => b.addEventListener('click', () => {
+      state.sync.partnerAvatar = b.dataset.av || '';
+      saveState();
+      renderFriends();
+      toast(b.dataset.av ? '头像已换成 ' + b.dataset.av : '头像已恢复首字');
+    }));
   }
 
   function renderUI() {
@@ -589,23 +613,41 @@ const Sync = (() => {
       status('正在同步…');
       try { await pullMerge(); await pushAll(true); } catch (e) { /* 状态已显示 */ }
     });
-    $('#sync-poke').addEventListener('click', async () => {
-      if (!cfg().partner) { status('先填写伙伴码并结对', 'err'); return; }
+    // ---- 互动：戳一下 / 附言 / 送礼物（共用发送） ----
+    async function sendPoke(text, isGift) {
+      if (!cfg().partner) { status('先在「我的好友」里结对', 'err'); return false; }
       const who = friendName() || 'TA';
       try {
-        const r = await request('poke', { to: cfg().partner, text: '该背单词啦！' });
+        const r = await request('poke', { to: cfg().partner, text: String(text || '该背单词啦！').slice(0, 80) });
         const d = (r && r.delivered) || {};
         const pushSent = (d.push && d.push.sent) || 0;
         const ntfyOk = !!(d.ntfy && d.ntfy.published);
         const wechatOk = !!(d.wechat && d.wechat.published);
-        if (pushSent > 0 && (ntfyOk || wechatOk)) toast('已戳 ' + who + ' ✓ 多个通道都发了');
-        else if (pushSent > 0) toast('已戳 ' + who + ' ✓ 网页推送已发出');
-        else if (ntfyOk) toast('已戳 ' + who + ' ✓ 已发到 TA 的 ntfy');
-        else if (wechatOk) toast('已戳 ' + who + ' ✓ 已发到 TA 的微信');
-        else if (r && r.toHasShell) toast('已放进 ' + who + ' 的消息盒——TA 的 App 取件后会提醒（最长 15 分钟）');
-        else toast('已放进 ' + who + ' 的消息盒（TA 暂时没有可用通知通道，打开应用能看到）');
+        const what = isGift ? '已送出 ' : '已戳 ';
+        if (pushSent > 0 && (ntfyOk || wechatOk)) toast(what + who + ' ✓ 多个通道都发了');
+        else if (pushSent > 0) toast(what + who + ' ✓ 网页推送已发出');
+        else if (ntfyOk) toast(what + who + ' ✓ 已发到 TA 的 ntfy');
+        else if (wechatOk) toast(what + who + ' ✓ 已发到 TA 的微信');
+        else if (r && r.toHasShell) toast(what + who + ' ✓ 已放进消息盒——TA 的 App 取件后会提醒（最长 15 分钟）');
+        else toast(what + who + '：已放进消息盒（TA 暂时没有可用通知通道，打开应用能看到）');
         refreshPartnerStatus();
-      } catch (e) { toast(String(e.message || e).slice(0, 60)); }
+        return true;
+      } catch (e) {
+        toast(String(e.message || e).slice(0, 60));
+        return false;
+      }
+    }
+    $('#sync-poke').addEventListener('click', () => sendPoke('该背单词啦！'));
+    // 礼物四连
+    $$('[data-gift]').forEach((b) => b.addEventListener('click', () => sendPoke(b.dataset.gift, true)));
+    // 附言模板
+    $$('[data-poke]').forEach((b) => b.addEventListener('click', () => sendPoke(b.dataset.poke)));
+    // 自定义附言
+    $('#poke-send').addEventListener('click', async () => {
+      const v = ($('#poke-text').value || '').trim();
+      if (!v) { toast('先写一句或点上面的快捷模板'); return; }
+      const ok = await sendPoke(v);
+      if (ok) $('#poke-text').value = '';
     });
 
     // ---- 账号密码（同步码的友好登录入口） ----

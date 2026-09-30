@@ -267,11 +267,6 @@
         <span class="set-entry-main"><b>云同步</b><i>账号密码 · 同步码 · 好友结对与互戳</i></span>
         <span class="set-entry-arrow">›</span>
       </button>
-      <button class="set-entry" data-setpanel="friend">
-        <span class="ico set-entry-ico" style="--ico:var(--ico-msg)"></span>
-        <span class="set-entry-main"><b>我的好友</b><i>备注与头像 · 送礼物 · 附言互戳</i></span>
-        <span class="set-entry-arrow">›</span>
-      </button>
       <button class="set-entry" data-setpanel="general">
         <span class="ico set-entry-ico" style="--ico:var(--ico-gear)"></span>
         <span class="set-entry-main"><b>通用</b><i>夜间模式 · 发音语速 · 字号 · 樱花</i></span>
@@ -379,48 +374,6 @@
     </div>
   </div>
 
-  <div id="setpanel-friend" class="set-panel hidden">
-    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">我的好友</div></div>
-      <div class="set-item">
-        <div class="set-label">我的好友<div class="set-hint">结对后给 TA 起个名字，互戳提示、对方状态、通知里都用它</div></div>
-      </div>
-      <div id="friend-list" style="padding:0 0 8px"></div>
-    <div class="settings-box" id="friend-actions">
-      <div class="set-section-title">🎁 送礼物（点即送出）</div>
-      <div class="gift-row">
-        <button class="gift-btn" data-gift="🌸 送你一朵花，加油！"><b>🌸</b><span>送花</span></button>
-        <button class="gift-btn" data-gift="⭐ 给你一颗小星星！"><b>⭐</b><span>星星</span></button>
-        <button class="gift-btn" data-gift="🔥 燃起来了，冲！"><b>🔥</b><span>打气</span></button>
-        <button class="gift-btn" data-gift="🏆 佩服你，向你学习！"><b>🏆</b><span>崇拜</span></button>
-      </div>
-      <div class="set-section-title" style="margin-top:14px">💬 戳一下（可附言）</div>
-      <div class="poke-tpl">
-        <button class="mini-btn" data-poke="该背单词啦！">该背单词啦！</button>
-        <button class="mini-btn" data-poke="加油，一起背！">加油，一起背！</button>
-        <button class="mini-btn" data-poke="今天背了吗？">今天背了吗？</button>
-        <button class="mini-btn" data-poke="别偷懒哦～">别偷懒哦～</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="poke-text" type="text" maxlength="40" placeholder="或自己写一句…" style="flex:1;font-size:13px">
-        <button class="ghost-btn" id="poke-send">戳 TA</button>
-      </div>
-    </div>
-    <div class="settings-box">
-      <div class="set-item">
-        <div class="set-label">伙伴同步码<div class="set-hint">粘贴朋友发给你的码，点「结对」（他那边不用再操作，会自动认到）</div></div>
-        <div>
-          <input type="text" id="sync-partner" maxlength="12" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
-          <button class="ghost-btn" id="sync-pair" style="padding:4px 10px;margin-left:6px">结对</button>
-        </div>
-      </div>
-      <div style="margin-top:8px">
-        <button class="ghost-btn" id="sync-poke" style="margin-left:6px">戳一下伙伴</button>
-        <button class="ghost-btn" id="partner-refresh" style="margin-left:6px">查对方状态</button>
-      </div>
-      <div id="partner-status" class="set-note"></div>
-    </div>
-  </div>
-
   <div id="setpanel-sync" class="set-panel hidden">
     <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">云同步</div></div>
     <!-- 云同步 -->
@@ -449,10 +402,21 @@
         </div>
       </div>
       <div class="set-item">
+        <div class="set-label">我的好友<div class="set-hint">结对后给 TA 起个名字，互戳提示、对方状态、通知里都用它</div></div>
+      </div>
+      <div id="friend-list" style="padding:0 0 8px"></div>
+      <div class="set-item">
         <div class="set-label">本机同步码<div class="set-hint">这串码就是你的身份：复制发给朋友，他填进「伙伴同步码」你们就结对了；换新手机也用它接管进度</div></div>
         <div>
           <input type="text" id="sync-code" readonly style="width:42%;font-size:13px;letter-spacing:1px;text-align:center">
           <button class="ghost-btn" id="sync-copy" style="padding:4px 10px;margin-left:6px">复制</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">伙伴同步码<div class="set-hint">粘贴朋友发给你的码，点「结对」（他那边不用再操作，会自动认到）</div></div>
+        <div>
+          <input type="text" id="sync-partner" maxlength="12" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
+          <button class="ghost-btn" id="sync-pair" style="padding:4px 10px;margin-left:6px">结对</button>
         </div>
       </div>
       <div class="set-item">
@@ -465,7 +429,10 @@
       <div id="sync-status" class="set-note"></div>
       <div style="margin-top:8px">
         <button class="ghost-btn" id="sync-push">立即同步</button>
+        <button class="ghost-btn" id="sync-poke" style="margin-left:6px">戳一下伙伴</button>
+        <button class="ghost-btn" id="partner-refresh" style="margin-left:6px">查对方状态</button>
       </div>
+      <div id="partner-status" class="set-note"></div>
       <div class="set-note">
         开启后，本机改动约每半分钟自动上传，打开应用时自动拉取合并。两台设备同时改不冲突：进度取并集，删除会同步删除。同步码就是钥匙，别发给陌生人。
       </div>

@@ -1039,3 +1039,28 @@ html.dark .wc-detail .lab { color: var(--brand-deep); }
 .set-entry-main b { display: block; font-size: 15px; font-weight: 600; }
 .set-entry-main i { display: block; font-style: normal; font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
 .set-entry-arrow { flex: none; color: var(--ink-4); font-size: 16px; }
+
+/* ---------- 好友面板：礼物 / 附言 / 头像 ---------- */
+.friend-badges { font-size: 11.5px; color: var(--ink-2); margin-top: 4px; }
+.friend-avatar { cursor: pointer; border: none; font-family: inherit; }
+.avatar-pick { display: flex; gap: 6px; flex-wrap: wrap; padding: 6px 2px 8px; }
+.avatar-opt {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--line); background: var(--card);
+  font-size: 19px; cursor: pointer; color: var(--ink-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-opt:active { transform: scale(.92); }
+.gift-row { display: flex; gap: 8px; margin-top: 8px; }
+.gift-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 0 8px; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--card);
+  cursor: pointer; font-family: inherit;
+}
+.gift-btn b { font-size: 22px; line-height: 1; }
+.gift-btn span { font-size: 11px; color: var(--ink-2); }
+.gift-btn:active { transform: scale(.94); background: var(--brand-soft); }
+.poke-tpl { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.poke-tpl .mini-btn { font-size: 12px; }
+#poke-text { border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; color: var(--ink); background: var(--card); outline: none; font-family: inherit; }
