@@ -446,10 +446,10 @@
     </div>
     <div class="settings-box">
       <div class="set-item">
-        <div class="set-label">加好友<div class="set-hint">输入对方的用户名（注册时设置的那个），点「加好友」——他那边自动认到</div></div>
+        <div class="set-label">伙伴同步码<div class="set-hint">粘贴朋友发给你的码，点「结对」（他那边不用再操作，会自动认到）</div></div>
         <div>
-          <input type="text" id="sync-partner" maxlength="20" placeholder="对方用户名" style="width:42%;font-size:13px">
-          <button class="ghost-btn" id="sync-pair" style="padding:4px 10px;margin-left:6px">加好友</button>
+          <input type="text" id="sync-partner" maxlength="12" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
+          <button class="ghost-btn" id="sync-pair" style="padding:4px 10px;margin-left:6px">结对</button>
         </div>
       </div>
       <div style="margin-top:8px">
@@ -466,31 +466,39 @@
     <div class="settings-box">
       <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M17.5 19a4.5 4.5 0 0 0 .38-8.98 7 7 0 0 0-13.76 1.99A4 4 0 0 0 6 19.5h11.5z%27/%3E%3C/svg%3E&quot;)"></i>云同步</div>
       <div class="set-item">
-        <div class="set-label">开启云同步<div class="set-hint">注册账号后，多台设备共用进度 · 与好友互戳</div></div>
+        <div class="set-label">开启云同步<div class="set-hint">多台设备共用进度 · 双人互戳</div></div>
         <label class="switch"><input type="checkbox" id="sync-on"><span>开启</span></label>
       </div>
       <div class="set-item">
-        <div class="set-label">我的账号<div class="set-hint">多台设备共用进度、互戳、AI 助手都需要账号；换设备登录即可取回全部进度</div></div>
+        <div class="set-label">账号密码<div class="set-hint">换新设备不用记同步码：输用户名密码就能取回全部进度</div></div>
       </div>
       <div style="padding:0 0 10px">
-        <div id="acct-migrate" class="set-note hidden" style="margin:0 0 8px;padding:8px 10px;background:var(--brand-soft);border-radius:10px;color:var(--brand-deep)"></div>
         <div id="acct-logged" class="set-note hidden" style="margin:0 0 8px"></div>
         <div id="acct-form">
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <input id="acct-user" type="text" placeholder="用户名（3~20位字母数字）" autocomplete="username" style="flex:1;font-size:13px">
             <input id="acct-pass" type="password" placeholder="密码（至少6位）" autocomplete="current-password" style="flex:1;font-size:13px">
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-            <input id="acct-name" type="text" maxlength="12" placeholder="昵称（显示给好友，可留空）" style="flex:1;font-size:13px">
-            <button class="avatar-opt" id="acct-avatar-btn" title="点头像选一个" style="width:38px;height:38px;font-size:17px">🌸</button>
-          </div>
-          <div id="acct-avatar-pick" class="avatar-pick hidden"></div>
           <button class="ghost-btn" id="acct-register">注册（绑定本机进度）</button>
           <button class="ghost-btn" id="acct-login" style="margin-left:6px">登录（取回进度）</button>
           <div class="set-note" style="margin-top:6px">注册会把本机当前进度绑到账号；换设备在新手机登录即可取回。忘记密码找作者重置。</div>
         </div>
         <div id="acct-out-wrap" class="hidden" style="margin-top:6px">
           <button class="ghost-btn" id="acct-logout">退出账号（不影响云同步）</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">本机同步码<div class="set-hint">这串码就是你的身份：复制发给朋友，他填进「伙伴同步码」你们就结对了；换新手机也用它接管进度</div></div>
+        <div>
+          <input type="text" id="sync-code" readonly style="width:42%;font-size:13px;letter-spacing:1px;text-align:center">
+          <button class="ghost-btn" id="sync-copy" style="padding:4px 10px;margin-left:6px">复制</button>
+        </div>
+      </div>
+      <div class="set-item">
+        <div class="set-label">已有同步码？<div class="set-hint">第二台设备输入第一台的码，接管同一份进度</div></div>
+        <div>
+          <input type="text" id="sync-takeover" maxlength="12" placeholder="输入 12 位码" style="width:42%;font-size:13px;letter-spacing:1px;text-transform:uppercase">
+          <button class="ghost-btn" id="sync-takeover-btn" style="padding:4px 10px;margin-left:6px">接管</button>
         </div>
       </div>
       <div id="sync-status" class="set-note"></div>

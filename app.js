@@ -571,13 +571,13 @@ const Sync = (() => {
     }));
   }
 
+  let renderAcctRef = null; // init 内 renderAcct 的顶层引用（renderUI 里刷新账号区用）
   function renderUI() {
     const c = cfg();
     tellShell();
     const on = $('#sync-on'); if (on) on.checked = !!c.on;
-    const code = $('#sync-code'); if (code) code.value = c.code || '';
-    const p = $('#sync-partner'); if (p && document.activeElement !== p) p.value = c.partner || '';
     if (typeof renderFriends === 'function') renderFriends();
+    if (typeof renderAcctRef === 'function' && renderAcctRef) renderAcctRef();
     if (c.on && c.code) {
       status((c.partner ? '已开启 · 好友 ' + ((state.sync && state.sync.partnerName) || c.partner) : '已开启') + (c.lastSync ? ' · 上次同步 ' + new Date(c.lastSync).toLocaleTimeString('zh-CN', { hour12: false }) : ''), 'ok');
     } else if (!c.on && c.code) {
@@ -594,25 +594,21 @@ const Sync = (() => {
       if (on.checked) { const okRes = await enable(); on.checked = !!okRes; }
       else disable();
     });
-    $('#sync-copy').addEventListener('click', async () => {
-      const v = cfg().code || '';
-      if (!v) { status('先开启云同步生成同步码', 'err'); return; }
-      try { await navigator.clipboard.writeText(v); toast('同步码已复制'); }
-      catch (e) { const el = $('#sync-code'); el.select(); try { document.execCommand('copy'); toast('同步码已复制'); } catch (e2) { toast('复制失败，请手动长按选择'); } }
-    });
     $('#sync-pair').addEventListener('click', async () => {
-      const p = $('#sync-partner').value.trim().toUpperCase();
-      if (!cfg().code) { status('先开启云同步', 'err'); return; }
-      if (!/^[A-Z2-7]{12}$/.test(p)) { status('伙伴码应为 12 位大写字母数字', 'err'); return; }
-      if (p === cfg().code) { status('不能和自己结对', 'err'); return; }
-      status('正在结对…');
+      const uname = ($('#sync-partner').value || '').trim().toLowerCase();
+      if (!cfg().code) { status('先在「我的账号」注册或登录', 'err'); return; }
+      if (!/^[a-z0-9_]{3,20}$/.test(uname)) { status('输入对方的用户名（3~20 位字母数字）', 'err'); return; }
+      status('正在加好友…');
       try {
-        await request('pair', { partner: p });
-        cfg().partner = p; saveState(); renderUI();
+        const r2 = await request('pair.byuser', { user: uname });
+        cfg().partner = r2.partner; saveState(); renderUI();
+        if (!state.sync.partnerName && r2.partnerName) state.sync.partnerName = r2.partnerName; // 自动用对方昵称
+        saveState();
         renderFriends();
-        status('已与 ' + (friendName() || p) + ' 结对 ✓ 现在可以互戳了', 'ok');
+        $('#sync-partner').value = '';
+        status('已和「' + (friendName() || r2.partnerName || uname) + '」成为好友 ✓ 现在可以互戳了', 'ok');
         refreshPartnerStatus();
-      } catch (e) { status('结对失败：' + String(e.message || e).slice(0, 60), 'err'); }
+      } catch (e) { status('加好友失败：' + String(e.message || e).slice(0, 60), 'err'); }
     });
     $('#sync-push').addEventListener('click', async () => {
       if (!cfg().on) { status('先开启云同步', 'err'); return; }
@@ -659,21 +655,59 @@ const Sync = (() => {
     // ---- 账号密码（同步码的友好登录入口） ----
     const acctGet = () => { try { return JSON.parse(localStorage.getItem('sgwd_account') || 'null'); } catch (e) { return null; } };
     const acctSet = (v) => { if (v) localStorage.setItem('sgwd_account', JSON.stringify(v)); else localStorage.removeItem('sgwd_account'); };
+    const ACCT_AVATARS = ['🌸', '⭐', '🔥', '🏆', '🐱', '🐶', '🐼', '🦊', '🐰', '🌟', '🍀', '🎯'];
+    let acctAvatar = (state.sync && state.sync.profileAvatar) || '🌸';
     function renderAcct() {
       const logged = $('#acct-logged'), form = $('#acct-form'), out = $('#acct-out-wrap');
+      const migrate = $('#acct-migrate');
       if (!logged || !form || !out) return;
       const a = acctGet();
       if (a && a.user) {
-        logged.textContent = '已登录：' + a.user + ' ✓ 进度已绑定到账号（换设备登录即可取回）';
+        const nm = (state.sync && state.sync.profileName) || a.user;
+        const av = (state.sync && state.sync.profileAvatar) || '🌸';
+        logged.innerHTML = '已登录：<b>' + esc(av + ' ' + nm) + '</b>（' + esc(a.user) + '）✓ 换设备登录即可取回进度';
         logged.classList.remove('hidden');
         form.classList.add('hidden');
         out.classList.remove('hidden');
+        if (migrate) migrate.classList.add('hidden');
       } else {
         logged.classList.add('hidden');
         form.classList.remove('hidden');
         out.classList.add('hidden');
+        // 迁移横幅：有旧同步码但还没账号
+        if (migrate) {
+          if (cfg().code && cfg().on) {
+            migrate.textContent = '💡 你还在用旧的同步码方式。点下面「注册」设置用户名和密码后，换设备直接用账号登录（进度自动绑定，不影响现有数据）。';
+            migrate.classList.remove('hidden');
+          } else {
+            migrate.classList.add('hidden');
+          }
+        }
+      }
+      // 头像按钮与选择条
+      const ab = $('#acct-avatar-btn');
+      if (ab) {
+        ab.textContent = acctAvatar;
+        if (!ab._bound) {
+          ab._bound = true;
+          ab.addEventListener('click', () => {
+            const pick = $('#acct-avatar-pick');
+            if (!pick) return;
+            if (pick.innerHTML === '') {
+              pick.innerHTML = ACCT_AVATARS.map((x) => '<button class="avatar-opt" data-av2="' + x + '">' + x + '</button>').join('');
+              pick.querySelectorAll('[data-av2]').forEach((b) => b.addEventListener('click', () => {
+                acctAvatar = b.dataset.av2;
+                ab.textContent = acctAvatar;
+                pick.classList.add('hidden');
+              }));
+            }
+            pick.classList.toggle('hidden');
+          });
+        }
       }
     }
+    renderAcctRef = renderAcct;
+
     async function accountTakeover(code) {
       // 登录后把账号绑定的码接过来：合并云端进度到本地，再整体上传
       await request('init', { code });
@@ -688,8 +722,11 @@ const Sync = (() => {
       status('正在注册…');
       try {
         if (!cfg().code) { await ensureCode(); } // 没开同步的先本地生成码，注册时一并绑定
-        const r = await request('account.register', { user, pass, code: cfg().code });
+        const pname = ($('#acct-name').value || '').trim();
+        const r = await request('account.register', { user, pass, code: cfg().code, profileName: pname, profileAvatar: acctAvatar });
         acctSet({ user: r.user, ts: Date.now() });
+        if (r.profileName) state.sync.profileName = r.profileName;
+        if (r.profileAvatar) state.sync.profileAvatar = r.profileAvatar;
         cfg().code = r.code; cfg().on = true;
         saveState(); renderUI(); renderAcct();
         await pushAll(true);
@@ -710,6 +747,9 @@ const Sync = (() => {
         const r = await request('account.login', { user, pass });
         await accountTakeover(r.code);
         acctSet({ user: r.user, ts: Date.now() });
+        if (r.profileName) state.sync.profileName = r.profileName;
+        if (r.profileAvatar) state.sync.profileAvatar = r.profileAvatar;
+        saveState();
         renderAcct();
         status('已登录：' + r.user + ' ✓ 进度已取回', 'ok');
         toast('登录成功 ✓ 进度已取回', 3000);
@@ -729,22 +769,6 @@ const Sync = (() => {
 
     const refreshBtn = $('#partner-refresh');
     if (refreshBtn) refreshBtn.addEventListener('click', refreshPartnerStatus);
-    // ---- 已有同步码接管（第二台设备） ----
-    const toBtn = $('#sync-takeover-btn');
-    if (toBtn) toBtn.addEventListener('click', async () => {
-      const c = ($('#sync-takeover').value || '').trim().toUpperCase();
-      if (!/^[A-Z2-7]{12}$/.test(c)) { status('同步码应为 12 位大写字母数字', 'err'); return; }
-      if (c === cfg().code) { status('这就是本机的同步码', 'err'); return; }
-      if (!confirm('接管会把云端那份进度与本机现有进度合并（取并集），继续？')) return;
-      status('正在接管…');
-      try {
-        await request('init', { code: c }); // 校验云端存在
-        cfg().code = c; cfg().on = true;
-        saveState(); renderUI();
-        await pullMerge(); await pushAll(true);
-        status('已接管 ' + c + ' ✓ 进度已合并', 'ok');
-      } catch (e) { status('接管失败：' + String(e.message || e).slice(0, 70), 'err'); }
-    });
 
     // ---- 安卓通知（ntfy） ----
     const nStatus = (msg, cls) => { const el = $('#ntfy-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } };
@@ -876,7 +900,7 @@ const Sync = (() => {
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus };
+  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -2075,6 +2099,9 @@ $('#settings-home').addEventListener('click', (e) => {
   if (!b) return;
   showSetPanel(b.dataset.setpanel);
   // 打开好友面板时刷新好友卡与对方状态（接管/登录后数据才到位，此前不会渲染）
+  if (b.dataset.setpanel === 'sync' && typeof Sync.renderUI === 'function') {
+    try { Sync.renderUI(); } catch (e2) { /* 静默 */ }
+  }
   if (b.dataset.setpanel === 'friend') {
     Sync.renderFriends();
     if (state.sync && state.sync.partner) {
@@ -3849,7 +3876,7 @@ const AI = (() => {
     try {
       const r = await (typeof Sync !== 'undefined' && Sync.request
         ? Sync.request('ai.chat', { messages: h.slice(-12), context: contextSummary() }, 90000)
-        : Promise.reject(new Error('未开通云同步')));
+        : Promise.reject(new Error('请先在设置 → 云同步 注册账号')));
       const reply = (r && r.text) || '（AI 没有返回内容，再试一次）';
       const h2 = hist();
       h2.push({ role: 'assistant', content: reply });
