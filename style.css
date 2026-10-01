@@ -1112,3 +1112,18 @@ html.dark .ai-msg.user { background: var(--brand); }
 }
 .fav-seg.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-deep); }
 html.dark .fav-seg.active { color: var(--brand); }
+
+/* ---------- AI 回复排版（轻量 Markdown 渲染） ---------- */
+.ai-msg.bot .md-h { font-weight: 700; margin: 10px 0 4px; }
+.ai-msg.bot .md-h1 { font-size: 16px; }
+.ai-msg.bot .md-h2 { font-size: 15.5px; }
+.ai-msg.bot .md-h3, .ai-msg.bot .md-h4 { font-size: 14.8px; color: var(--brand-deep); }
+.ai-msg.bot .md-p { margin: 4px 0; }
+.ai-msg.bot .md-li { margin: 3px 0 3px 14px; position: relative; }
+.ai-msg.bot .md-li::before { content: '·'; position: absolute; left: -10px; color: var(--brand); font-weight: 700; }
+.ai-msg.bot .md-oli { margin-left: 6px; }
+.ai-msg.bot .md-oli::before { content: none; }
+.ai-msg.bot .md-gap { height: 6px; }
+.ai-msg.bot .md-hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
+.ai-msg.bot b { color: var(--brand-deep); }
+html.dark .ai-msg.bot b { color: var(--brand); }

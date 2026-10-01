@@ -193,9 +193,10 @@ const Sync = (() => {
   function djb2(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h); }
   function status(msg, cls) { const el = $('#sync-status'); if (el) { el.textContent = msg; el.className = 'set-note' + (cls ? ' ' + cls : ''); } }
 
-  async function request(action, payload) {
+  async function request(action, payload, timeoutMs) {
     const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 15000); // 弱网下 15 秒必给反馈，不挂起按钮
+    const limit = Number(timeoutMs) || 15000; // 默认弱网下 15 秒必给反馈；AI 等长任务可放宽
+    const tid = setTimeout(() => ctrl.abort(), limit);
     let res;
     try {
       res = await fetch(API, {
@@ -206,7 +207,7 @@ const Sync = (() => {
       });
     } catch (e) {
       clearTimeout(tid);
-      if (e.name === 'AbortError') { const err = new Error('网络超时（15 秒无响应）'); err.code = 'TIMEOUT'; throw err; }
+      if (e.name === 'AbortError') { const err = new Error('网络超时（' + Math.round(limit / 1000) + ' 秒无响应）'); err.code = 'TIMEOUT'; throw err; }
       throw e;
     }
     clearTimeout(tid);
@@ -3774,6 +3775,25 @@ const AI = (() => {
     return bits.join('，');
   }
 
+  /** 轻量 Markdown 渲染（AI 回复排版）：先转义防 XSS，再行级转换 */
+  function mdLite(raw) {
+    const t = esc(String(raw || ''));
+    const out = [];
+    for (const line of t.split('\n')) {
+      const x = line.trim();
+      if (!x) { out.push('<div class="md-gap"></div>'); continue; }
+      if (/^-{3,}$/.test(x) || /^\*{3,}$/.test(x)) { out.push('<hr class="md-hr">'); continue; }
+      const h = x.match(/^(#{1,4})\s+(.*)$/);
+      if (h) { out.push('<div class="md-h md-h' + h[1].length + '">' + h[2] + '</div>'); continue; }
+      const li = x.match(/^[-*•]\s+(.*)$/);
+      if (li) { out.push('<div class="md-li">' + li[1] + '</div>'); continue; }
+      const oli = x.match(/^(\d{1,2})[.、)]\s+(.*)$/);
+      if (oli) { out.push('<div class="md-li md-oli"><b>' + oli[1] + '.</b> ' + oli[2] + '</div>'); continue; }
+      out.push('<p class="md-p">' + x + '</p>');
+    }
+    return out.join('').replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  }
+
   function renderMsgs() {
     const box = $('#ai-msgs');
     if (!box) return;
@@ -3783,7 +3803,7 @@ const AI = (() => {
     } else {
       box.innerHTML = h.map((m) => m.role === 'user'
         ? `<div class="ai-msg user">${esc(m.content)}</div>`
-        : `<div class="ai-msg bot">${esc(m.content).replace(/\n/g, '<br>')}</div>`).join('');
+        : `<div class="ai-msg bot">${mdLite(m.content)}</div>`).join('');
     }
     const chips = $('#ai-chips');
     if (chips) {
@@ -3820,7 +3840,7 @@ const AI = (() => {
     box.scrollTop = box.scrollHeight;
     try {
       const r = await (typeof Sync !== 'undefined' && Sync.request
-        ? Sync.request('ai.chat', { messages: h.slice(-12), context: contextSummary() })
+        ? Sync.request('ai.chat', { messages: h.slice(-12), context: contextSummary() }, 90000)
         : Promise.reject(new Error('未开通云同步')));
       const reply = (r && r.text) || '（AI 没有返回内容，再试一次）';
       const h2 = hist();
