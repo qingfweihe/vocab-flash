@@ -58,11 +58,6 @@
         </div>
         <div class="reading-pct hidden" id="listening-card-pct">0%</div>
       </button>
-        <button id="home-todo-card" class="set-entry" data-homepanel="todo">
-          <span class="ico set-entry-ico" style="--ico:var(--ico-checklist)"></span>
-          <span class="set-entry-main"><b>待办清单</b><i id="home-todo-sub">新建提醒事项，到点推送</i></span>
-          <span class="set-entry-arrow">›</span>
-        </button>
         <button id="home-words-card" class="set-entry" data-homepanel="words">
           <span class="ico set-entry-ico" style="--ico:var(--ico-book)"></span>
           <span class="set-entry-main"><b>背单词</b><i id="home-words-sub">选择单元开始学习</i></span>
@@ -96,46 +91,6 @@
         </div>
         <div class="set-note" style="margin-top:8px">自定义事项每天自动重置打勾；关掉的学习项不出现在今日清单里。</div>
       </div>
-    </div>
-    </div>
-
-    <!-- 二级面板：待办清单 -->
-    <div id="homepanel-todo" class="set-panel hidden">
-      <div class="subhead"><button class="back-btn" data-homeback>‹ 首页</button><div class="subhead-title">待办清单</div><button class="test-btn" id="btn-todo-new">＋ 新建</button></div>
-    </div>
-    <div id="todo-list"></div>
-    <div class="todo-rem-group">
-      <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>提醒开关</div>
-      <div class="todo-rem-bar">
-        <div class="trb-main">
-          <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
-          <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
-        </div>
-        <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
-      </div>
-      <button class="ghost-btn mini-inline" id="todo-rem-test">发送测试通知</button>
-    </div>
-    <div id="todo-form" class="todo-form hidden">
-      <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
-      <div class="todo-type-row" id="todo-type-row">
-        <button class="todo-type active" data-type="once">一次性</button>
-        <button class="todo-type" data-type="daily">每天</button>
-        <button class="todo-type" data-type="weekly">每周</button>
-      </div>
-      <div class="todo-when-row">
-        <input type="datetime-local" id="todo-when-once">
-        <input type="time" id="todo-when-daily" value="20:00" class="hidden">
-        <div id="todo-when-weekly" class="hidden">
-          <select id="todo-wd">
-            <option value="1">周一</option><option value="2">周二</option><option value="3">周三</option>
-            <option value="4">周四</option><option value="5">周五</option><option value="6">周六</option>
-            <option value="0">周日</option>
-          </select>
-          <input type="time" id="todo-when-weekly-time" value="20:00">
-        </div>
-      </div>
-      <button class="primary-btn" id="todo-save">保存待办</button>
-      <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
     </div>
     </div>
 
@@ -227,6 +182,46 @@
   </section>
 
   <!-- 视图：待办清单 -->
+  <section id="view-todo" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">待办清单</div>
+      <button class="test-btn" id="btn-todo-new">＋ 新建</button>
+    </div>
+    <div id="todo-list"></div>
+    <div class="todo-rem-group">
+      <div class="set-section-title"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9%27/%3E%3Cpath d=%27M13.73 21a2 2 0 0 1-3.46 0%27/%3E%3C/svg%3E&quot;)"></i>提醒开关</div>
+      <div class="todo-rem-bar">
+        <div class="trb-main">
+          <div class="trb-title">推送提醒 <span id="todo-rem-state" class="trb-off">未开启</span></div>
+          <div class="trb-sub" id="todo-rem-sub">开启后待办到点会推送通知</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="todo-rem-switch"><span>开启</span></label>
+      </div>
+      <button class="ghost-btn mini-inline" id="todo-rem-test">发送测试通知</button>
+    </div>
+    <div id="todo-form" class="todo-form hidden">
+      <input type="text" id="todo-text" placeholder="要提醒的事（如：复习第 5 单元）" maxlength="60">
+      <div class="todo-type-row" id="todo-type-row">
+        <button class="todo-type active" data-type="once">一次性</button>
+        <button class="todo-type" data-type="daily">每天</button>
+        <button class="todo-type" data-type="weekly">每周</button>
+      </div>
+      <div class="todo-when-row">
+        <input type="datetime-local" id="todo-when-once">
+        <input type="time" id="todo-when-daily" value="20:00" class="hidden">
+        <div id="todo-when-weekly" class="hidden">
+          <select id="todo-wd">
+            <option value="1">周一</option><option value="2">周二</option><option value="3">周三</option>
+            <option value="4">周四</option><option value="5">周五</option><option value="6">周六</option>
+            <option value="0">周日</option>
+          </select>
+          <input type="time" id="todo-when-weekly-time" value="20:00">
+        </div>
+      </div>
+      <button class="primary-btn" id="todo-save">保存待办</button>
+      <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
+    </div>
+  </section>
 
   <!-- 视图：阅读随手练 -->
   <section id="view-reading" class="view hidden">
@@ -254,15 +249,9 @@
   <!-- 视图：收藏夹 -->
   <section id="view-favorites" class="view hidden">
     <div class="subhead no-back">
-      <div class="subhead-title" id="fav-title">收藏夹</div>
+      <div class="subhead-title">收藏夹</div>
       <button class="test-btn" id="btn-test-fav">检验收藏</button>
-      <button class="test-btn" id="btn-test-wrong">检验错词</button>
     </div>
-    <div class="fav-seg-bar">
-      <button class="fav-seg active" data-seg="fav">⭐ 收藏夹</button>
-      <button class="fav-seg" data-seg="wrong">📝 错词本</button>
-    </div>
-    <div id="fav-seg-fav">
     <div id="fav-filters"></div>
     <div id="fav-list"></div>
     <div class="settings-box" id="fav-read-box">
@@ -277,13 +266,16 @@
         <div id="fav-listen-list"></div>
       </details>
     </div>
-    </div>
-    <div id="fav-seg-wrong" class="hidden">
-    <div id="wrong-list"></div>
-    </div>
   </section>
 
   <!-- 视图：错词本 -->
+  <section id="view-wrong" class="view hidden">
+    <div class="subhead no-back">
+      <div class="subhead-title">错词本</div>
+      <button class="test-btn" id="btn-test-wrong">检验错词</button>
+    </div>
+    <div id="wrong-list"></div>
+  </section>
 
   <!-- 视图：设置 -->
 
@@ -569,10 +561,12 @@
 
 <!-- 底部导航 -->
 <nav id="tabbar">
-  <button class="tab active" data-nav="units"><span class="tab-ico" style="--ico:var(--ico-home)"></span><span>首页</span></button>
-  <button class="tab" data-nav="ai"><span class="tab-ico" style="--ico:var(--ico-msg)"></span><span>AI</span></button>
-  <button class="tab" data-nav="favorites"><span class="tab-ico" style="--ico:var(--ico-star)"></span><span>收藏</span></button>
-  <button class="tab" data-nav="settings"><span class="tab-ico" style="--ico:var(--ico-gear)"></span><span>设置</span></button>
+  <button class="tab" data-nav="ai"><span class="tab-ico" style="--ico:var(--ico-star)"></span><span>AI</span></button>
+  <button class="tab active" data-nav="units"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></span><span>单词</span></button>
+  <button class="tab" data-nav="favorites"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z%27/%3E%3C/svg%3E&quot;)"></span><span>收藏</span></button>
+  <button class="tab" data-nav="todo"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M9 11l2 2 4-4%27/%3E%3Crect x=%273%27 y=%274%27 width=%2718%27 height=%2717%27 rx=%272.5%27/%3E%3Cpath d=%27M8 2v4M16 2v4%27/%3E%3C/svg%3E&quot;)"></span><span>待办</span></button>
+  <button class="tab" data-nav="wrong"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%279%27/%3E%3Cpath d=%27M5.6 5.6l12.8 12.8%27/%3E%3C/svg%3E&quot;)"></span><span>错词本</span></button>
+  <button class="tab" data-nav="settings"><span class="tab-ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%273%27/%3E%3Cpath d=%27M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z%27/%3E%3C/svg%3E&quot;)"></span><span>设置</span></button>
 </nav>
 
 <div id="toast" class="hidden"></div>

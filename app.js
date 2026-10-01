@@ -1104,10 +1104,13 @@ function speak(word) {
 /* ================= 视图路由 ================= */
 let currentView = 'units';
 let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据此回到学习页而非列表
-const TAB_VIEWS = ['units', 'favorites', 'todo', 'wrong', 'settings', 'ai'];
+const TAB_VIEWS = ['units', 'favorites', 'settings', 'ai'];
 
+let pendingFavSeg = null, pendingHomePanel = null; // 路由别名（wrong→收藏错词段 / todo→首页待办面板）
 function nav(view) {
   if (window.speechSynthesis) speechSynthesis.cancel(); // 切页即停朗读
+  if (view === 'wrong') { pendingFavSeg = 'wrong'; view = 'favorites'; }
+  if (view === 'todo') { pendingHomePanel = 'todo'; view = 'units'; }
   if (currentView === 'study' && view !== 'study') {
     saveStudyPos();                    // 离开学习页前保存精确位置（词级）
     if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
@@ -1117,6 +1120,7 @@ function nav(view) {
   currentView = view;
   $$('.view').forEach((v) => v.classList.add('hidden'));
   const el = $('#view-' + view);
+  if (!el) return; // 视图不存在（旧别名已在上面映射）
   if (el) el.classList.remove('hidden');
   $$('#tabbar .tab').forEach((b) => {
     b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
@@ -1124,12 +1128,17 @@ function nav(view) {
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
-  if (view === 'units' && typeof showHomePanel === 'function') showHomePanel(null); // 回首页回到主页列表
+  if (view === 'units' && typeof showHomePanel === 'function') {
+    showHomePanel(null); // 回首页回到主页列表
+    if (pendingHomePanel) { showHomePanel(pendingHomePanel); pendingHomePanel = null; }
+  }
   if (view === 'settings' && typeof showSetPanel === 'function') showSetPanel(null); // 进设置页回到主页列表
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
-  if (view === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
-  if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#fav-list', 'fav'); }
-  if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
+  if (view === 'favorites' && typeof renderFavorites === 'function') {
+    Reading.renderWrongVocab(); Listening.renderWrongVocab();
+    const target = pendingFavSeg || favSeg; pendingFavSeg = null;
+    setFavSeg(target);
+  }
   if (view === 'reading') Reading.renderPage();
   if (view === 'ai') AI.renderMsgs();
   if (view === 'listening') Listening.renderPage();
@@ -1854,6 +1863,28 @@ function renderFavChips() {
     renderFavorites();
   }));
 }
+
+/* ================= 收藏页分段（收藏夹 / 错词本） ================= */
+let favSeg = 'fav';
+function setFavSeg(seg) {
+  favSeg = seg === 'wrong' ? 'wrong' : 'fav';
+  const f = $('#fav-seg-fav'), w = $('#fav-seg-wrong');
+  if (f) f.classList.toggle('hidden', favSeg !== 'fav');
+  if (w) w.classList.toggle('hidden', favSeg !== 'wrong');
+  $$('.fav-seg').forEach((b) => b.classList.toggle('active', b.dataset.seg === favSeg));
+  const title = $('#fav-title');
+  if (title) title.textContent = favSeg === 'wrong' ? '错词本' : '收藏夹';
+  const tf = $('#btn-test-fav'), tw = $('#btn-test-wrong');
+  if (tf) tf.classList.toggle('hidden', favSeg !== 'fav');
+  if (tw) tw.classList.toggle('hidden', favSeg !== 'wrong');
+  if (favSeg === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
+  else { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
+}
+const favSegBar = document.querySelector('.fav-seg-bar');
+if (favSegBar) favSegBar.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-seg]');
+  if (b) setFavSeg(b.dataset.seg);
+});
 
 function renderFavorites() {
   const box = $('#fav-list');
