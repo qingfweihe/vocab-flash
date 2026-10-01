@@ -876,7 +876,7 @@ const Sync = (() => {
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends };
+  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -2072,7 +2072,15 @@ function showSetPanel(name) {
 }
 $('#settings-home').addEventListener('click', (e) => {
   const b = e.target.closest('[data-setpanel]');
-  if (b) showSetPanel(b.dataset.setpanel);
+  if (!b) return;
+  showSetPanel(b.dataset.setpanel);
+  // 打开好友面板时刷新好友卡与对方状态（接管/登录后数据才到位，此前不会渲染）
+  if (b.dataset.setpanel === 'friend') {
+    Sync.renderFriends();
+    if (state.sync && state.sync.partner) {
+      try { Sync.refreshPartnerStatus(); } catch (e2) { /* 静默 */ }
+    }
+  }
 });
 $$('.set-panel [data-setback]').forEach((b) => b.addEventListener('click', () => showSetPanel(null)));
 
