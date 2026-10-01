@@ -114,6 +114,9 @@ function saveState() {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+/* 平台判断：iPhone/iPad（决定显示 iOS 专属文案） */
+function isIOS() { return /iPhone|iPad|iPod/.test(navigator.userAgent || ''); }
+
 /* 轻震动反馈（安卓有效；iOS 网页应用不支持则静默跳过） */
 function buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { } }
 
@@ -926,29 +929,8 @@ function todoExpired(it) {
   return Date.now() - plan > 12 * 3600e3;
 }
 
-/** 待办页顶部的推送提醒状态条 */
-function renderTodoRemBar() {
-  const sw = $('#todo-rem-switch');
-  if (!sw) return;
-  const r = state.reminder || {};
-  const on = !!r.enabled;
-  sw.checked = on;
-  const st = $('#todo-rem-state');
-  const sub = $('#todo-rem-sub');
-  if (!Reminder.pushSupported()) {
-    st.textContent = '不支持'; st.className = 'trb-off';
-    sub.textContent = '当前浏览器不支持通知（需 iOS 16.4+）';
-  } else if (!Reminder.isStandalone()) {
-    st.textContent = '待主屏'; st.className = 'trb-off';
-    sub.textContent = '先把应用「添加到主屏幕」再开启';
-  } else if (on) {
-    st.textContent = '已开启 ✓'; st.className = 'trb-on';
-    sub.textContent = `每日背单词 ${r.time || '20:00'} + 待办到点推送`;
-  } else {
-    st.textContent = '未开启'; st.className = 'trb-off';
-    sub.textContent = '开启后待办到点会推送通知';
-  }
-}
+/** 提醒已统一到设置页管理（待办页不再有状态条）；保留空实现防旧调用点报错 */
+function renderTodoRemBar() { }
 
 function renderTodo() {
   const box = $('#todo-list');
@@ -1003,29 +985,6 @@ function setTodoType(t) {
 }
 
 function bindTodo() {
-  // 推送提醒状态条：开关 + 测试通知（与设置页的开关控制同一状态）
-  const remSw = $('#todo-rem-switch');
-  if (remSw) {
-    remSw.addEventListener('change', async () => {
-      if (remSw.checked) {
-        const ok = await Reminder.enable();
-        if (!ok) remSw.checked = !!state.reminder.enabled;
-      } else {
-        await Reminder.disable();
-      }
-      renderTodoRemBar();
-    });
-  }
-  const remTest = $('#todo-rem-test');
-  if (remTest) remTest.addEventListener('click', async () => {
-    if (!state.reminder.enabled || !state.reminder.id) { toast('先开启推送提醒'); return; }
-    toast('正在发送测试通知…');
-    try {
-      await Reminder.sendTest();
-    } catch (e) { /* Reminder 内部已提示 */ }
-    renderTodoRemBar();
-  });
-
   $('#btn-todo-new').addEventListener('click', () => showTodoForm($('#todo-form').classList.contains('hidden')));
   $('#todo-type-row').addEventListener('click', (e) => {
     const b = e.target.closest('.todo-type');
@@ -1130,7 +1089,11 @@ function nav(view) {
   if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
   if (view === 'units' && typeof showHomePanel === 'function') {
     showHomePanel(null); // 回首页回到主页列表
-    if (pendingHomePanel) { showHomePanel(pendingHomePanel); pendingHomePanel = null; }
+    if (pendingHomePanel) {
+      showHomePanel(pendingHomePanel);
+      if (pendingHomePanel === 'todo') renderTodo(); // 待办面板打开时刷新列表
+      pendingHomePanel = null;
+    }
   }
   if (view === 'settings' && typeof showSetPanel === 'function') showSetPanel(null); // 进设置页回到主页列表
   if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
@@ -3220,10 +3183,13 @@ const Reminder = (() => {
       } else if (!pushSupported()) {
         why = '这个浏览器不支持系统通知';
       } else {
-        why = '还没把本应用「添加到主屏幕」';
+        why = isIOS() ? '还没把本应用「添加到主屏幕」' : '这台浏览器拿不到系统通知';
       }
       if (!pushOK && !ntfyOn && !state.sync.pushplusToken && !Sync.isShell()) {
-        setStatus('这台设备现在还收不到提醒（' + why + '）。安卓手机可以：装「 安卓 App 安装包」（最省心），或到下面「 微信通知」粘贴 PushPlus 口令；iPhone 请先「添加到主屏幕」并从主屏图标打开、允许通知。', 'err');
+        const guide = isIOS()
+          ? 'iPhone：请先「添加到主屏幕」并从主屏图标打开、允许通知。'
+          : '安卓：装「 安卓 App 安装包」（最省心），或到下面「 微信通知」粘贴 PushPlus 口令。';
+        setStatus('这台设备现在还收不到提醒（' + why + '）。' + guide, 'err');
         return false;
       }
       rem().enabled = true;
@@ -3318,7 +3284,11 @@ const Reminder = (() => {
     $('#rem-test').addEventListener('click', sendTest);
     // 后端地址输入框由 Sync 模块统一接管（两个模块共用同一地址）
     if (r.enabled && state.sync && state.sync.code) setStatus('提醒已开启 ✓ 每天 ' + (r.time || '20:00') + (r.smart !== false ? '（已背过则跳过）' : ''), 'ok');
-    else if (!isStandalone()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
+    else if (!isStandalone()) {
+      if (isIOS()) setStatus('提示：先「添加到主屏幕」，从主屏图标打开后再开启提醒', '');
+      else if (Sync.isShell()) setStatus('通知走 App 系统通知（无需额外设置）；也可在下方配微信通道', '');
+      else setStatus('这台安卓设备建议：装「安卓 App 安装包」（通知最稳），或在下方配微信通道', '');
+    }
     if (r.enabled) repairPush(); // 启动自愈：旧订阅密钥不匹配时自动重建（换后端后必备）
     // 启动即上传一次待办（关闭软件后的待办到点提醒由服务端负责；不碰待办也要保证服务端有最新数据）
     if (state.sync && state.sync.code) setTimeout(() => sync(true), 3000);
@@ -3718,7 +3688,9 @@ function showHomePanel(name) {
 }
 $('#home-main').addEventListener('click', (e) => {
   const b = e.target.closest('[data-homepanel]');
-  if (b) showHomePanel(b.dataset.homepanel);
+  if (!b) return;
+  showHomePanel(b.dataset.homepanel);
+  if (b.dataset.homepanel === 'todo') renderTodo(); // 待办列表随面板打开刷新
 });
 $$('#view-units [data-homeback]').forEach((b) => b.addEventListener('click', () => showHomePanel(null)));
 // 今日任务卡：改为进面板（面板里有清单与「开始复习」）
