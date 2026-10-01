@@ -114,8 +114,10 @@ function saveState() {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-function toast(msg, ms = 1800) {
-  const t = $('#toast');
+/* 轻震动反馈（安卓有效；iOS 网页应用不支持则静默跳过） */
+function buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { } }
+
+function toast(msg, ms = 1800) {  const t = $('#toast');
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(t._tid);
@@ -1102,7 +1104,7 @@ function speak(word) {
 /* ================= 视图路由 ================= */
 let currentView = 'units';
 let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据此回到学习页而非列表
-const TAB_VIEWS = ['units', 'favorites', 'todo', 'wrong', 'settings'];
+const TAB_VIEWS = ['units', 'favorites', 'todo', 'wrong', 'settings', 'ai'];
 
 function nav(view) {
   if (window.speechSynthesis) speechSynthesis.cancel(); // 切页即停朗读
@@ -1129,6 +1131,7 @@ function nav(view) {
   if (view === 'favorites' && typeof renderFavorites === 'function') { renderFavorites(); Reading.renderWrongVocab(); Listening.renderWrongVocab(); restoreListPos('#fav-list', 'fav'); }
   if (view === 'todo') { renderTodo(); renderTodoRemBar(); }
   if (view === 'reading') Reading.renderPage();
+  if (view === 'ai') AI.renderMsgs();
   if (view === 'listening') Listening.renderPage();
 }
 
@@ -1758,6 +1761,7 @@ function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   const remembered = mode === 'got';
   state.stats.tested += 1;
   if (remembered) state.stats.correct += 1;
+  buzz(remembered ? 15 : [30, 50, 30]); // 轻震动反馈（iOS 网页应用不支持则自动跳过）
 
   // SRS 调度（词库外的自由词不进 SRS）
   if (item.unitId != null && item.word) {
@@ -1784,8 +1788,25 @@ function finishTest() {
   $('#test-done').classList.remove('hidden');
   const n = test.queue.length;
   const r = test.right;
-  $('#done-body').innerHTML = `本组共 ${n} 词<br><b class="ok">✓</b> 记住 ${r} · <b class="no">✗</b> 没记住 ${n - r}<br>正确率 ${n ? Math.round((r / n) * 100) : 0}%`;
+  $('#done-body').innerHTML = `本组共 ${n} 词<br><b class="ok">✓</b> 记住 ${r} · <b class="no">✗</b> 没记住 ${n - r}<br>正确率 ${n ? Math.round((r / n) * 100) : 0}%`
+    + (test.miss.length ? `<br><span style="font-size:12.5px;color:var(--ink-2)">⏳ 3 秒后自动回炉 ${test.miss.length} 个错词（点「返回」可取消）</span>
+      <br><button class="ghost-btn" id="miss-ai-btn" style="margin-top:8px;padding:6px 14px">AI 帮我记错词</button>` : '');
+  const missAi = $('#miss-ai-btn');
+  if (missAi && test.miss.length) {
+    missAi.addEventListener('click', () => {
+      const w = test.miss.map(function (x) { return x.word && x.word.w; }).filter(Boolean).slice(0, 3).join('、');
+      if (w) aiRememberWord(w);
+    });
+  }
   renderUnits();
+  // 错词当场回炉：3 秒后自动再测（仍在检验页才触发；返回/切走即取消）
+  if (test.miss.length) {
+    const missSnapshot = test.miss.slice();
+    setTimeout(() => {
+      if (currentView !== 'test' || !test || $('#test-done').classList.contains('hidden')) return;
+      startTest(missSnapshot, '错词回炉 · 再来一轮');
+    }, 3000);
+  }
 }
 
 $('#btn-test-again').addEventListener('click', () => {
@@ -3346,6 +3367,7 @@ const WordCard = (() => {
         <div class="wccn"></div>
         <div class="wcacts">
           <button class="wcbtn wcspeak"> 发音</button>
+          <button class="wcbtn wcai">AI 讲解</button>
           <button class="wcbtn wcfav">☆ 收藏生词</button>
         </div>
       </div>`;
@@ -3353,6 +3375,7 @@ const WordCard = (() => {
     el.querySelector('.wcmask').addEventListener('click', hide);
     el.querySelector('.wcclose').addEventListener('click', hide);
     el.querySelector('.wcspeak').addEventListener('click', () => { if (el.dataset.w) speak(el.dataset.w); });
+    el.querySelector('.wcai').addEventListener('click', () => { if (el.dataset.w) { WordCard.hide(); aiExplainWord(el.dataset.w); } });
     el.querySelector('.wcfav').addEventListener('click', toggleFav);
     return el;
   }
@@ -3718,6 +3741,130 @@ function renderHeat() {
   }
 }
 
+
+/* ================= AI 学习助手 ================= */
+const AI = (() => {
+  const HIST_KEY = 'sgwd_ai_hist';
+  let sending = false;
+
+  function hist() {
+    try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function saveHist(h) {
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(-60))); } catch (e) { }
+  }
+
+  /** 进度上下文：AI 知道你在学什么 */
+  function contextSummary() {
+    const bits = [];
+    try {
+      let learned = 0;
+      for (const k in state.learned) learned += countKeys(state.learned, k);
+      bits.push(`已学 ${learned}/1007 词`);
+      const u = state.lastUnit && unitById(state.lastUnit);
+      if (u) bits.push(`最近在学 ${u.name}`);
+      const t = todayCount();
+      bits.push(`今日新词 ${t.n}、复习 ${t.r}`);
+      const due = srsDueCapped().length;
+      if (due) bits.push(`待复习 ${due} 词`);
+    } catch (e) { }
+    return bits.join('，');
+  }
+
+  function renderMsgs() {
+    const box = $('#ai-msgs');
+    if (!box) return;
+    const h = hist();
+    if (!h.length) {
+      box.innerHTML = `<div class="ai-empty">你好呀 🌸 我是你的 AI 学习助手。<br>可以问我：单词含义/记忆技巧、语法、长难句分析、真题翻译…<br>我大致知道你的学习进度（${esc(contextSummary()) || '刚上手'}）。</div>`;
+    } else {
+      box.innerHTML = h.map((m) => m.role === 'user'
+        ? `<div class="ai-msg user">${esc(m.content)}</div>`
+        : `<div class="ai-msg bot">${esc(m.content).replace(/\n/g, '<br>')}</div>`).join('');
+    }
+    const chips = $('#ai-chips');
+    if (chips) {
+      const u = state.lastUnit && unitById(state.lastUnit);
+      const lastWord = window.__aiWord || (u && u.words[0] && u.words[0].w);
+      const qs = [
+        lastWord ? `讲解单词 ${lastWord}（词源/辨析/记忆技巧/例句）` : '讲一个考研高频词',
+        '易混词辨析：affect vs effect',
+        '分析一个考研长难句并教我拆解方法',
+        '我今天的复习计划建议',
+      ];
+      chips.innerHTML = qs.map((q) => `<button class="mini-btn" data-aiq="${esc(q)}">${esc(q.length > 16 ? q.slice(0, 15) + '…' : q)}</button>`).join('');
+      chips.querySelectorAll('[data-aiq]').forEach((b) => b.addEventListener('click', () => send(b.dataset.aiq)));
+    }
+    box.scrollTop = box.scrollHeight;
+    window.scrollTo({ top: document.body.scrollHeight });
+  }
+
+  async function send(text) {
+    const input = $('#ai-input');
+    const msg = String(text !== undefined ? text : (input && input.value) || '').trim();
+    if (!msg || sending) return;
+    if (input) input.value = '';
+    const h = hist();
+    h.push({ role: 'user', content: msg });
+    saveHist(h);
+    renderMsgs();
+    sending = true;
+    const box = $('#ai-msgs');
+    const loading = document.createElement('div');
+    loading.className = 'ai-msg bot ai-loading';
+    loading.textContent = '思考中…';
+    box.appendChild(loading);
+    box.scrollTop = box.scrollHeight;
+    try {
+      const r = await (typeof Sync !== 'undefined' && Sync.request
+        ? Sync.request('ai.chat', { messages: h.slice(-12), context: contextSummary() })
+        : Promise.reject(new Error('未开通云同步')));
+      const reply = (r && r.text) || '（AI 没有返回内容，再试一次）';
+      const h2 = hist();
+      h2.push({ role: 'assistant', content: reply });
+      saveHist(h2);
+    } catch (e) {
+      const h2 = hist();
+      const em = String(e.message || e);
+      h2.push({ role: 'assistant', content: '请求失败：' + (/NO_KEY|未配置/.test(em) ? 'AI 还没配置好（找青峰放 Key）' : (/LIMIT/.test(em) ? '今天次数用完了（每天 100 次）' : em.slice(0, 80))) });
+      saveHist(h2);
+    } finally {
+      sending = false;
+      renderMsgs();
+    }
+  }
+
+  /** 从别的页面带着预设问题跳进来（词卡讲解 / 错词记忆） */
+  function askWith(question) {
+    nav('ai');
+    setTimeout(() => send(question), 150);
+  }
+
+  function bind() {
+    const btn = $('#ai-send');
+    if (btn) btn.addEventListener('click', () => send());
+    const input = $('#ai-input');
+    if (input) input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); send(); }
+    });
+    const clear = $('#ai-clear');
+    if (clear) clear.addEventListener('click', () => {
+      if (!hist().length) return;
+      if (confirm('清空 AI 对话记录？')) { localStorage.removeItem(HIST_KEY); renderMsgs(); }
+    });
+  }
+
+  return { bind, renderMsgs, askWith, send };
+})();
+
+/* 对外快捷入口：词卡讲解 / 错词记忆 */
+function aiExplainWord(w) {
+  AI.askWith(`详细讲解考研单词 "${w}"：词源拆解、常见搭配、易混词辨析、一个巧记方法和两个真题级例句（带中文）。`);
+}
+function aiRememberWord(w) {
+  AI.askWith(`我总是记不住单词 "${w}"，请给我一个强记忆锚点（谐音/画面/词根联想都行），越生动越好，并给一个用了这个锚点的例句。`);
+}
+
 /* ================= 启动 ================= */
 // iOS Safari：挂一个 touch 监听后 :active 按压反馈才会生效
 document.addEventListener('touchstart', () => {}, { passive: true });
@@ -3792,6 +3939,8 @@ async function boot() {
   migrateTodo();
   bindTodo();
   renderTodoRemBar();
+  AI.bind();
+  AI.renderMsgs();
   Reading.bind();
   Reading.renderHome();
   Listening.bind();
