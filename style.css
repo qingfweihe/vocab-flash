@@ -95,9 +95,8 @@ body { min-height: 100vh; min-height: 100dvh; }
   align-items: baseline;
   justify-content: space-between;
   padding: calc(var(--safe-top) + 10px) var(--sp-4) 10px;
-  background: rgba(255, 255, 255, .92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--card);
+  transform: translateZ(0);
   border-bottom: 1px solid var(--line);
 }
 #topbar-title { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .2px; }
@@ -113,14 +112,15 @@ main {
 }
 
 /* ---------- 底部 Tab 栏（白底、图标 + 文字、选中变蓝） ---------- */
+/* iOS Safari：fixed + backdrop-filter 的组合会让栏体在滚动时漂移（合成层 bug），
+   底/顶栏一律用不透明底 + translateZ(0) 独立成层，不做毛玻璃 */
 #tabbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   z-index: 30;
   display: flex;
-  background: rgba(255, 255, 255, .94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--card);
+  transform: translateZ(0);
   border-top: 1px solid var(--line);
   padding-bottom: var(--safe-bottom);
 }
@@ -1013,8 +1013,8 @@ html.dark {
   color-scheme: dark;
 }
 html.dark body { background: var(--page-bg); }
-html.dark #topbar { background: rgba(21, 22, 27, .92); }
-html.dark #tabbar { background: rgba(18, 19, 24, .94); }
+html.dark #topbar { background: #15161b; }
+html.dark #tabbar { background: #12131a; }
 html.dark .subhead { background: rgba(21, 22, 27, .94); }
 html.dark #fav-filters { background: rgba(21, 22, 27, .94); }
 html.dark .speak-btn { background: var(--brand-soft); }
