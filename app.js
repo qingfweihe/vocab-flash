@@ -2655,7 +2655,7 @@ const Reading = (() => {
     qb.addEventListener('click', () => {
       if (!qbox.classList.contains('hidden')) { qbox.classList.add('hidden'); qb.textContent = 'AI 出 3 道小练'; return; }
       qb.textContent = '收起小练';
-      StudyAI.ask('rdQuiz', { text: it.text }, qbox, '出题中，约 15 秒…', renderRdQuiz);
+      StudyAI.ask('rdQuiz', { text: it.text }, qbox, '出题中，最长约 1 分钟…', renderRdQuiz);
     });
     // 生词交互：翻面+发音；全部显示；收藏
     res.querySelectorAll('.vw-main').forEach((b) => b.addEventListener('click', () => {
