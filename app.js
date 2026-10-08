@@ -1734,10 +1734,53 @@ function showCard() {
   $('#fc-answer').classList.add('hidden');
   $('#fc-judge').classList.add('hidden');
   $('#btn-reveal').classList.remove('hidden');
+  // 语境挑战区复位（换词后上一题的选项与解析不能残留）
+  $('#srs-ctx-box').classList.add('hidden');
+  $('#srs-ctx-box').innerHTML = '';
+  $('#btn-srs-ctx').classList.remove('hidden');
+  $('#btn-srs-ctx').textContent = '语境挑战';
   $('#test-stage').classList.remove('hidden');
   $('#test-done').classList.add('hidden');
   window.scrollTo({ top: 0 });
 }
+
+// 语境挑战：AI 例句挖空选义（不影响 SRS 评分，答错只给解析）
+function renderSrsCtx(box, d) {
+  if (!d || !d.sent || !Array.isArray(d.opts) || d.opts.length < 2) {
+    box.innerHTML = '<div class="ai-msg bot">出题格式异常，稍后再试</div>';
+    return;
+  }
+  box.innerHTML = `<div class="sc-sent">${esc(String(d.sent)).replace(/_{2,}/g, '<b class="sc-blank">＿＿＿</b>')}</div>
+    <div class="sc-opts">${d.opts.map((o, j) => `<button class="sc-opt" data-j="${j}">${'ABCD'[j]}. ${esc(String(o))}</button>`).join('')}</div>
+    <div class="sc-note hidden"></div>`;
+  const ans = Number(d.ans);
+  box.querySelectorAll('.sc-opt').forEach((b) => b.addEventListener('click', () => {
+    const item = box.querySelector('.sc-opts');
+    if (item.dataset.done) return;
+    item.dataset.done = '1';
+    const j = Number(b.dataset.j);
+    const hit = j === ans;
+    box.querySelectorAll('.sc-opt').forEach((ob, oj) => {
+      ob.disabled = true;
+      if (oj === ans) ob.classList.add('right');
+      else if (oj === j) ob.classList.add('wrong');
+    });
+    const note = box.querySelector('.sc-note');
+    note.classList.remove('hidden');
+    note.textContent = (hit ? '✓ 答对了 · ' : '✗ 答错了 · ') + (d.note || '');
+  }));
+}
+
+$('#btn-srs-ctx').addEventListener('click', async () => {
+  if (!test || !test.queue[test.pos]) return;
+  const w = test.queue[test.pos].word;
+  const box = $('#srs-ctx-box'), btn = $('#btn-srs-ctx');
+  if (!box.classList.contains('hidden')) { box.classList.add('hidden'); btn.textContent = '语境挑战'; return; }
+  btn.textContent = '收起挑战';
+  const d0 = (w.defs && w.defs[0]) || {};
+  const done = await StudyAI.ask('srsCtx', { w: w.w, cn: d0.cn || '', pos: d0.pos || '' }, box, '出题中…', renderSrsCtx);
+  if (!done) { box.classList.add('hidden'); btn.textContent = '语境挑战'; } // 失败收起，可再点重试
+});
 
 $('#btn-reveal').addEventListener('click', () => {
   $('#fc-answer').classList.remove('hidden');
@@ -2232,6 +2275,75 @@ const Sakura = (() => {
   };
 })();
 
+/* ================= AI 学习讲解（ai.study：服务端 prompt + 云端共享缓存） =================
+   阅读逐题讲解 / 全文精讲 / 句级讲解 / 错题模式分析共用：
+   结果按内容哈希在云端缓存共享，同一篇只有第一次真实调用（命中不计每日次数）。 */
+const StudyAI = (() => {
+  function errText(e) {
+    const m = String((e && e.message) || e);
+    if (e && e.code === 'LIMIT') return '今天的 AI 次数用完了（每天 100 次，讲解有云端缓存不受影响）';
+    if (e && (e.code === 'NO_KEY' || /未配置/.test(m))) return 'AI 还没配置好（找青峰放 Key）';
+    if (e && (e.code === 'TIMEOUT' || /超时/.test(m))) return '生成超时了，点一下再试';
+    return '生成失败：' + m.slice(0, 80);
+  }
+  /** 请求并渲染到 boxEl；返回 false=失败。同一 box 未完成时不重复请求。
+      renderData：结构化出题类（r.data）的自定义渲染回调 renderData(boxEl, data)，负责 innerHTML 与绑定 */
+  async function ask(kind, payload, boxEl, waitText, renderData) {
+    if (!boxEl) return false;
+    if (boxEl.dataset.busy === '1') return false;
+    boxEl.dataset.busy = '1';
+    boxEl.classList.remove('hidden');
+    boxEl.innerHTML = `<div class="ai-msg bot ai-loading">${waitText || 'AI 讲解生成中…'}</div>`;
+    try {
+      if (typeof Sync === 'undefined' || !Sync.request) throw new Error('请先在设置 → 云同步 注册账号');
+      const r = await Sync.request('ai.study', Object.assign({ kind }, payload), 90000);
+      if (renderData && r && r.data !== undefined) { renderData(boxEl, r.data); return true; }
+      boxEl.innerHTML = `<div class="ai-msg bot">${AI.mdLite(r && r.text)}</div>`;
+      return true;
+    } catch (e) {
+      boxEl.innerHTML = `<div class="ai-msg bot">${esc(errText(e))}</div>`;
+      return false;
+    } finally {
+      boxEl.dataset.busy = '0';
+    }
+  }
+  return { ask, errText };
+})();
+
+/** AI 小练渲染与判分：data = [{q, opts[4], ans, note}]，答完显示总成绩 */
+function renderRdQuiz(box, data) {
+  if (!Array.isArray(data) || !data.length) { box.innerHTML = '<div class="ai-msg bot">出题格式异常，稍后再试</div>'; return; }
+  let answered = 0, rightN = 0;
+  box.innerHTML = '<div class="set-note" style="margin:2px 0 8px">AI 小练 · 点选项即时判分</div>'
+    + data.map((t, i) => `
+      <div class="rdq-item" data-i="${i}">
+        <div class="rdq-q">${i + 1}. ${esc(String(t.q || ''))}</div>
+        <div class="rdq-opts">${(t.opts || []).map((o, j) => `<button class="rdq-opt" data-j="${j}">${'ABCD'[j]}. ${esc(String(o))}</button>`).join('')}</div>
+        <div class="rdq-note hidden"></div>
+      </div>`).join('')
+    + '<div class="rdq-score"></div>';
+  box.querySelectorAll('.rdq-item').forEach((item) => {
+    const t = data[Number(item.dataset.i)];
+    item.querySelectorAll('.rdq-opt').forEach((b) => b.addEventListener('click', () => {
+      if (item.dataset.done) return;
+      item.dataset.done = '1';
+      const j = Number(b.dataset.j);
+      const hit = j === Number(t.ans);
+      if (hit) rightN++;
+      answered++;
+      item.querySelectorAll('.rdq-opt').forEach((ob, oj) => {
+        ob.disabled = true;
+        if (oj === Number(t.ans)) ob.classList.add('right');
+        else if (oj === j) ob.classList.add('wrong');
+      });
+      const note = item.querySelector('.rdq-note');
+      note.classList.remove('hidden');
+      note.textContent = (hit ? '✓ ' : '✗ ') + (t.note || '');
+      if (answered === data.length) box.querySelector('.rdq-score').textContent = `小练成绩：${rightN}/${data.length}`;
+    }));
+  });
+}
+
 /* ================= 阅读随手练 ================= */
 const Reading = (() => {
   let ITEMS = null, PROMISE = null;
@@ -2303,17 +2415,33 @@ const Reading = (() => {
     const r = rState();
     const doneIds = Object.keys(r.done).sort((a, b) => r.done[b].ts - r.done[a].ts);
     const list = $('#reading-list');
-    list.innerHTML = doneIds.length
-      ? '<div class="set-note" style="margin:10px 2px 6px">做过的篇目（点击重做）</div>' + doneIds.map((id) => {
-          const it = ITEMS && ITEMS.find((x) => x.id === id);
-          const d = r.done[id];
-          return `<div class="rd-item ${d.ok ? 'ok' : 'no'}" data-rd="${id}">
-            <span class="rd-mark">${d.ok ? '✓' : '✗'}</span>
-            <span class="rd-src">${it ? it.src : id}</span>
-            <span class="rd-pick">选了 ${d.pick}</span>
-          </div>`;
-        }).join('')
-      : '';
+    list.innerHTML = (doneIds.length >= 3
+      ? '<button class="ghost-btn" id="rd-pattern-btn" style="margin:12px 2px 4px;width:100%">AI 分析我的错题</button><div class="rd-ai-box hidden" id="rd-pattern-box"></div>'
+      : '')
+      + (doneIds.length
+        ? '<div class="set-note" style="margin:10px 2px 6px">做过的篇目（点击重做）</div>' + doneIds.map((id) => {
+            const it = ITEMS && ITEMS.find((x) => x.id === id);
+            const d = r.done[id];
+            return `<div class="rd-item ${d.ok ? 'ok' : 'no'}" data-rd="${id}">
+              <span class="rd-mark">${d.ok ? '✓' : '✗'}</span>
+              <span class="rd-src">${it ? it.src : id}</span>
+              <span class="rd-pick">选了 ${d.pick}</span>
+            </div>`;
+          }).join('')
+        : '');
+    // 错题模式分析：近 20 篇记录（题干要点|我的答案|正确答案）→ 题型/错因/建议
+    const pb = $('#rd-pattern-btn');
+    if (pb) pb.addEventListener('click', () => {
+      const pbox = $('#rd-pattern-box');
+      if (!pbox.dataset.busy && !pbox.classList.contains('hidden') && pbox.innerHTML) { pbox.classList.add('hidden'); return; }
+      const ids = doneIds.slice(0, 20);
+      const lines = ids.map((id) => {
+        const it2 = ITEMS && ITEMS.find((x) => x.id === id);
+        const d2 = r.done[id];
+        return (it2 ? it2.q.stem.slice(0, 70) : id) + ' | ' + d2.pick + ' | ' + (it2 ? it2.q.answer : '?');
+      }).join('\n');
+      StudyAI.ask('rdPattern', { records: lines }, pbox, '分析错题模式中…');
+    });
     list.querySelectorAll('[data-rd]').forEach((el) => el.addEventListener('click', () => {
       const it = ITEMS && ITEMS.find((x) => x.id === el.dataset.rd);
       if (it) { cur = it; renderQuiz(it, true); }
@@ -2335,6 +2463,47 @@ const Reading = (() => {
     return t.replace(/[A-Za-z][A-Za-z'’\-]*/g, (m) => `<span class="rd-w">${m}</span>`);
   }
 
+  // 译文对照开关（记住偏好；默认关——做题时看翻译会剧透）
+  function rdCnOn() { try { return localStorage.getItem('sgwd_rd_cn') === '1'; } catch (e) { return false; } }
+  function setCnOn(v) { try { localStorage.setItem('sgwd_rd_cn', v ? '1' : '0'); } catch (e) { } }
+
+  /** 原文渲染：开对照且译文段落与原文段落数一致 → 逐段交错；否则译文整体块跟在文末 */
+  function rdTextHtml(it, showCn) {
+    const en = it.text.split('\n').filter((p) => p.trim());
+    const cn = (it.cn || '').split('\n').filter((p) => p.trim());
+    if (showCn && it.cn && cn.length === en.length) {
+      return en.map((p, i) => `<p class="rd-p">${wrapWords(p)}</p><p class="rd-p cn">${cn[i]}</p>`).join('');
+    }
+    let html = en.map((p) => `<p class="rd-p">${wrapWords(p)}</p>`).join('');
+    if (showCn && it.cn) html += `<p class="rd-p cn rd-cn-fall">${it.cn.replace(/\n/g, '<br>')}</p>`;
+    return html;
+  }
+
+  /** 简单句子切分（不用 lookbehind 正则——旧 WebView 会整文件语法报错）；缩写点会误切，容忍 */
+  function splitSentences(para) {
+    const out = [];
+    let buf = '';
+    for (const ch of para) {
+      buf += ch;
+      if (ch === '.' || ch === '!' || ch === '?') { const s = buf.trim(); if (s) out.push(s); buf = ''; }
+    }
+    const rest = buf.trim();
+    if (rest) out.push(rest);
+    return out;
+  }
+
+  /** 点词时定位所在句 + 前后文（句级 AI 讲解用） */
+  function findSentence(para, word) {
+    const ss = splitSentences(para);
+    const w = String(word || '').toLowerCase();
+    for (let i = 0; i < ss.length; i++) {
+      if (ss[i].toLowerCase().indexOf(w) >= 0) {
+        return { sent: ss[i], ctx: (ss[i - 1] ? ss[i - 1] : '') + (ss[i + 1] ? ' ' + ss[i + 1] : '') };
+      }
+    }
+    return { sent: para, ctx: '' };
+  }
+
   function renderQuiz(it, redo) {
     if (window.speechSynthesis) speechSynthesis.cancel(); // 换篇时停掉上一篇朗读
     $('#reading-list').classList.add('hidden');
@@ -2348,7 +2517,12 @@ const Reading = (() => {
           <button class="rd-speak" id="rd-stop"><i class="ico ls-ico" style="--ico:url(undefined)"></i>停止</button>
         </span>
       </div>
-      <div class="rd-text">${wrapWords(it.text).replace(/\n/g, '</p><p class="rd-p">').replace(/^/, '<p class="rd-p">') + '</p>'}</div>
+      <div class="rd-tools">
+        <button class="rd-tool" id="rd-cn-sw">对照译文</button>
+        <button class="rd-tool" id="rd-fullai">全文精讲</button>
+      </div>
+      <div class="rd-ai-box hidden" id="rd-fullai-box"></div>
+      <div class="rd-text" id="rd-text"></div>
       <div class="rd-q">${it.q.stem}</div>
       <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => `
         <button class="rd-opt" data-opt="${c}"><b>${c}</b> ${it.q.options[i]}</button>`).join('')}
@@ -2358,12 +2532,31 @@ const Reading = (() => {
         <button class="primary-btn" id="rd-next">再来一篇</button>
         <button class="ghost-btn" id="rd-back">返回阅读页</button>
       </div>`;
-    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', () => pick(it, b.dataset.opt)));
-    // 点词查释义（文章内任意单词）
-    box.querySelector('.rd-text').addEventListener('click', (ev) => {
+    // 原文渲染 + 对照译文开关（切开关只换 innerHTML；点词监听挂在元素上只挂一次，重复挂会叠加触发）
+    const cnSw = $('#rd-cn-sw');
+    const applyCn = () => {
+      const on = rdCnOn();
+      $('#rd-text').innerHTML = rdTextHtml(it, on);
+      cnSw.textContent = on ? '隐藏译文' : '对照译文';
+      cnSw.classList.toggle('on', on);
+    };
+    $('#rd-text').addEventListener('click', (ev) => {
       const s = ev.target.closest('.rd-w');
-      if (s) WordCard.show(s.textContent);
+      if (!s) return;
+      const p = s.closest('.rd-p');
+      const info = findSentence(p ? p.textContent : '', s.textContent);
+      WordCard.show(s.textContent, info.sent, info.ctx);
     });
+    applyCn();
+    cnSw.addEventListener('click', () => { setCnOn(!rdCnOn()); applyCn(); });
+    // 全文精讲（文章级：长难句/核心词/篇章脉络，云端缓存共享）
+    const fa = $('#rd-fullai'), fab = $('#rd-fullai-box');
+    fa.addEventListener('click', () => {
+      if (!fab.classList.contains('hidden')) { fab.classList.add('hidden'); fa.textContent = '全文精讲'; return; }
+      fa.textContent = '收起精讲';
+      StudyAI.ask('rdFull', { text: it.text }, fab, '全文精讲生成中，约 10~20 秒…');
+    });
+    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', () => pick(it, b.dataset.opt)));
     // 朗读：播放中可暂停/继续/停止
     const speakBtn = $('#rd-speak');
     const ttsCtrl = $('#rd-tts-ctrl');
@@ -2444,8 +2637,26 @@ const Reading = (() => {
     res.innerHTML = `
       <div class="rd-verdict ${ok ? 'ok' : 'no'}">${ok ? '✓ 答对了' : `✗ 答错了，正确答案 ${it.q.answer}`}</div>
       <div class="rd-explain">${it.q.explain}</div>
+      <button class="ghost-btn rd-ai-btn" id="rd-ai-explain">AI 深度讲解</button>
+      <div class="rd-ai-box hidden" id="rd-ai-box"></div>
+      <button class="ghost-btn rd-ai-btn" id="rd-quiz-btn">AI 出 3 道小练</button>
+      <div class="rd-ai-box hidden" id="rd-quiz-box"></div>
       ${vocabHtml}
       ${cnHtml}`;
+    // 逐题 AI 讲解（定位原句/解题逻辑/干扰项分析，云端缓存共享）
+    const ax = $('#rd-ai-explain'), ab = $('#rd-ai-box');
+    ax.addEventListener('click', () => {
+      if (!ab.classList.contains('hidden')) { ab.classList.add('hidden'); ax.textContent = 'AI 深度讲解'; return; }
+      ax.textContent = '收起讲解';
+      StudyAI.ask('rdExplain', { text: it.text, q: it.q.stem, opts: it.q.options, ans: it.q.answer }, ab, '生成讲解中，约 10 秒…');
+    });
+    // AI 出 3 道小练（词汇/短语/句子理解，云端缓存共享；即时判分不进 SRS）
+    const qb = $('#rd-quiz-btn'), qbox = $('#rd-quiz-box');
+    qb.addEventListener('click', () => {
+      if (!qbox.classList.contains('hidden')) { qbox.classList.add('hidden'); qb.textContent = 'AI 出 3 道小练'; return; }
+      qb.textContent = '收起小练';
+      StudyAI.ask('rdQuiz', { text: it.text }, qbox, '出题中，约 15 秒…', renderRdQuiz);
+    });
     // 生词交互：翻面+发音；全部显示；收藏
     res.querySelectorAll('.vw-main').forEach((b) => b.addEventListener('click', () => {
       const back = b.querySelector('.vw-back');
@@ -3407,6 +3618,8 @@ const WordCard = (() => {
           <button class="wcbtn wcai">AI 讲解</button>
           <button class="wcbtn wcfav">☆ 收藏生词</button>
         </div>
+        <button class="wcbtn wcsent-btn hidden">AI 讲这句话</button>
+        <div class="wcsent hidden"></div>
       </div>`;
     document.body.appendChild(el);
     el.querySelector('.wcmask').addEventListener('click', hide);
@@ -3414,6 +3627,13 @@ const WordCard = (() => {
     el.querySelector('.wcspeak').addEventListener('click', () => { if (el.dataset.w) speak(el.dataset.w); });
     el.querySelector('.wcai').addEventListener('click', () => { if (el.dataset.w) { WordCard.hide(); aiExplainWord(el.dataset.w); } });
     el.querySelector('.wcfav').addEventListener('click', toggleFav);
+    el.querySelector('.wcsent-btn').addEventListener('click', () => {
+      const sbox = el.querySelector('.wcsent');
+      const btn = el.querySelector('.wcsent-btn');
+      if (!sbox.classList.contains('hidden')) { sbox.classList.add('hidden'); btn.textContent = 'AI 讲这句话'; return; }
+      btn.textContent = '收起讲解';
+      StudyAI.ask('rdSent', { sent: el.dataset.sent, ctx: el.dataset.ctx }, sbox, '句子讲解生成中…');
+    });
     return el;
   }
   function inVocab(w) {
@@ -3441,12 +3661,20 @@ const WordCard = (() => {
     saveState();
     if (typeof Reading !== 'undefined' && currentView === 'favorites') Reading.renderWrongVocab();
   }
-  async function show(word) {
+  async function show(word, sent, ctx) {
     const box = ensure();
     const w = String(word || '').toLowerCase().replace(/[^a-z'\-]/g, '');
     if (!w) return;
     box.dataset.w = w;
     box.dataset.cn = '';
+    box.dataset.sent = String(sent || '');
+    box.dataset.ctx = String(ctx || '');
+    const sb = box.querySelector('.wcsent-btn');
+    const sbox = box.querySelector('.wcsent');
+    if (sent) { sb.classList.remove('hidden'); sb.textContent = 'AI 讲这句话'; }
+    else { sb.classList.add('hidden'); }
+    sbox.classList.add('hidden');
+    sbox.innerHTML = '';
     box.querySelector('.wcword').textContent = w;
     box.querySelector('.wcphon').textContent = '…';
     box.querySelector('.wccn').textContent = '';
@@ -3912,7 +4140,7 @@ const AI = (() => {
     });
   }
 
-  return { bind, renderMsgs, askWith, send };
+  return { bind, renderMsgs, askWith, send, mdLite };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆 */

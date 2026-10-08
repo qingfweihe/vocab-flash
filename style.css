@@ -751,6 +751,41 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .rd-cn-toggle { margin-bottom: 8px; }
 .rd-cn { border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 14px; line-height: 1.8; color: var(--ink-2); margin-bottom: 10px; background: var(--card); }
 
+/* ---------- 阅读 AI 精读 + 译文逐段对照 ---------- */
+.rd-tools { display: flex; gap: 8px; margin: 0 14px 10px; }
+.rd-tool { flex: 1; padding: 8px 0; border-radius: 10px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink-2); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.rd-tool.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand-deep); }
+.rd-p.cn { font-size: 13.5px; color: var(--ink-2); background: var(--brand-bg); border-left: 3px solid var(--brand-soft); padding: 6px 10px; border-radius: 6px; margin: -2px 0 10px 2px; line-height: 1.75; }
+.rd-p.cn.rd-cn-fall { margin-top: 10px; border-left-color: var(--line-strong); }
+.rd-ai-box { margin: 0 14px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); padding: 10px 12px; }
+.rd-ai-box .ai-loading { color: var(--ink-3); font-size: 13px; }
+.rd-ai-btn { width: 100%; margin-bottom: 10px; }
+.wcsent-btn { width: calc(100% - 24px); margin: 0 12px 8px; }
+.wcsent { margin: 0 12px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--brand-bg); padding: 10px 12px; font-size: 13px; line-height: 1.7; max-height: 46vh; overflow-y: auto; }
+
+/* ---------- AI 小练（阅读交卷后）+ 语境挑战（闪卡） ---------- */
+.reveal-btn.srs-ctx-btn { margin-top: 8px; margin-left: 8px; background: var(--card); color: var(--brand-deep); border: 1.5px solid var(--line-strong); font-size: 13.5px; padding: 9px 22px; }
+.reveal-btn.srs-ctx-btn:active { background: var(--brand-soft); }
+#srs-ctx-box { margin-top: 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--brand-bg); padding: 10px 12px; text-align: left; }
+#srs-ctx-box .ai-loading { color: var(--ink-3); font-size: 13px; }
+.sc-sent { font-size: 14px; line-height: 1.75; color: var(--ink); margin-bottom: 8px; }
+.sc-blank { color: var(--brand-deep); letter-spacing: 1px; }
+.sc-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc-opt { border: 1.5px solid var(--line); background: var(--card); border-radius: 9px; padding: 8px 6px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; font-family: inherit; text-align: left; }
+.sc-opt:disabled { opacity: 0.75; }
+.sc-opt.right { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+.sc-opt.wrong { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+.sc-note { margin-top: 8px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
+.rdq-item { margin-bottom: 10px; }
+.rdq-q { font-size: 13.5px; color: var(--ink); line-height: 1.6; margin-bottom: 6px; }
+.rdq-opts { display: grid; gap: 5px; }
+.rdq-opt { border: 1.5px solid var(--line); background: var(--card); border-radius: 9px; padding: 8px 10px; font-size: 13px; color: var(--ink-2); cursor: pointer; font-family: inherit; text-align: left; }
+.rdq-opt:disabled { opacity: 0.75; }
+.rdq-opt.right { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+.rdq-opt.wrong { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+.rdq-note { margin-top: 6px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
+.rdq-score { font-size: 13.5px; font-weight: 700; color: var(--brand-deep); margin-top: 4px; }
+
 /* ---------- 六级听力 ---------- */
 .ls-paper { align-items: center; gap: 10px; padding: 11px 12px; margin-bottom: 8px; cursor: pointer; }
 .ls-paper-main { flex: 1; min-width: 0; }
