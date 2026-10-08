@@ -219,6 +219,61 @@ const Sync = (() => {
   function tomb(key) { cfg().tomb[key] = Date.now(); }
   function untomb(key) { const t = cfg().tomb; if (t[key] !== undefined) t[key] = -Date.now(); }
 
+  /* ---- SSE 流式聊天（问史 wsstream 同款方案：HTTP 函数 + getReader）----
+     返回 {text, left, model, partial}；onDelta(piece, full) 逐字回调。
+     握手失败（非 2xx JSON）抛 err.code 契约错误；流式中途 error 事件且已有输出 → partial=true。 */
+  const STREAM_API = 'https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/vfstream';
+  async function streamChat(payload, onDelta, signal) {
+    let res;
+    try {
+      res = await fetch(STREAM_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ action: 'ai.chat', code: cfg().code || undefined }, payload || {})),
+        signal,
+      });
+    } catch (e) {
+      if (e.name === 'AbortError') { const err = new Error('已停止'); err.code = 'ABORTED'; throw err; }
+      const err = new Error('网络异常（流式通道不可达）'); err.code = 'TIMEOUT'; throw err;
+    }
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      const e = new Error((j && j.message) || ('HTTP ' + res.status));
+      e.code = j && j.error;
+      throw e;
+    }
+    if (!res.body || !res.body.getReader) { const e = new Error('当前环境不支持流式'); e.code = 'NO_STREAM'; throw e; }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', text = '', left = null, model = '', streamErr = null, aborted = false;
+    while (true) {
+      let chunk;
+      try { chunk = await reader.read(); } catch (e) {
+        if (signal && signal.aborted) { aborted = true; break; }
+        throw e;
+      }
+      if (chunk.done) break;
+      buf += dec.decode(chunk.value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith('data:')) continue;
+        try {
+          const ev = JSON.parse(line.slice(5).trim());
+          if (ev.type === 'delta') { text += ev.text || ''; if (onDelta) onDelta(ev.text || '', text); }
+          else if (ev.type === 'end') { left = ev.left; model = ev.model || ''; }
+          else if (ev.type === 'error') { streamErr = new Error(ev.message || '流式中断'); streamErr.code = ev.error; }
+        } catch (e) { /* 忽略坏行 */ }
+      }
+    }
+    buf += dec.end();
+    if (aborted) { const e = new Error('已停止生成'); e.code = 'ABORTED'; e.partialText = text; throw e; }
+    if (streamErr && !text) throw streamErr;
+    return { text, left, model, partial: !!streamErr };
+  }
+
+
   function domainPayload(d) {
     if (d === 'progress') return { learned: state.learned };
     if (d === 'vocab') return { wrong: state.wrong, favorites: state.favorites, favStars: state.favStars || {} };
@@ -900,7 +955,7 @@ const Sync = (() => {
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
+  return { init, markDirty, tomb, untomb, request, streamChat, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -4038,23 +4093,61 @@ const AI = (() => {
     return bits.join('，');
   }
 
-  /** 轻量 Markdown 渲染（AI 回复排版）：先转义防 XSS，再行级转换 */
+  /* 轻量 Markdown 渲染（AI 回复排版）：先转义防 XSS，再行级转换。
+     11 种语法：标题/列表/有序列表/hr/粗体/引用/删除线/行内代码/围栏代码块/表格/链接（仅 http/s）。
+     围栏代码块先整段摘为占位符，避免块内语法被误解析（问史同款方案）。 */
+  function mdInline(s) {
+    return s
+      .replace(/`([^`\n]+)`/g, '<code class="md-code-i">$1</code>')
+      .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
+      .replace(/~~([^~\n]+)~~/g, '<del>$1</del>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a class="md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
+  function mdTable(rows) {
+    const cells = (line) => line.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => mdInline(c.trim()));
+    const head = cells(rows[0]);
+    const body = rows.slice(2).map(cells);
+    const th = head.map((c) => '<th>' + c + '</th>').join('');
+    const tb = body.map((r) => '<tr>' + r.map((c) => '<td>' + c + '</td>').join('') + '</tr>').join('');
+    return '<div class="md-tbl-wrap"><table class="md-tbl"><thead><tr>' + th + '</tr></thead><tbody>' + tb + '</tbody></table></div>';
+  }
   function mdLite(raw) {
-    const t = esc(String(raw || ''));
+    const codes = [];
+    const s0 = String(raw || '').replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
+      codes.push({ lang: lang || '', code: code.replace(/\n$/, '') });
+      return '\u0000C' + (codes.length - 1) + '\u0000';
+    });
+    const t = esc(s0);
+    const restore = (x) => x.replace(/\u0000C(\d+)\u0000/g, (m, i) => {
+      const c = codes[Number(i)] || { lang: '', code: '' };
+      return '<div class="md-code"><div class="md-code-lang">' + c.lang + '</div><pre>' + c.code + '</pre></div>';
+    });
+    const lines = t.split('\n');
     const out = [];
-    for (const line of t.split('\n')) {
-      const x = line.trim();
+    for (let i = 0; i < lines.length; i++) {
+      const x = lines[i].trim();
       if (!x) { out.push('<div class="md-gap"></div>'); continue; }
       if (/^-{3,}$/.test(x) || /^\*{3,}$/.test(x)) { out.push('<hr class="md-hr">'); continue; }
       const h = x.match(/^(#{1,4})\s+(.*)$/);
-      if (h) { out.push('<div class="md-h md-h' + h[1].length + '">' + h[2] + '</div>'); continue; }
+      if (h) { out.push('<div class="md-h md-h' + h[1].length + '">' + mdInline(h[2]) + '</div>'); continue; }
       const li = x.match(/^[-*•]\s+(.*)$/);
-      if (li) { out.push('<div class="md-li">' + li[1] + '</div>'); continue; }
+      if (li) { out.push('<div class="md-li">' + mdInline(li[1]) + '</div>'); continue; }
       const oli = x.match(/^(\d{1,2})[.、)]\s+(.*)$/);
-      if (oli) { out.push('<div class="md-li md-oli"><b>' + oli[1] + '.</b> ' + oli[2] + '</div>'); continue; }
-      out.push('<p class="md-p">' + x + '</p>');
+      if (oli) { out.push('<div class="md-li md-oli"><b>' + oli[1] + '.</b> ' + mdInline(oli[2]) + '</div>'); continue; }
+      const q = x.match(/^&gt;\s?(.*)$/);
+      if (q) { out.push('<blockquote class="md-quote">' + mdInline(q[1]) + '</blockquote>'); continue; }
+      /* 表格块：当前行以 | 开头且下一行是 |---| 分隔行 */
+      if (x.startsWith('|') && i + 1 < lines.length && /^\|[\s:|-]+\|?$/.test(lines[i + 1].trim()) && lines[i + 1].trim().indexOf('-') >= 0) {
+        const rows = [];
+        while (i < lines.length && lines[i].trim().startsWith('|')) { rows.push(lines[i].trim()); i++; }
+        i--;
+        out.push(restore(mdTable(rows)));
+        continue;
+      }
+      if (/^\u0000C\d+\u0000$/.test(x)) { out.push(restore(x)); continue; }
+      out.push('<p class="md-p">' + mdInline(x) + '</p>');
     }
-    return out.join('').replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+    return restore(out.join(''));
   }
 
   function renderMsgs() {
@@ -4064,10 +4157,11 @@ const AI = (() => {
     if (!h.length) {
       box.innerHTML = `<div class="ai-empty">你好呀 🌸 我是你的 AI 学习助手。<br>可以问我：单词含义/记忆技巧、语法、长难句分析、真题翻译…<br>我大致知道你的学习进度（${esc(contextSummary()) || '刚上手'}）。</div>`;
     } else {
-      box.innerHTML = h.map((m) => m.role === 'user'
-        ? `<div class="ai-msg user">${esc(m.content)}</div>`
+      box.innerHTML = h.map((m, idx) => m.role === 'user'
+        ? `<div class="ai-msg user"><span class="ai-user-txt">${esc(m.content)}</span><button class="msg-edit" data-edit="${idx}" title="编辑重发">✎</button></div>`
         : `<div class="ai-msg bot">${mdLite(m.content)}</div>`).join('');
     }
+    box.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => editResend(Number(b.dataset.edit))));
     const chips = $('#ai-chips');
     if (chips) {
       const u = state.lastUnit && unitById(state.lastUnit);
@@ -4085,40 +4179,160 @@ const AI = (() => {
     window.scrollTo({ top: document.body.scrollHeight });
   }
 
+  /* 编辑重发：删除该条及其后所有消息，原文塞回输入框，改完再发 */
+  function editResend(idx) {
+    if (sending) { toast('等这轮回答完再编辑'); return; }
+    const h = hist();
+    if (!h[idx] || h[idx].role !== 'user') return;
+    const raw = h[idx].content;
+    saveHist(h.slice(0, idx));
+    const input = $('#ai-input');
+    if (input) { input.value = raw; try { input.focus(); } catch (e) { } }
+    renderMsgs();
+  }
+
+  /** 错误分类文案（服务端 AI_AUTH/AI_RATE/AI_MODEL/AI_UPSTREAM/LIMIT/NO_KEY/TIMEOUT 同一套契约） */
+  function errText(e) {
+    const code = e && e.code;
+    const m = String((e && e.message) || e);
+    if (code === 'ABORTED') return '';
+    if (code === 'LIMIT') return '今天次数用完了（每天 100 次）';
+    if (code === 'NO_KEY') return 'AI 还没配置好（找青峰放 Key）';
+    if (code === 'AI_AUTH') return 'AI 密钥失效（' + m.slice(0, 90) + '）';
+    if (code === 'AI_RATE') return 'AI 正被限流，等十几秒再试';
+    if (code === 'AI_MODEL') return '模型不可用：' + m.slice(0, 90);
+    if (code === 'AI_UPSTREAM' || code === 'AI_EMPTY') return 'AI 服务异常：' + m.slice(0, 90);
+    if (code === 'TIMEOUT' || code === 'NO_STREAM') return '网络不通（' + m.slice(0, 60) + '）';
+    return m.slice(0, 90);
+  }
+
+  /** 握手类失败自动重试（仅网络/上游瞬时错误；限额、密钥、内容类不重试） */
+  function isRetryable(e) {
+    return e && (e.code === 'TIMEOUT' || e.code === 'NO_STREAM' || e.code === 'AI_UPSTREAM');
+  }
+
+  /** 上下文折叠：12 条窗口外的早期用户提问压成清单，随 earlier 上传（不静默丢失） */
+  function earlierDigest(h) {
+    const win = h.slice(-12);
+    const cut = h.length - win.length;
+    if (cut <= 0) return { msgs: h, earlier: '' };
+    const items = [];
+    for (let i = 0; i < cut; i++) {
+      if (h[i].role === 'user') items.push((items.length + 1) + '. ' + h[i].content.slice(0, 40));
+    }
+    return { msgs: win, earlier: items.slice(-15).join('\n') };
+  }
+
+  let abortCtrl = null; // 当前流式请求的中止句柄（发送键在生成中=停止键）
+
   async function send(text) {
     const input = $('#ai-input');
     const msg = String(text !== undefined ? text : (input && input.value) || '').trim();
-    if (!msg || sending) return;
+    if (!msg) return;
+    if (sending) { // 生成中点发送键 = 停止生成
+      if (abortCtrl) abortCtrl.abort();
+      return;
+    }
     if (input) input.value = '';
     const h = hist();
     h.push({ role: 'user', content: msg });
     saveHist(h);
     renderMsgs();
     sending = true;
+    setSendMode('stop');
     const box = $('#ai-msgs');
-    const loading = document.createElement('div');
-    loading.className = 'ai-msg bot ai-loading';
-    loading.textContent = '思考中…';
-    box.appendChild(loading);
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-msg bot ai-loading';
+    bubble.textContent = '思考中…';
+    box.appendChild(bubble);
     box.scrollTop = box.scrollHeight;
-    try {
-      const r = await (typeof Sync !== 'undefined' && Sync.request
-        ? Sync.request('ai.chat', { messages: h.slice(-12), context: contextSummary() }, 90000)
-        : Promise.reject(new Error('请先在设置 → 云同步 注册账号')));
-      const reply = (r && r.text) || '（AI 没有返回内容，再试一次）';
+    const t0 = Date.now();
+    const tick = setInterval(() => {
+      if (bubble.isConnected && !bubble.dataset.streaming) bubble.textContent = Math.round((Date.now() - t0) / 1000) + 's · 正在思考…';
+    }, 500);
+    // 流式增量渲染（节流 100ms，结束补一次全量）
+    let raw = '', raf = 0;
+    const paint = (final) => {
+      bubble.dataset.streaming = '1';
+      bubble.classList.remove('ai-loading');
+      bubble.innerHTML = AI.mdLite(raw) + (final ? '' : '<span class="md-caret"></span>');
+      box.scrollTop = box.scrollHeight;
+    };
+    const onDelta = (piece, full) => {
+      raw = full;
+      if (!raf) raf = setTimeout(() => { raf = 0; paint(false); }, 100);
+    };
+    abortCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const finish = (reply) => {
       const h2 = hist();
       h2.push({ role: 'assistant', content: reply });
       saveHist(h2);
-    } catch (e) {
-      const h2 = hist();
-      const em = String(e.message || e);
-      h2.push({ role: 'assistant', content: '请求失败：' + (/NO_KEY|未配置/.test(em) ? 'AI 还没配置好（找青峰放 Key）' : (/LIMIT/.test(em) ? '今天次数用完了（每天 100 次）' : em.slice(0, 80))) });
-      saveHist(h2);
-    } finally {
+      clearInterval(tick);
       sending = false;
+      abortCtrl = null;
+      setSendMode('send');
       renderMsgs();
+      const live = document.getElementById('sr-live');
+      if (live) live.textContent = reply; // 读屏只播最新一条
+    };
+    const { msgs, earlier } = earlierDigest(hist());
+    const payload = { messages: msgs, context: contextSummary(), earlier };
+    let attempt = 0;
+    while (true) {
+      try {
+        let r = null;
+        try {
+          r = await (typeof Sync !== 'undefined' && Sync.streamChat
+            ? Sync.streamChat(payload, onDelta, abortCtrl ? abortCtrl.signal : undefined)
+            : Promise.reject(Object.assign(new Error('无流式通道'), { code: 'NO_STREAM' })));
+        } catch (se) {
+          if (se.code === 'ABORTED') { finish(se.partialText || raw || '（已停止）'); return; }
+          // 流式通道不可达/上游错误 → 降级走原非流式（问史兜底同款）
+          if (attempt === 0 && (se.code === 'NO_STREAM' || se.code === 'TIMEOUT' || se.code === 'AI_UPSTREAM')) {
+            attempt++;
+            r = await Sync.request('ai.chat', payload, 90000);
+          } else throw se;
+        }
+        if (r && r.left != null) showLeft(r.left);
+        finish((r && r.text) || '（AI 没有返回内容，再试一次）');
+        return;
+      } catch (e) {
+        if (e.code === 'ABORTED') { finish(e.partialText || raw || '（已停止）'); return; }
+        attempt++;
+        if (attempt <= 2 && isRetryable(e)) { // 网络类失败自动重试（指数退避）
+          await new Promise((r2) => setTimeout(r2, 700 * attempt));
+          continue;
+        }
+        const txt = errText(e);
+        clearInterval(tick);
+        sending = false;
+        abortCtrl = null;
+        setSendMode('send');
+        if (txt) {
+          const h3 = hist();
+          h3.push({ role: 'assistant', content: '请求失败：' + txt });
+          saveHist(h3);
+        }
+        renderMsgs();
+        return;
+      }
     }
   }
+
+  /** 发送键双态：send=发消息 / stop=停止生成 */
+  function setSendMode(mode) {
+    const btn = $('#ai-send');
+    if (!btn) return;
+    btn.classList.toggle('stopping', mode === 'stop');
+    btn.innerHTML = mode === 'stop' ? '■<span class="ai-stop-txt">停止</span>' : '发送';
+  }
+
+  function showLeft(left) {
+    if (left == null) return;
+    const el = $('#ai-left');
+    if (el) el.textContent = '今日剩余 ' + left + ' 次';
+  }
+
 
   /** 从别的页面带着预设问题跳进来（词卡讲解 / 错词记忆） */
   function askWith(question) {

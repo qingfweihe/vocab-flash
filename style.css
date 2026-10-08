@@ -1162,3 +1162,28 @@ html.dark .fav-seg.active { color: var(--brand); }
 .ai-msg.bot .md-hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
 .ai-msg.bot b { color: var(--brand-deep); }
 html.dark .ai-msg.bot b { color: var(--brand); }
+
+/* mdLite 增强（问史 11 语法）：表格/代码块/引用/删除线/行内代码/链接 */
+.ai-msg.bot .md-tbl-wrap { overflow-x: auto; margin: 8px 0; -webkit-overflow-scrolling: touch; }
+.ai-msg.bot .md-tbl { border-collapse: collapse; font-size: 12.5px; width: max-content; min-width: 60%; }
+.ai-msg.bot .md-tbl th, .ai-msg.bot .md-tbl td { border: 1px solid var(--line-strong); padding: 5px 9px; text-align: left; max-width: 58vw; }
+.ai-msg.bot .md-tbl th { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; white-space: nowrap; }
+.ai-msg.bot .md-tbl tbody tr:nth-child(even) { background: var(--brand-bg); }
+.ai-msg.bot .md-code { background: #f4f5f7; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+.ai-msg.bot .md-code-lang { font-size: 10.5px; color: var(--ink-3); padding: 4px 10px 0; font-family: var(--mono, monospace); }
+.ai-msg.bot .md-code pre { margin: 0; padding: 8px 10px 10px; overflow-x: auto; font-family: var(--mono, monospace); font-size: 12px; line-height: 1.6; white-space: pre; }
+.ai-msg.bot .md-code-i { background: rgba(63, 123, 245, .09); color: var(--brand-deep); border-radius: 4px; padding: 1px 5px; font-family: var(--mono, monospace); font-size: .92em; }
+.ai-msg.bot .md-quote { border-left: 3px solid var(--brand-soft); background: var(--brand-bg); margin: 6px 0; padding: 6px 10px; border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 13.5px; }
+.ai-msg.bot del { color: var(--ink-3); }
+.ai-msg.bot .md-link { color: var(--brand); text-decoration: underline; word-break: break-all; }
+.ai-msg.bot .md-caret { display: inline-block; width: 7px; height: 14px; background: var(--brand); margin-left: 2px; vertical-align: -2px; animation: caret-blink .9s steps(1) infinite; }
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+/* 聊天输入区扩展：停止态/剩余额度/编辑重发/读屏 */
+#ai-send.stopping { background: var(--danger); }
+#ai-send .ai-stop-txt { margin-left: 4px; font-size: 13px; }
+.ai-left { text-align: right; font-size: 11px; color: var(--ink-4); padding: 4px 4px 0; min-height: 16px; }
+.ai-msg.user { position: relative; }
+.ai-msg .msg-edit { border: none; background: none; color: var(--ink-4); font-size: 13px; cursor: pointer; padding: 2px 4px; position: absolute; right: 6px; bottom: 4px; opacity: .6; }
+.ai-msg .msg-edit:active { opacity: 1; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
