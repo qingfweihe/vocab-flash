@@ -1751,7 +1751,7 @@ $('#spell-submit').addEventListener('click', spellSubmit);
 $('#spell-next').addEventListener('click', () => { test.pos += 1; showCard(); });
 $('#spell-speak').addEventListener('click', () => { if (test && test.queue[test.pos]) speak(test.queue[test.pos].word.w); });
 $('#spell-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); if (!$('#spell-submit').classList.contains('hidden')) spellSubmit(); }
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (!$('#spell-submit').classList.contains('hidden')) spellSubmit(); }
 });
 $('#test-mode').addEventListener('click', () => {
   if (!test) return;
@@ -2352,6 +2352,7 @@ const StudyAI = (() => {
     try {
       if (typeof Sync === 'undefined' || !Sync.request) throw new Error('请先在设置 → 云同步 注册账号');
       const r = await Sync.request('ai.study', Object.assign({ kind }, payload), 90000);
+      if (r && r.left != null && typeof AI !== 'undefined' && AI.showLeft) AI.showLeft(r.left);
       if (renderData && r && r.data !== undefined) { renderData(boxEl, r.data); return true; }
       boxEl.innerHTML = `<div class="ai-msg bot">${AI.mdLite(r && r.text)}</div>`;
       return true;
@@ -3810,7 +3811,7 @@ async function renderSearch(q) {
 
 $('#search-input').addEventListener('input', (e) => renderSearch(e.target.value));
 $('#search-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+  if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); }
 });
 $('#search-results').addEventListener('click', (e) => {
   const d = e.target.closest('.sr-dict');
@@ -4177,6 +4178,7 @@ const AI = (() => {
     }
     box.scrollTop = box.scrollHeight;
     window.scrollTo({ top: document.body.scrollHeight });
+    restoreLeft();
   }
 
   /* 编辑重发：删除该条及其后所有消息，原文塞回输入框，改完再发 */
@@ -4228,11 +4230,8 @@ const AI = (() => {
   async function send(text) {
     const input = $('#ai-input');
     const msg = String(text !== undefined ? text : (input && input.value) || '').trim();
-    if (!msg) return;
-    if (sending) { // 生成中点发送键 = 停止生成
-      if (abortCtrl) abortCtrl.abort();
-      return;
-    }
+    // 生成中：程序化调用（词卡讲解等）静默忽略；「停止」只在按钮/回车层处理（见 bind）
+    if (!msg || sending) return;
     if (input) input.value = '';
     const h = hist();
     h.push({ role: 'user', content: msg });
@@ -4264,6 +4263,7 @@ const AI = (() => {
     };
     abortCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const finish = (reply) => {
+      if (raf) { clearTimeout(raf); raf = 0; } // 清掉未执行的节流 render，防游离 paint
       const h2 = hist();
       h2.push({ role: 'assistant', content: reply });
       saveHist(h2);
@@ -4295,7 +4295,8 @@ const AI = (() => {
           } else throw se;
         }
         if (r && r.left != null) showLeft(r.left);
-        finish((r && r.text) || '（AI 没有返回内容，再试一次）');
+        const replyTxt = (r && r.text) || '（AI 没有返回内容，再试一次）';
+        finish(r && r.partial ? replyTxt + '\n\n（回答中断，内容可能不完整）' : replyTxt);
         return;
       } catch (e) {
         if (e.code === 'ABORTED') { finish(e.partialText || raw || '（已停止）'); return; }
@@ -4332,21 +4333,36 @@ const AI = (() => {
     if (left == null) return;
     const el = $('#ai-left');
     if (el) el.textContent = '今日剩余 ' + left + ' 次';
+    try { localStorage.setItem('sgwd_ai_left', String(left)); } catch (e) { }
+  }
+  /** 进 AI 页恢复上次已知额度（还没请求过就不显示） */
+  function restoreLeft() {
+    const el = $('#ai-left');
+    if (!el || el.textContent) return;
+    try {
+      const v = localStorage.getItem('sgwd_ai_left');
+      if (v != null) el.textContent = '今日剩余 ' + v + ' 次';
+    } catch (e) { }
   }
 
 
   /** 从别的页面带着预设问题跳进来（词卡讲解 / 错词记忆） */
   function askWith(question) {
     nav('ai');
+    if (sending) { toast('AI 正在回答上一个问题，稍等一下再点'); return; }
     setTimeout(() => send(question), 150);
   }
 
   function bind() {
     const btn = $('#ai-send');
-    if (btn) btn.addEventListener('click', () => send());
+    if (btn) btn.addEventListener('click', () => {
+      if (sending) { if (abortCtrl) abortCtrl.abort(); return; } // 生成中=停止键
+      send();
+    });
     const input = $('#ai-input');
     if (input) input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); send(); }
+      // isComposing：中文输入法回车是"确认候选词"，不能当发送（防误触）
+      if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (!sending) send(); }
     });
     const clear = $('#ai-clear');
     if (clear) clear.addEventListener('click', () => {
@@ -4355,7 +4371,7 @@ const AI = (() => {
     });
   }
 
-  return { bind, renderMsgs, askWith, send, mdLite };
+  return { bind, renderMsgs, askWith, send, mdLite, showLeft };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆 */

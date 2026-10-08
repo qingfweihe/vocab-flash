@@ -30,7 +30,7 @@
     <div id="home-main">
     <button id="btn-continue" class="continue-btn hidden">继续学习</button>
       <div class="search-box">
-      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off">
+      <input id="search-input" type="search" placeholder="搜索单词或中文释义…" autocomplete="off" enterkeyhint="search">
       <div id="search-results" class="hidden"></div>
     </div>
       <div class="settings-box set-entries">
@@ -198,7 +198,7 @@
           <div class="spell-cn" id="spell-cn"></div>
           <button class="ghost-btn" id="spell-speak"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i>听发音</button>
           <input id="spell-input" type="text" placeholder="拼写这个单词…" autocomplete="off"
-                 autocapitalize="off" autocorrect="off" spellcheck="false">
+                 autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
           <button class="primary-btn" id="spell-submit">提交</button>
         </div>
         <div id="spell-result" class="hidden"></div>
@@ -286,7 +286,7 @@
     <div id="ai-msgs"></div>
     <div class="ai-chips" id="ai-chips"></div>
     <div class="ai-input-bar">
-      <input id="ai-input" type="text" maxlength="200" placeholder="问单词 / 语法 / 真题 / 翻译…" autocomplete="off">
+      <input id="ai-input" type="text" maxlength="200" placeholder="问单词 / 语法 / 真题 / 翻译…" autocomplete="off" enterkeyhint="send">
       <button class="primary-btn" id="ai-send">发送</button>
     </div>
     <div class="ai-left" id="ai-left"></div>

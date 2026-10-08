@@ -1169,10 +1169,10 @@ html.dark .ai-msg.bot b { color: var(--brand); }
 .ai-msg.bot .md-tbl th, .ai-msg.bot .md-tbl td { border: 1px solid var(--line-strong); padding: 5px 9px; text-align: left; max-width: 58vw; }
 .ai-msg.bot .md-tbl th { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; white-space: nowrap; }
 .ai-msg.bot .md-tbl tbody tr:nth-child(even) { background: var(--brand-bg); }
-.ai-msg.bot .md-code { background: #f4f5f7; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+.ai-msg.bot .md-code { background: var(--page-bg); border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
 .ai-msg.bot .md-code-lang { font-size: 10.5px; color: var(--ink-3); padding: 4px 10px 0; font-family: var(--mono, monospace); }
 .ai-msg.bot .md-code pre { margin: 0; padding: 8px 10px 10px; overflow-x: auto; font-family: var(--mono, monospace); font-size: 12px; line-height: 1.6; white-space: pre; }
-.ai-msg.bot .md-code-i { background: rgba(63, 123, 245, .09); color: var(--brand-deep); border-radius: 4px; padding: 1px 5px; font-family: var(--mono, monospace); font-size: .92em; }
+.ai-msg.bot .md-code-i { background: var(--brand-bg); color: var(--brand-deep); border-radius: 4px; padding: 1px 5px; font-family: var(--mono, monospace); font-size: .92em; }
 .ai-msg.bot .md-quote { border-left: 3px solid var(--brand-soft); background: var(--brand-bg); margin: 6px 0; padding: 6px 10px; border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 13.5px; }
 .ai-msg.bot del { color: var(--ink-3); }
 .ai-msg.bot .md-link { color: var(--brand); text-decoration: underline; word-break: break-all; }
@@ -1184,6 +1184,6 @@ html.dark .ai-msg.bot b { color: var(--brand); }
 #ai-send .ai-stop-txt { margin-left: 4px; font-size: 13px; }
 .ai-left { text-align: right; font-size: 11px; color: var(--ink-4); padding: 4px 4px 0; min-height: 16px; }
 .ai-msg.user { position: relative; }
-.ai-msg .msg-edit { border: none; background: none; color: var(--ink-4); font-size: 13px; cursor: pointer; padding: 2px 4px; position: absolute; right: 6px; bottom: 4px; opacity: .6; }
+.ai-msg .msg-edit { border: none; background: none; color: rgba(255, 255, 255, .75); font-size: 13px; cursor: pointer; padding: 2px 4px; position: absolute; right: 6px; bottom: 4px; opacity: .8; }
 .ai-msg .msg-edit:active { opacity: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
