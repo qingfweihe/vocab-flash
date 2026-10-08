@@ -267,7 +267,7 @@ const Sync = (() => {
         } catch (e) { /* 忽略坏行 */ }
       }
     }
-    buf += dec.end();
+    buf += dec.decode(); // TextDecoder 无 end()：无参调用即 flush 尾部多字节（问史坑：别用 StringDecoder 的 API）
     if (aborted) { const e = new Error('已停止生成'); e.code = 'ABORTED'; e.partialText = text; throw e; }
     if (streamErr && !text) throw streamErr;
     return { text, left, model, partial: !!streamErr };
@@ -4287,8 +4287,9 @@ const AI = (() => {
             : Promise.reject(Object.assign(new Error('无流式通道'), { code: 'NO_STREAM' })));
         } catch (se) {
           if (se.code === 'ABORTED') { finish(se.partialText || raw || '（已停止）'); return; }
-          // 流式通道不可达/上游错误 → 降级走原非流式（问史兜底同款）
-          if (attempt === 0 && (se.code === 'NO_STREAM' || se.code === 'TIMEOUT' || se.code === 'AI_UPSTREAM')) {
+          // 流式通道不可达/异常 → 降级走原非流式（业务类错误码不降级，如实报错）
+          const BIZ = ['LIMIT', 'NO_KEY', 'AI_AUTH', 'AI_RATE', 'AI_MODEL', 'BAD_CODE', 'BAD_MSGS', 'NO_SUCH_CODE'];
+          if (attempt === 0 && BIZ.indexOf(se.code) < 0) {
             attempt++;
             r = await Sync.request('ai.chat', payload, 90000);
           } else throw se;
