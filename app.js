@@ -136,6 +136,11 @@ function esc(s) {
 
 /* ---- 进度存储：以词头（小写）为键，词库重排不会错位 ---- */
 function wordKey(w) { return String(w).toLowerCase(); }
+
+/** 词库总词数（数据驱动：新词库追加后自动跟随） */
+function totalWords() {
+  try { return DATA.units.reduce((sum, u) => sum + u.words.length, 0); } catch (e) { return 2007; }
+}
 function learnedMap(id) { return state.learned[String(id)] || (state.learned[String(id)] = {}); }
 function wrongMap(id) { return state.wrong[String(id)] || (state.wrong[String(id)] = {}); }
 function isLearned(id, w) { return !!learnedMap(id)[wordKey(w)]; }
@@ -1185,7 +1190,7 @@ function nav(view) {
     setFavSeg(target);
   }
   if (view === 'reading') Reading.renderPage();
-  if (view === 'ai') AI.renderMsgs();
+  if (view === 'ai') { AI.renderMsgs(); AI.applyBackBtn(); }
   if (view === 'listening') Listening.renderPage();
 }
 
@@ -2813,6 +2818,8 @@ const Reading = (() => {
     $('#reading-list').classList.add('hidden');
     const box = $('#reading-quiz');
     box.classList.remove('hidden');
+    delete box.dataset.answered; // 换篇重置答题标志（box 是固定元素，innerHTML 不清 dataset）
+    box.classList.remove('show-cn');
     box.innerHTML = `
       <div class="rd-src-line">${it.src} · 约 ${it.words} 词
         <button class="rd-speak" id="rd-speak"> 朗读</button>
@@ -3499,7 +3506,7 @@ const Listening = (() => {
         <div class="lw-root">${esc((hit.w.root || '').slice(0, 90))}</div>`;
     } else {
       card.innerHTML = `<div class="lw-head"><b>${esc(raw)}</b><button class="lw-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
-        <div class="lw-cn">词库（1007 词）里没有这个词，先按发音记一下。</div>`;
+        <div class="lw-cn">词库（${totalWords()} 词）里没有这个词，先按发音记一下。</div>`;
     }
     document.body.appendChild(card);
     const rect = el.getBoundingClientRect();
@@ -4104,7 +4111,7 @@ function renderContinue() {
     b.classList.remove('hidden');
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
-    if (wordsSub) wordsSub.textContent = `已学 ${learnedTotal}/1007 · 继续 ${u.name}${pos}`;
+    if (wordsSub) wordsSub.textContent = `已学 ${learnedTotal}/${totalWords()} · 继续 ${u.name}${pos}`;
   } else {
     b.classList.add('hidden');
     if (wordsSub) wordsSub.textContent = '选择单元开始学习';
@@ -4349,7 +4356,7 @@ const AI = (() => {
     try {
       let learned = 0;
       for (const k in state.learned) learned += countKeys(state.learned, k);
-      bits.push(`已学 ${learned}/1007 词`);
+      bits.push(`已学 ${learned}/${totalWords()} 词`);
       const u = state.lastUnit && unitById(state.lastUnit);
       if (u) bits.push(`最近在学 ${u.name}`);
       const t = todayCount();
@@ -4730,11 +4737,25 @@ const AI = (() => {
   }
 
 
-  /** 从别的页面带着预设问题跳进来（词卡讲解 / 错词记忆） */
+  /** 从别的页面带着预设问题跳进来（词卡讲解 / 错词记忆）。
+      记住来源页：看完讲解点「‹ 返回」回来源，而不是掉回首页。 */
+  let returnView = null;
   function askWith(question) {
+    if (currentView !== 'ai') returnView = currentView;
     nav('ai');
     if (sending) { toast('AI 正在回答上一个问题，稍等一下再点'); return; }
     setTimeout(() => send(question), 150);
+  }
+  /** AI 页返回键显隐 + 目标（有跳入来源才显示） */
+  function applyBackBtn() {
+    const btn = document.getElementById('ai-back');
+    if (!btn) return;
+    if (returnView && returnView !== 'ai') {
+      btn.classList.remove('hidden');
+      btn.dataset.nav = returnView;
+    } else {
+      btn.classList.add('hidden');
+    }
   }
 
   function bind() {
@@ -4755,7 +4776,9 @@ const AI = (() => {
     });
   }
 
-  return { bind, renderMsgs, askWith, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord };
+  const backBtn = document.getElementById('ai-back');
+  if (backBtn) backBtn.addEventListener('click', () => { returnView = null; }); // data-nav 委托负责跳转
+  return { bind, renderMsgs, askWith, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆 */
