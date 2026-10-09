@@ -2640,9 +2640,21 @@ const Daily = (() => {
     if (act === 'submit') { submit(t.dataset.date); return; }
   }
 
-  function open() { loadFull(false); if (!DATA) loadFull(false); }
+  function open() {
+    if (typeof Sync !== 'undefined' && Sync.isShell && Sync.isShell()) return; // 壳内禁用
+    loadFull(false);
+    if (!DATA) loadFull(false);
+  }
 
   function init() {
+    // 安卓 App 壳内不启用每日精进（用户指定仅 iPhone 等非壳环境可见）
+    if (typeof Sync !== 'undefined' && Sync.isShell && Sync.isShell()) {
+      const card = document.getElementById('daily-card');
+      if (card) card.classList.add('hidden');
+      const panel = document.getElementById('homepanel-daily');
+      if (panel) panel.remove();
+      return;
+    }
     const box = $('#daily-body');
     if (box && !box.dataset.dbound) { box.dataset.dbound = '1'; box.addEventListener('click', onClick); }
     const rf = $('#daily-refresh');
