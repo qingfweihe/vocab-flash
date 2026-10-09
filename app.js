@@ -4784,7 +4784,7 @@ const AI = (() => {
       sending = false;
       abortCtrl = null;
       setSendMode('send');
-      curRender();
+      if (V) renderPop(); else renderMsgs();
       if (acts.length) setTimeout(() => runActions(acts), 100); // 渲染完再执行（quiz/review 会切页）
       const live = document.getElementById('sr-live');
       if (live) live.textContent = clean; // 读屏只播最新一条
@@ -4830,7 +4830,7 @@ const AI = (() => {
           saveHist(h3);
           if (V) V.list.push({ role: 'assistant', content: '请求失败：' + txt });
         }
-        curRender();
+        if (V) renderPop(); else renderMsgs();
         return;
       }
     }
