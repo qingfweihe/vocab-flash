@@ -4151,6 +4151,119 @@ const AI = (() => {
     return restore(out.join(''));
   }
 
+  /* ================= 应用操控（vf-action 协议） =================
+     AI 在回复末尾输出 <vf-action>{"op":...}</vf-action>，前端白名单解析执行。
+     只允许低危操作（收藏/星级/已学/错词/复习/检验/跳转），每轮最多 3 个；
+     词必须能在词库定位，否则该条跳过并回执失败原因。历史里只存剥离指令后的纯文本。 */
+  const ACTION_RE = /<vf-action>\s*(\{[\s\S]*?\})\s*<\/vf-action>/g;
+  function parseActions(raw) {
+    const acts = [];
+    let m;
+    ACTION_RE.lastIndex = 0;
+    while ((m = ACTION_RE.exec(String(raw || ''))) && acts.length < 3) {
+      try { acts.push(JSON.parse(m[1])); } catch (e) { /* 坏 JSON 不执行也不剥离 */ }
+    }
+    return acts;
+  }
+  function stripActions(raw) {
+    return String(raw || '').replace(/<vf-action>\s*(\{[\s\S]*?\})\s*<\/vf-action>\s*/g, (mm, j) => {
+      try { JSON.parse(j); return ''; } catch (e) { return mm; } // 只有合法指令才从正文剥离
+    }).trim();
+  }
+  function findWord(word) {
+    const k = wordKey(String(word || '').trim());
+    if (!k) return null;
+    for (const u of DATA.units) {
+      const w = u.words.find((x) => wordKey(x.w) === k);
+      if (w) return { unitId: u.id, w: w.w };
+    }
+    return null;
+  }
+  /** 执行单条指令，返回回执文本；不合法抛 Error（消息给用户看） */
+  function execAction(a) {
+    const op = String(a && a.op || '');
+    const KNOWN = ['fav', 'unfav', 'star', 'learn', 'unlearn', 'master', 'review', 'quiz', 'nav'];
+    if (KNOWN.indexOf(op) < 0) throw new Error('未知操作：' + op); // 白名单前置：删数据类操作永远到不了这里
+    if (op === 'review') {
+      const q = srsDueCapped();
+      if (!q.length) return '今日没有到期的复习词';
+      startTest(q, '今日复习 ' + q.length + ' 词');
+      return '已开始今日复习（' + q.length + ' 词）';
+    }
+    if (op === 'quiz') {
+      const n = Number(a.unit);
+      const u = (n >= 1 && n <= DATA.units.length) ? DATA.units[n - 1] : DATA.units[Math.floor(Math.random() * DATA.units.length)];
+      startTest(buildQueueByUnit(u.id), u.name + ' 检验');
+      return '已开始「' + u.name + '」检验';
+    }
+    if (op === 'nav') {
+      const views = ['units', 'favorites', 'reading', 'listening', 'settings'];
+      const v = String(a.view || '');
+      if (views.indexOf(v) < 0) throw new Error('不支持的页面：' + v);
+      nav(v);
+      return '已跳转';
+    }
+    const f = findWord(a.word);
+    if (!f) throw new Error('词库中没有「' + a.word + '」');
+    const id = f.unitId, w = f.w;
+    if (op === 'fav') {
+      if (isFav(id, w)) return '「' + w + '」已在收藏夹';
+      setFav(id, w, true); saveState();
+      return '已收藏「' + w + '」';
+    }
+    if (op === 'unfav') {
+      if (!isFav(id, w)) return '「' + w + '」本就不在收藏夹';
+      setFav(id, w, false); saveState();
+      return '已取消收藏「' + w + '」';
+    }
+    if (op === 'star') {
+      const v = Math.max(1, Math.min(3, Number(a.v) || 1));
+      if (!isFav(id, w)) setFav(id, w, true); // 星级挂在收藏上：未收藏先收藏
+      setFavStar(id, w, v); saveState();
+      return '「' + w + '」熟练度已设为 ' + v + ' 星';
+    }
+    if (op === 'learn') {
+      setLearned(id, w, true); setWrong(id, w, false);
+      srsInit(id, w); logLearn('n'); saveState();
+      if (typeof renderToday === 'function') renderToday();
+      return '已标记「' + w + '」为已学（明天进入复习）';
+    }
+    if (op === 'unlearn') {
+      setLearned(id, w, false); srsRemove(id, w); saveState();
+      return '已取消「' + w + '」的已学标记';
+    }
+    if (op === 'master') {
+      if (!isWrong(id, w)) return '「' + w + '」不在错词本';
+      setWrong(id, w, false); saveState();
+      return '「' + w + '」已移出错词本';
+    }
+    throw new Error('未知操作：' + op); // 不可达（白名单前置），兜底
+  }
+  /** 顺序执行指令并在最后一条回复气泡后追加回执条 */
+  function runActions(acts) {
+    const box = $('#ai-msgs');
+    if (!box) return;
+    const bar = document.createElement('div');
+    bar.className = 'vf-action-bar';
+    bar.innerHTML = '<div class="vf-action-head">⚡ 已执行应用操作</div>';
+    let okN = 0;
+    acts.forEach((a) => {
+      const row = document.createElement('div');
+      row.className = 'vf-action-row';
+      try {
+        const msg = execAction(a);
+        okN++;
+        row.innerHTML = '<span class="ok">✓</span> ' + esc(msg);
+      } catch (e) {
+        row.innerHTML = '<span class="no">✗</span> ' + esc(String(e.message || e).slice(0, 80));
+      }
+      bar.appendChild(row);
+    });
+    box.appendChild(bar);
+    box.scrollTop = box.scrollHeight;
+    buzz(okN ? 15 : [30, 50, 30]);
+  }
+
   function renderMsgs() {
     const box = $('#ai-msgs');
     if (!box) return;
@@ -4249,12 +4362,14 @@ const AI = (() => {
     const tick = setInterval(() => {
       if (bubble.isConnected && !bubble.dataset.streaming) bubble.textContent = Math.round((Date.now() - t0) / 1000) + 's · 正在思考…';
     }, 500);
-    // 流式增量渲染（节流 100ms，结束补一次全量）
+    // 流式增量渲染（节流 100ms，结束补一次全量）。
+    // paintText：流式期间不显示操作指令（已闭合的整段和尾部半截 <vf-action 都不显示，避免闪现）
     let raw = '', raf = 0;
+    const paintText = (s) => s.replace(/<vf-action>\s*\{[\s\S]*?\}\s*<\/vf-action>\s*/g, '').replace(/<vf-action>[\s\S]*$/, '');
     const paint = (final) => {
       bubble.dataset.streaming = '1';
       bubble.classList.remove('ai-loading');
-      bubble.innerHTML = AI.mdLite(raw) + (final ? '' : '<span class="md-caret"></span>');
+      bubble.innerHTML = AI.mdLite(paintText(raw)) + (final ? '' : '<span class="md-caret"></span>');
       box.scrollTop = box.scrollHeight;
     };
     const onDelta = (piece, full) => {
@@ -4264,16 +4379,19 @@ const AI = (() => {
     abortCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     const finish = (reply) => {
       if (raf) { clearTimeout(raf); raf = 0; } // 清掉未执行的节流 render，防游离 paint
+      const acts = parseActions(reply);
+      const clean = acts.length ? stripActions(reply) : reply;
       const h2 = hist();
-      h2.push({ role: 'assistant', content: reply });
+      h2.push({ role: 'assistant', content: clean });
       saveHist(h2);
       clearInterval(tick);
       sending = false;
       abortCtrl = null;
       setSendMode('send');
       renderMsgs();
+      if (acts.length) setTimeout(() => runActions(acts), 100); // 渲染完再执行（quiz/review 会切页）
       const live = document.getElementById('sr-live');
-      if (live) live.textContent = reply; // 读屏只播最新一条
+      if (live) live.textContent = clean; // 读屏只播最新一条
     };
     const { msgs, earlier } = earlierDigest(hist());
     const payload = { messages: msgs, context: contextSummary(), earlier };
@@ -4371,7 +4489,7 @@ const AI = (() => {
     });
   }
 
-  return { bind, renderMsgs, askWith, send, mdLite, showLeft };
+  return { bind, renderMsgs, askWith, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆 */
