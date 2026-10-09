@@ -1301,3 +1301,8 @@ html.dark .daily-md b { color: var(--brand); }
 .daily-md .md-quote { border-left: 3px solid var(--brand-soft); background: var(--brand-bg); margin: 6px 0; padding: 6px 10px; border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 13.5px; }
 .daily-md del { color: var(--ink-3); }
 .daily-md .md-link { color: var(--brand); text-decoration: underline; word-break: break-all; }
+
+/* 阅读生词升入精背 */
+.rv-item .rv-acts { display: flex; align-items: center; gap: 6px; flex: none; }
+.rv-item.promoted { opacity: .72; }
+.rv-item.promoted .rv-promote { color: var(--ok); }

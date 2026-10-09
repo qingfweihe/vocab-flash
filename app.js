@@ -3036,6 +3036,16 @@ const Reading = (() => {
   }
 
   /** 收藏夹：阅读生词折叠分区 */
+  /** 阅读生词升入主收藏列表精背：定位背诵词库 → setFav（条目保留，行内标已精背） */
+  function promoteReadWord(w, row) {
+    const hit = AI.findWord(w);
+    if (!hit) { toast('「' + w + '」不在背诵词库，无法精背'); return false; }
+    if (isFav(hit.unitId, w)) { if (row) row.classList.add('promoted'); return false; }
+    setFav(hit.unitId, w, true);
+    saveState();
+    if (row) row.classList.add('promoted');
+    return true;
+  }
   function renderWrongVocab() {
     const box = $('#fav-read-list');
     if (!box) return;
@@ -3044,16 +3054,41 @@ const Reading = (() => {
     const r = rState();
     const words = Object.keys(r.vocab);
     if (wrap) wrap.classList.toggle('hidden', !words.length);
-    if (head) head.textContent = `阅读生词（${words.length}）`;
+    if (head) head.innerHTML = `阅读生词（${words.length}）<button class="mini-btn" id="rv-promote-all" style="margin-left:8px">全部升入精背</button>`;
     if (!words.length) return;
-    box.innerHTML = words.map((w) => `
-      <div class="rem-item"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
-      <button class="rem-del" data-rvw="${w}">认识</button></div>`).join('');
+    box.innerHTML = words.map((w) => {
+      const promoted = (() => { const h = AI.findWord(w); return h && isFav(h.unitId, w); })();
+      return `<div class="rem-item rv-item${promoted ? ' promoted' : ''}" data-rvrow="${w}"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
+      <span class="rv-acts"><button class="mini-btn rv-promote" data-rfav="${w}">${promoted ? '✓ 已精背' : '⬆ 精背'}</button><button class="rem-del" data-rvw="${w}">认识</button></span></div>`;
+    }).join('');
     box.querySelectorAll('[data-rvw]').forEach((b) => b.addEventListener('click', () => {
       delete rState().vocab[b.dataset.rvw];
       if (typeof Sync !== 'undefined') Sync.tomb('rv:' + b.dataset.rvw);
       saveState(); renderWrongVocab();
     }));
+    box.querySelectorAll('[data-rfav]').forEach((b) => b.addEventListener('click', () => {
+      const row = b.closest('.rv-item');
+      if (promoteReadWord(b.dataset.rfav, row)) {
+        b.textContent = '✓ 已精背';
+        if (typeof renderFavorites === 'function') renderFavorites(); // 主列表即时出现
+        toast('已升入收藏夹精背');
+      } else if (b.textContent.indexOf('已精背') < 0) {
+        renderWrongVocab(); // 刷新行状态（可能已在收藏）
+      }
+    }));
+    const pa = document.getElementById('rv-promote-all');
+    if (pa) pa.addEventListener('click', () => {
+      let okN = 0, skipN = 0;
+      Object.keys(rState().vocab).forEach((w) => {
+        const hit = AI.findWord(w);
+        if (hit && !isFav(hit.unitId, w)) { setFav(hit.unitId, w, true); okN++; }
+        else skipN++;
+      });
+      saveState();
+      if (typeof renderFavorites === 'function') renderFavorites();
+      renderWrongVocab();
+      toast(okN ? '已升入 ' + okN + ' 词' + (skipN ? '（' + skipN + ' 个不在词库/已收藏）' : '') : '没有可升入的词');
+    });
   }
 
   function bind() {
