@@ -718,6 +718,14 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .rd-opt.right { border-color: var(--ok); background: var(--ok-soft); }
 .rd-opt.wrong { border-color: var(--danger); background: var(--danger-soft); }
 .rd-opt:disabled { cursor: default; }
+/* 题干/选项中文（挂「对照译文」开关）+ 选项内点词 */
+.rd-q-cn { display: none; font-size: 13px; color: var(--ink-2); background: var(--brand-bg); border-left: 3px solid var(--brand-soft); padding: 5px 9px; border-radius: 6px; margin-top: 6px; line-height: 1.7; }
+#reading-quiz.show-cn .rd-q-cn { display: block; }
+.rd-opt .opt-en { display: inline; }
+.rd-opt .opt-cn { display: none; font-size: 12px; color: var(--ink-2); margin-top: 4px; line-height: 1.6; }
+#reading-quiz.show-cn .rd-opt .opt-cn { display: block; }
+.rd-opt .rd-w { cursor: pointer; }
+.rd-opt.answered { cursor: default; }
 .rd-verdict { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
 .rd-verdict.ok { color: var(--ok); }
 .rd-verdict.no { color: var(--danger); }
@@ -1194,3 +1202,102 @@ html.dark .ai-msg.bot b { color: var(--brand); }
 .vf-action-row { font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
 .vf-action-row .ok { color: var(--ok); font-weight: 700; }
 .vf-action-row .no { color: var(--danger); font-weight: 700; }
+
+/* ==================== 每日精进（毛选 & AI 方法论） ==================== */
+#daily-card-badge.done { color: var(--ok); background: var(--ok-soft); }
+
+.daily-empty { padding: 28px 8px; text-align: center; font-size: 13.5px; color: var(--ink-3); line-height: 1.9; }
+.daily-hint { font-size: 12.5px; color: var(--ink-4); }
+
+.daily-pending {
+  margin: 0 0 10px; padding: 9px 12px;
+  font-size: 12.5px; color: var(--warn); background: var(--warn-soft);
+  border-radius: 10px; line-height: 1.7;
+}
+
+.daily-day { margin-bottom: 12px; }
+.daily-day-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;
+  padding: 10px 12px; margin-bottom: 6px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  font-family: inherit; cursor: pointer; text-align: left;
+  box-shadow: var(--shadow-1);
+}
+.daily-day.is-today .daily-day-head { border-color: var(--brand); background: var(--brand-bg); }
+.daily-day-title { flex: 1; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.daily-day-stat { flex: none; font-size: 12px; color: var(--ink-3); font-family: var(--mono); }
+.daily-day-stat.ok { color: var(--ok); }
+.daily-day-body { padding: 2px 0 0; }
+
+.daily-arw { flex: none; font-size: 15px; color: var(--ink-4); transition: transform .18s; }
+.daily-arw.open { transform: rotate(90deg); }
+
+.daily-item {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow-1);
+}
+.daily-item-head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.daily-tag {
+  flex: none; font-size: 11px; font-weight: 600;
+  border-radius: 6px; padding: 2px 7px;
+  color: var(--brand); background: var(--brand-soft);
+}
+.daily-tag.ai { color: var(--ok); background: var(--ok-soft); }
+.daily-item-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.daily-item-body { margin-top: 10px; font-size: 14px; color: var(--ink); line-height: 1.75; }
+
+.daily-q {
+  margin-top: 12px; padding: 10px 12px; font-size: 13.5px; line-height: 1.75; color: var(--ink);
+  background: var(--brand-bg); border-radius: 10px; border-left: 3px solid var(--brand);
+}
+.daily-qlabel { font-weight: 700; color: var(--brand); margin-right: 6px; }
+
+.daily-ta {
+  display: block; width: 100%; box-sizing: border-box; margin-top: 10px;
+  padding: 10px 12px; font-size: 14px; font-family: inherit; line-height: 1.7;
+  color: var(--ink); background: var(--page-bg);
+  border: 1px solid var(--line-strong); border-radius: 10px;
+  resize: vertical; min-height: 64px;
+}
+.daily-ta:focus { outline: none; border-color: var(--brand); background: var(--card); }
+.daily-submit { width: 100%; margin-top: 8px; }
+
+.daily-ans {
+  margin-top: 10px; padding: 10px 12px; font-size: 13.5px; line-height: 1.75;
+  color: var(--ink); background: var(--page-bg); border-radius: 10px; white-space: pre-wrap;
+}
+.daily-ans-label { display: block; font-style: normal; font-size: 11.5px; color: var(--ink-3); margin-bottom: 4px; }
+
+.daily-review {
+  margin-top: 10px; padding: 10px 12px; font-size: 13.5px; line-height: 1.75;
+  color: var(--ink); background: var(--ok-soft); border-radius: 10px;
+  border-left: 3px solid var(--ok);
+}
+.daily-review-label { display: block; font-style: normal; font-size: 11.5px; color: var(--ink-3); margin-bottom: 4px; }
+
+/* 正文排版（mdLite 渲染，尺度对齐 AI 气泡；不侵入 .ai-msg 现有规则） */
+.daily-md .md-h { font-weight: 700; margin: 10px 0 4px; }
+.daily-md .md-h1 { font-size: 16px; }
+.daily-md .md-h2 { font-size: 15px; }
+.daily-md .md-h3, .daily-md .md-h4 { font-size: 14.5px; color: var(--brand-deep); }
+.daily-md .md-p { margin: 4px 0; }
+.daily-md .md-li { margin: 3px 0 3px 14px; position: relative; }
+.daily-md .md-li::before { content: '·'; position: absolute; left: -10px; color: var(--brand); font-weight: 700; }
+.daily-md .md-oli { margin-left: 6px; }
+.daily-md .md-oli::before { content: none; }
+.daily-md .md-gap { height: 6px; }
+.daily-md .md-hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
+.daily-md b { color: var(--brand-deep); }
+html.dark .daily-md b { color: var(--brand); }
+.daily-md .md-tbl-wrap { overflow-x: auto; margin: 8px 0; -webkit-overflow-scrolling: touch; }
+.daily-md .md-tbl { border-collapse: collapse; font-size: 12.5px; width: max-content; min-width: 60%; }
+.daily-md .md-tbl th, .daily-md .md-tbl td { border: 1px solid var(--line-strong); padding: 5px 9px; text-align: left; max-width: 58vw; }
+.daily-md .md-tbl th { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; white-space: nowrap; }
+.daily-md .md-tbl tbody tr:nth-child(even) { background: var(--brand-bg); }
+.daily-md .md-code { background: var(--page-bg); border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+.daily-md .md-code-lang { font-size: 10.5px; color: var(--ink-3); padding: 4px 10px 0; font-family: var(--mono, monospace); }
+.daily-md .md-code pre { margin: 0; padding: 8px 10px 10px; overflow-x: auto; font-family: var(--mono, monospace); font-size: 12px; line-height: 1.6; white-space: pre; }
+.daily-md .md-code-i { background: var(--brand-bg); color: var(--brand-deep); border-radius: 4px; padding: 1px 5px; font-family: var(--mono, monospace); font-size: .92em; }
+.daily-md .md-quote { border-left: 3px solid var(--brand-soft); background: var(--brand-bg); margin: 6px 0; padding: 6px 10px; border-radius: 0 8px 8px 0; color: var(--ink-2); font-size: 13.5px; }
+.daily-md del { color: var(--ink-3); }
+.daily-md .md-link { color: var(--brand); text-decoration: underline; word-break: break-all; }

@@ -16,7 +16,14 @@
      "It is reshaping humanity."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「While the term AI conjures up anxieties about killer robots or catastrophic levels of unemployment, there are other, deeper implications.」"
+    "explain": "正确答案 D。依据（原文）：「While the term AI conjures up anxieties about killer robots or catastrophic levels of unemployment, there are other, deeper implications.」",
+    "stemCn": "关于人工智能的深层含义，我们了解到什么？",
+    "optionsCn": [
+     "它正在造成灾难性的失业水平。",
+     "它正在对人类操作者造成身体伤害。",
+     "它正在改变道德判断。",
+     "它正在重塑人性。"
+    ]
    },
    "vocab": [
     {
@@ -61,7 +68,14 @@
      "Managers do not need to take the trouble to determine who to hire or fire."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「These are areas where _algorithmic_ (算法的) prescription is replacing human judgment, and so people who might have had the chance to develop practical judgment in these areas no longer will.」"
+    "explain": "正确答案 B。依据（原文）：「These are areas where _algorithmic_ (算法的) prescription is replacing human judgment, and so people who might have had the chance to develop practical judgment in these areas no longer will.」",
+    "stemCn": "算法规定取代人类判断的后果是什么？",
+    "optionsCn": [
+     "人们失去了培养做出实际判断能力的机会。",
+     "人们被阻止参与在工作场所做出重大决定。",
+     "经理们不再有机会决定批准哪一笔贷款。",
+     "经理们不需要费心去确定雇佣或解雇谁。"
+    ]
    },
    "vocab": [
     {
@@ -106,7 +120,14 @@
      "Humans will develop tastes similar to machines'."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Recommendation engines, which are increasingly prevalent intermediaries in people's consumption of culture, may serve to constrain choice and minimize luck.」"
+    "explain": "正确答案 A。依据（原文）：「Recommendation engines, which are increasingly prevalent intermediaries in people's consumption of culture, may serve to constrain choice and minimize luck.」",
+    "stemCn": "在我们文化消费中推荐引擎应用的增加可能会导致什么结果？",
+    "optionsCn": [
+     "消费者将会有非常有限的选择。",
+     "消费者实际上会享受到更好的运气。",
+     "决定享受什么会更容易。",
+     "人类将培养出与机器相似的品味。"
+    ]
    },
    "vocab": [
     {
@@ -147,7 +168,14 @@
      "They may become better and better."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「As machine learning algorithms improve and as they train on more extensive data sets, larger parts of everyday life are likely to become utterly predictable.」"
+    "explain": "正确答案 C。依据（原文）：「As machine learning algorithms improve and as they train on more extensive data sets, larger parts of everyday life are likely to become utterly predictable.」",
+    "stemCn": "随着机器学习算法的改进，我们日常生活中的大部分可能会发生什么？",
+    "optionsCn": [
+     "它们最终会变得更令人愉快。",
+     "它们会重复我们过去的经历。",
+     "它们可以被完全预测。",
+     "它们可能会变得越来越好。"
+    ]
    },
    "vocab": [
     {
@@ -180,7 +208,14 @@
      "They will be deprived of what their predecessors were proud of about themselves."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「As they become more and more predictable, the creatures inhabiting the increasingly AI-mediated world will become less and less like us.」"
+    "explain": "正确答案 B。依据（原文）：「As they become more and more predictable, the creatures inhabiting the increasingly AI-mediated world will become less and less like us.」",
+    "stemCn": "作者为什么说，生活在日益人工智能化世界里的生物将变得越来越不像我们？",
+    "optionsCn": [
+     "他们将失去作为智能这一最重要的人类特质。",
+     "他们将不再拥有不可预测这一人类特征。",
+     "他们将无法像我们今天这样理解自己。",
+     "他们将被剥夺其前辈们引以为傲的东西。"
+    ]
    },
    "vocab": [
     {
@@ -225,7 +260,14 @@
      "An ever-forceful advocacy of a combined method for teaching reading."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「America is stuck in a debate about teaching children to read that has been going on for decades.」"
+    "explain": "正确答案 B。依据（原文）：「America is stuck in a debate about teaching children to read that has been going on for decades.」",
+    "stemCn": "美国几十年来一直在见证什么？",
+    "optionsCn": [
+     "对创新阅读教学方法的痴迷。",
+     "关于教孩子阅读方法的持久争论。",
+     "对许多儿童读写能力不足日益增长的担忧。",
+     "对综合阅读教学方法的日益有力的倡导。"
+    ]
    },
    "vocab": [
     {
@@ -270,7 +312,14 @@
      "Balanced literacy fails to sustain children's interest in developing a good reading habit."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.」"
+    "explain": "正确答案 B。依据（原文）：「For the first time since measurement began, Mississippi's pupils are now average readers, a remarkable achievement in such a poor state.」",
+    "stemCn": "为什么特内特·史密斯认为教学方法的组合是无效的？",
+    "optionsCn": [
+     "当使用多种方法结合教学时，小学生会感到沮丧。",
+     "为了达到预期的效果，自然拼读法必须被系统地应用和清晰地教授。",
+     "在教学中穿插一点自然拼读法，甚至会阻碍那些动机充足的儿童的进步。",
+     "平衡读写能力未能维持儿童在培养良好阅读习惯方面的兴趣。"
+    ]
    },
    "vocab": [
     {
@@ -315,7 +364,14 @@
      "Obtaining support from Congress to upgrade teaching methods."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「Mississippi's success is attributed to implementing reading methods supported by a body of research known as the science of reading.」"
+    "explain": "正确答案 C。依据（原文）：「Mississippi's success is attributed to implementing reading methods supported by a body of research known as the science of reading.」",
+    "stemCn": "作者认为密西西比州的成功归因于什么？",
+    "optionsCn": [
+     "召集一个国家阅读小组以综合研究证据。",
+     "同时给予流利性和理解能力足够的重视。",
+     "采用有科学依据的教授阅读的方法。",
+     "获得国会对升级教学方法的支持。"
+    ]
    },
    "vocab": [
     {
@@ -360,7 +416,14 @@
      "Doctors."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Yet despite all this, one group, which in no way has their best interests at heart, has almost unconstrained access.」"
+    "explain": "正确答案 A。依据（原文）：「Yet despite all this, one group, which in no way has their best interests at heart, has almost unconstrained access.」",
+    "stemCn": "作者指出哪一类人拥有几乎不受限制的接触儿童的权限？",
+    "optionsCn": [
+     "广告商",
+     "照顾者",
+     "教师",
+     "医生"
+    ]
    },
    "vocab": [
     {
@@ -401,7 +464,14 @@
      "Those who have developed a proper sense of their own identity."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「We've come to know it as“pester power\"or the ability of children to pressure parents to make certain purchases.」"
+    "explain": "正确答案 B。依据（原文）：「We've come to know it as“pester power\"or the ability of children to pressure parents to make certain purchases.」",
+    "stemCn": "根据作者的观点，我们应该让孩子成为什么样的人？",
+    "optionsCn": [
+     "那些从名望和财富中寻求外在且最终认可的人。",
+     "那些因为自己对社会的贡献而看重自己的人。",
+     "那些将自我价值与处理金钱的能力联系起来的人。",
+     "那些形成了恰当的自我身份感的人。"
+    ]
    },
    "vocab": [
     {
@@ -442,7 +512,14 @@
      "It is literally limited to children."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「It's also one that's forever developing new ways to persuade our children to desire material possessions, and because of advertisements'viral effect they only need to infect a few to reach the many.」"
+    "explain": "正确答案 A。依据（原文）：「It's also one that's forever developing new ways to persuade our children to desire material possessions, and because of advertisements'viral effect they only need to infect a few to reach the many.」",
+    "stemCn": "作者对广告的影响有何暗示？",
+    "optionsCn": [
+     "它实际上对许多人而非少数人具有传染性。",
+     "它根植于我们对物质财富的渴望。",
+     "它可与病毒的影响相媲美。",
+     "它确实仅限于儿童。"
+    ]
    },
    "vocab": [
     {
@@ -487,7 +564,14 @@
      "It would violate the rights endowed upon advertisers."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「Let's ban all advertising targeting children of primary school age and younger now.」"
+    "explain": "正确答案 D。依据（原文）：「Let's ban all advertising targeting children of primary school age and younger now.」",
+    "stemCn": "反对者对全面禁止向儿童做广告的论点是什么？",
+    "optionsCn": [
+     "这会剥夺他们了解产品的机会。",
+     "这会使他们无法塑造独特的身份。",
+     "这会侵犯他们作为潜在消费者的自由。",
+     "这会侵犯赋予广告商的权利。"
+    ]
    },
    "vocab": [
     {
@@ -512,7 +596,14 @@
      "It enables firms to squeeze maximal productivity from employees."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Many oppose workplace surveillance, because of the inherent dehumanizing effect it has and the relentless pressure it brings.」"
+    "explain": "正确答案 B。依据（原文）：「Many oppose workplace surveillance, because of the inherent dehumanizing effect it has and the relentless pressure it brings.」",
+    "stemCn": "为什么很多人反对监控员工绩效？",
+    "optionsCn": [
+     "它使员工持续处于压力之下。",
+     "它被普遍认为本质上反人性。",
+     "它对被监控的员工造成身心伤害。",
+     "它使公司能够从员工身上榨取最大生产力。"
+    ]
    },
    "vocab": [
     {
@@ -557,7 +648,14 @@
      "It is hard to decide on how many people to sit at a lunch table without data analysis."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「Over the last few years a Stockholm co-working space called Epicenter has gone much further and holds popular“chipping parties”, where people can have microchips implanted in their hands.」"
+    "explain": "正确答案 C。依据（原文）：「Over the last few years a Stockholm co-working space called Epicenter has gone much further and holds popular“chipping parties”, where people can have microchips implanted in their hands.」",
+    "stemCn": "作者通过不同数量的人在午餐桌旁互动的例子想说明什么？",
+    "optionsCn": [
+     "数据分析是成功实施工作场所监控的关键。",
+     "分析从工人那里收集的数据可能会得出意想不到的结果。",
+     "更多的同事坐在一张午餐桌上往往会促进互动和思想交流。",
+     "没有数据分析，很难决定有多少人坐在一张午餐桌上。"
+    ]
    },
    "vocab": [
     {
@@ -602,7 +700,14 @@
      "How well bosses make known their purpose of monitoring."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.」"
+    "explain": "正确答案 A。依据（原文）：「A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.」",
+    "stemCn": "监控举措的大部分积极效果取决于什么？",
+    "optionsCn": [
+     "员工被监控的频率。",
+     "哪些具体的个人信息被排除在外。",
+     "采取了哪些步骤来减少其不利影响。",
+     "老板们多大程度上阐明其监控的目的。"
+    ]
    },
    "vocab": [
     {
@@ -647,7 +752,14 @@
      "They are all in increasingly great demand."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Investigative reporter Michael Moss says processed food is engineered to hook you, not unlike alcohol, cigarettes, or other harmful substances.」"
+    "explain": "正确答案 A。依据（原文）：「Investigative reporter Michael Moss says processed food is engineered to hook you, not unlike alcohol, cigarettes, or other harmful substances.」",
+    "stemCn": "迈克尔·莫斯认为加工食品与酒精和香烟有何相似之处？",
+    "optionsCn": [
+     "它们都是令人上瘾的。",
+     "它们都是必要的恶。",
+     "它们都是为了让人享受而经过精心设计的。",
+     "它们的需求量都越来越大。"
+    ]
    },
    "vocab": [
     {
@@ -688,7 +800,14 @@
      "Memory."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「Memory, _nostalgia_ (怀旧) in particular, plays a big role in the foods we crave.」"
+    "explain": "正确答案 D。依据（原文）：「Memory, _nostalgia_ (怀旧) in particular, plays a big role in the foods we crave.」",
+    "stemCn": "作者说在我们渴望的食物中起关键作用的是什么？",
+    "optionsCn": [
+     "食物环境。",
+     "积极的营销。",
+     "便利性。",
+     "记忆。"
+    ]
    },
    "vocab": [
     {
@@ -721,7 +840,14 @@
      "They endeavor to find what consumers remember about their products."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「One of the reasons I came to think that some of these food products are even more powerful, more troublesome than drugs can be is memory.」"
+    "explain": "正确答案 A。依据（原文）：「One of the reasons I came to think that some of these food products are even more powerful, more troublesome than drugs can be is memory.」",
+    "stemCn": "食品公司为了利用消费者对其食品产品的联想，会怎么做？",
+    "optionsCn": [
+     "他们努力影响消费者对其产品的记忆方式。",
+     "他们试图利用消费者的长期记忆来促进成瘾。",
+     "他们尝试尽早地利用消费者对其产品的记忆。",
+     "他们致力于找出消费者对其产品的记忆内容。"
+    ]
    },
    "vocab": [
     {
@@ -758,7 +884,14 @@
      "They are hooked on manufacturing convenience foods."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「Now that more and more people care about what they put in their bodies and are wanting to eat healthier, these companies are finding it really difficult to meet that new demand because of their own addiction to making these convenience foods.」"
+    "explain": "正确答案 D。依据（原文）：「Now that more and more people care about what they put in their bodies and are wanting to eat healthier, these companies are finding it really difficult to meet that new demand because of their own addiction to making these convenience foods.」",
+    "stemCn": "为什么公司发现很难满足消费者对更健康食品产品的需求？",
+    "optionsCn": [
+     "他们认为生产速度比消费者的健康更重要。",
+     "他们相信，如果没有快餐，他们的行业将会消亡。",
+     "他们必须在味道和营养之间取得平衡。",
+     "他们沉迷于制造方便食品。"
+    ]
    },
    "vocab": [
     {
@@ -799,7 +932,14 @@
      "They know how to survive everywhere on earth."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「At more than 7 billion, human population dwarfs that of nearly all other mammals — despite our physical weaknesses.」"
+    "explain": "正确答案 C。依据（原文）：「At more than 7 billion, human population dwarfs that of nearly all other mammals — despite our physical weaknesses.」",
+    "stemCn": "什么可以解释人类在几乎所有哺乳动物中拥有最大的种群数量？",
+    "optionsCn": [
+     "他们拥有解决最具挑战性问题的强大能力。",
+     "他们比自己的动物亲戚更有效地应对外部世界。",
+     "他们拥有最杰出的思考能力。",
+     "他们知道如何在地球上的任何地方生存。"
+    ]
    },
    "vocab": [
     {
@@ -844,7 +984,14 @@
      "They meet challenges by imitating others carefully."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「But a growing number of cognitive scientists and _anthropologists_ (人类学家) are rejecting that explanation.」"
+    "explain": "正确答案 D。依据（原文）：「But a growing number of cognitive scientists and _anthropologists_ (人类学家) are rejecting that explanation.」",
+    "stemCn": "越来越多的认知科学家和人类学家认为，是什么解释了人类在进化上的成功？",
+    "optionsCn": [
+     "他们更擅长创新解决方案。",
+     "他们通过创造性的策略蓬勃发展。",
+     "他们天生适应生态环境。",
+     "他们通过仔细模仿他人来应对挑战。"
+    ]
    },
    "vocab": [
     {
@@ -885,7 +1032,14 @@
      "Children omitted the step of tapping on the box with a stick to open it."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「That is, they copied irrationally:Instead of doing only what was necessary to get their reward, children slavishly imitated every action they'd witnessed.」"
+    "explain": "正确答案 A。依据（原文）：「That is, they copied irrationally:Instead of doing only what was necessary to get their reward, children slavishly imitated every action they'd witnessed.」",
+    "stemCn": "作者认为维多利亚·霍纳和安德鲁·怀顿的研究发现有什么奇怪之处？",
+    "optionsCn": [
+     "儿童不合逻辑地模仿了实验者的每一个动作。",
+     "黑猩猩能够分辨透明的盒子和不透明的那个。",
+     "黑猩猩比孩子们更快地拿到了奖赏。",
+     "儿童省略了用棍子敲击盒子来打开它的步骤。"
+    ]
    },
    "vocab": [
     {
@@ -930,7 +1084,14 @@
      "It is naive to laugh at someone embracing nonconformity."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Where does the seemingly irrational human preference for over-imitation come from?Anthropologist Joseph Henrich points out that people around the world rely on technologies that are often so complex that no one can learn them rationally.」"
+    "explain": "正确答案 B。依据（原文）：「Where does the seemingly irrational human preference for over-imitation come from?Anthropologist Joseph Henrich points out that people around the world rely on technologies that are often so complex that no one can learn them rationally.」",
+    "stemCn": "当作者说“我们不是黑猩猩”时，他想强调什么观点？",
+    "optionsCn": [
+     "是否每个人都应该避免模仿，这一点值得商榷。",
+     "模仿他人是人类的特点。",
+     "信任更有知识的同龄人是可取的。",
+     "嘲笑那些拥抱非主流的人是幼稚的。"
+    ]
    },
    "vocab": [
     {
@@ -971,7 +1132,14 @@
      "There appears to be a misunderstanding of the formula among the public."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「When Democrats do talk about encouraging economic growth, they often sound like Republicans.」"
+    "explain": "正确答案 D。依据（原文）：「When Democrats do talk about encouraging economic growth, they often sound like Republicans.」",
+    "stemCn": "为什么减税方案尽管无效却依然受欢迎？",
+    "optionsCn": [
+     "批评者的声音在全国范围内没有被听到。",
+     "似乎没有其他可用的选项来替代它。",
+     "减税崇拜被所有政策制定者不懈地传播。",
+     "在公众之中似乎对该方案存在误解。"
+    ]
    },
    "vocab": [
     {
@@ -1008,7 +1176,14 @@
      "Introducing even more extensive tax cuts."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Raising the wages of American workers ought to be the priority of economic policymakers.」"
+    "explain": "正确答案 A。依据（原文）：「Raising the wages of American workers ought to be the priority of economic policymakers.」",
+    "stemCn": "作者认为，在美国，推动经济增长的更有效措施是什么？",
+    "optionsCn": [
+     "帮助经济增长中的落伍者。",
+     "优先考虑国家GDP的增长。",
+     "提高劳动报酬。",
+     "实施更大规模的减税。"
+    ]
    },
    "vocab": [
     {
@@ -1053,7 +1228,14 @@
      "Familiar arguments for higher wages are outdated."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「He did it to increase production — he was paying a premium to maintain a reliable workforce.」"
+    "explain": "正确答案 B。依据（原文）：「He did it to increase production — he was paying a premium to maintain a reliable workforce.」",
+    "stemCn": "作者观点背后的逻辑是什么？",
+    "optionsCn": [
+     "工人工资的增长最终会推动国家经济。",
+     "支付溢价以维持可靠的员工队伍，能吸引更多顾客。",
+     "消费刺激了对更高工资的渴望。",
+     "支持提高工资的常见论点已经过时了。"
+    ]
    },
    "vocab": [
     {
@@ -1098,7 +1280,14 @@
      "People have seen the link disappearing between productivity and workers' well-being."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「In the real world, things are more complicated.」"
+    "explain": "正确答案 C。依据（原文）：「In the real world, things are more complicated.」",
+    "stemCn": "在过去50年左右的时间里，我们从美国现实世界中的事情中了解到什么？",
+    "optionsCn": [
+     "人们未能看到工资和生产力的相应增长。",
+     "人们因富人与穷人之间日益扩大的差距而感到沮丧。",
+     "人们目睹了共和党与民主党之间围绕减税的拉锯战。",
+     "人们看到生产力与工人福祉之间的联系正在消失。"
+    ]
    },
    "vocab": [
     {
@@ -1143,7 +1332,14 @@
      "The majority of editors in top psychology and neuroscience journals have relevant backgrounds."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Men were found to account for 60% of the editors of psychology journals.」"
+    "explain": "正确答案 B。依据（原文）：「Men were found to account for 60% of the editors of psychology journals.」",
+    "stemCn": "我们从《自然·神经科学》的一项新研究中能了解到什么？",
+    "optionsCn": [
+     "大多数顶尖的心理学和神经科学期刊都反映了多样化的声音、经验和身份。",
+     "大多数心理学和神经科学期刊的编辑委员会确实会影响其领域的发展方向。",
+     "心理学和神经科学领域最重要期刊的编辑委员会由男性主导。",
+     "顶尖心理学和神经科学期刊的大多数编辑拥有相关的背景。"
+    ]
    },
    "vocab": [
     {
@@ -1184,7 +1380,14 @@
      "There were few female editors who could move up to senior positions."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「In this case, the proportion of female editors was not significantly lower than the proportion of female researchers working in neuroscience — a finding that reveals enduring gender disparities in the field more broadly.」"
+    "explain": "正确答案 C。依据（原文）：「In this case, the proportion of female editors was not significantly lower than the proportion of female researchers working in neuroscience — a finding that reveals enduring gender disparities in the field more broadly.」",
+    "stemCn": "作者在心理学期刊编辑的性别差异方面强调了什么事实？",
+    "optionsCn": [
+     "有相当多的女性编辑也成为了有影响力的心理学研究者。",
+     "女性编辑的数量与从事心理学研究的女性人数不成比例。",
+     "在高级别职位上，女性编辑的比例越来越低。",
+     "很少有女性编辑能够晋升到高级职位。"
+    ]
    },
    "vocab": [
     {
@@ -1221,7 +1424,14 @@
      "She has succeeded in a bid on the internet"
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「She has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016.」"
+    "explain": "正确答案 A。依据（原文）：「She has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016.」",
+    "stemCn": "关于歌手兼演员赛琳娜·戈麦斯，我们在过去四年半里了解到什么？",
+    "optionsCn": [
+     "她经历了恶化的心理问题。",
+     "她赢得了Instagram最多的粉丝。",
+     "她一直避免使用社交媒体。",
+     "她成功完成了一次互联网上的尝试。"
+    ]
    },
    "vocab": [
     {
@@ -1266,7 +1476,14 @@
      "Most people have been seriously addicted to the web without being aware of it."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Actively opting out of using the internet becomes a matter of privilege.」"
+    "explain": "正确答案 B。依据（原文）：「Actively opting out of using the internet becomes a matter of privilege.」",
+    "stemCn": "为什么主动选择不使用互联网会成为一种特权？",
+    "optionsCn": [
+     "大多数人认为戒掉互联网是微妙而复杂的。",
+     "大多数人很难在避免仇恨和比较的同时戒掉网络。",
+     "由于日益增长的数字化，大多数人很难在没有互联网的情况下生活。",
+     "大多数人已经严重沉迷于网络，却没有意识到这一点。"
+    ]
    },
    "vocab": [
     {
@@ -1311,7 +1528,14 @@
      "Most families in the UK do not have stable broadband connections."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据在第 4 段。"
+    "explain": "正确答案 A。依据在第 4 段。",
+    "stemCn": "作者为什么说“目睹公司……尤其令人恼火”（第6段第2-4行）？",
+    "optionsCn": [
+     "由于元宇宙，英国的数字鸿沟将进一步恶化。",
+     "人们认为，元宇宙的概念仍然相当虚幻。",
+     "学童将会被进一步拉离现实世界。",
+     "英国的大多数家庭没有稳定的宽带连接。"
+    ]
    },
    "vocab": [
     {
@@ -1356,7 +1580,14 @@
      "They create a virtual community on the internet."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.」"
+    "explain": "正确答案 A。依据（原文）：「Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.」",
+    "stemCn": "关于社交媒体平台，有什么值得记住的吗？",
+    "optionsCn": [
+     "它们有助于促进社会平等。",
+     "它们帮助许多人感觉与他人有联系。",
+     "它们为数字排毒提供了一个必要的工具。",
+     "它们在互联网上创建了一个虚拟社区。"
+    ]
    },
    "vocab": [
     {
@@ -1401,7 +1632,14 @@
      "Opening more social media accounts."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「It's crucial that people who feel that social media is having a detrimental effect on their mental health are allowed to switch off and for those living in digital exclusion to be able to switch on in the first place.」"
+    "explain": "正确答案 D。依据（原文）：「It's crucial that people who feel that social media is having a detrimental effect on their mental health are allowed to switch off and for those living in digital exclusion to be able to switch on in the first place.」",
+    "stemCn": "作者认为，对于生活在数字鸿沟中的人们来说，什么才是真正重要的？",
+    "optionsCn": [
+     "能够接入互联网。",
+     "进一步迈向Web 3.0。",
+     "获取更多的教育资源。",
+     "开设更多的社交媒体账户。"
+    ]
    },
    "vocab": [
     {
@@ -1446,7 +1684,14 @@
      "The impact of competition."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Psychologically speaking, competition has been seen as an inevitable consequence of human drives.」"
+    "explain": "正确答案 B。依据（原文）：「Psychologically speaking, competition has been seen as an inevitable consequence of human drives.」",
+    "stemCn": "作者认为在当代生活的许多领域中，什么是显而易见的？",
+    "optionsCn": [
+     "对竞争不可避免性的分歧。",
+     "心理调查的后果。",
+     "人类动力的影响。",
+     "竞争的影响。"
+    ]
    },
    "vocab": [
     {
@@ -1491,7 +1736,14 @@
      "It is the pre-rational world rarely appreciated nowadays."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据在第 3 段。"
+    "explain": "正确答案 C。依据在第 3 段。",
+    "stemCn": "托马斯·霍布斯所描述的“自然世界”是怎样的？",
+    "optionsCn": [
+     "它被哲学家和人类学家所曲解。",
+     "它在达尔文的《物种起源》中被歪曲。",
+     "它不受人类理性的干预。",
+     "它是如今很少被欣赏的前理性的世界。"
+    ]
    },
    "vocab": [
     {
@@ -1536,7 +1788,14 @@
      "The strongest species proves to be the fittest in natural selection."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Darwin asserted in _The Origin of Species_ that the struggles he was describing should be viewed as metaphors and could easily include dependence and cooperation.」"
+    "explain": "正确答案 A。依据（原文）：「Darwin asserted in _The Origin of Species_ that the struggles he was describing should be viewed as metaphors and could easily include dependence and cooperation.」",
+    "stemCn": "我们可以从《物种起源》中达尔文的论断得出什么结论？",
+    "optionsCn": [
+     "所有物种都天生依赖其他物种才能生存。",
+     "生存斗争并不排除相互支持。",
+     "作为一种生存策略，竞争与合作同等重要。",
+     "在自然选择中，最强壮的物种被证明是最适者。"
+    ]
    },
    "vocab": [
     {
@@ -1581,7 +1840,14 @@
      "People's attitude towards competition is actually culture-bound."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「Many studies have been conducted to test the importance placed on competition as opposed to other values, such as cooperation — by various cultures, and generally conclude that Americans uniquely praise competition as natural, inevitable, and desirable.」"
+    "explain": "正确答案 B。依据（原文）：「Many studies have been conducted to test the importance placed on competition as opposed to other values, such as cooperation — by various cultures, and generally conclude that Americans uniquely praise competition as natural, inevitable, and desirable.」",
+    "stemCn": "玛格丽特·米德在研究了数十种不同的文化之后得出了什么结论？",
+    "optionsCn": [
+     "人类的特征是好竞争。",
+     "美国人独特地反对合作。",
+     "竞争在西方社会中相对更普遍。",
+     "人们对竞争的态度实际上是受文化制约的。"
+    ]
    },
    "vocab": [
     {
@@ -1626,7 +1892,14 @@
      "They have few chances to locate the journals that publish these findings."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「For researchers in the tenure-track system, their main goal is winning tenure, which in part can be achieved by getting a number of papers published in prominent journals.」"
+    "explain": "正确答案 A。依据（原文）：「For researchers in the tenure-track system, their main goal is winning tenure, which in part can be achieved by getting a number of papers published in prominent journals.」",
+    "stemCn": "为什么普通读者觉得难以获取研究人员的研究结果？",
+    "optionsCn": [
+     "他们无法理解用于报告这些结果的学术语言。",
+     "他们畏惧研究人员用来描述其发现的行话。",
+     "他们不参加这些结果可自由获取的会议。",
+     "他们很少有找到发表这些研究成果的期刊的机会。"
+    ]
    },
    "vocab": [
     {
@@ -1671,7 +1944,14 @@
      "By helping them to forge ties with government agencies."
     ],
     "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Institutions and researchers should invest in partnerships that expand capacity for sharing results more broadly.」"
+    "explain": "正确答案 A。依据（原文）：「Institutions and researchers should invest in partnerships that expand capacity for sharing results more broadly.」",
+    "stemCn": "分享研究成果如何能对研究人员自身有益？",
+    "optionsCn": [
+     "通过帮助他们确定新的研究方向。",
+     "通过使他们能够理解困扰社会的危机。",
+     "通过使他们能够有效解决社会差异。",
+     "通过帮助他们与政府机构建立联系。"
+    ]
    },
    "vocab": [
     {
@@ -1716,7 +1996,14 @@
      "To render their findings acceptable by prominent journals."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「But this can be resolved by researchers engaging the services of professional writers or communication officers to help with translating their study into more accessible language and share it widely with media outlets and the public.」"
+    "explain": "正确答案 C。依据（原文）：「But this can be resolved by researchers engaging the services of professional writers or communication officers to help with translating their study into more accessible language and share it widely with media outlets and the public.」",
+    "stemCn": "为什么研究人员被建议聘请专业作家或传播官员？",
+    "optionsCn": [
+     "为了满足伦理委员会对研究人员的强制性要求。",
+     "将他们的研究翻译成海外读者能理解的语言。",
+     "使他们的出版物被公众正确理解。",
+     "使他们的研究成果被著名期刊接受。"
+    ]
    },
    "vocab": [
     {
@@ -1761,7 +2048,14 @@
      "The extinction of a lot of wildlife."
     ],
     "answer": "C",
-    "explain": "正确答案 C。依据（原文）：「Does this perhaps explain, in part, the lack of data about how spiders are faring in our age of ecological crisis?」"
+    "explain": "正确答案 C。依据（原文）：「Does this perhaps explain, in part, the lack of data about how spiders are faring in our age of ecological crisis?」",
+    "stemCn": "什么部分解释了蜘蛛食物供应的减少？",
+    "optionsCn": [
+     "收集昆虫的悠久传统。",
+     "它们竞争者的快速繁殖。",
+     "用于杀虫的化学物质。",
+     "大量野生动物的灭绝。"
+    ]
    },
    "vocab": [
     {
@@ -1806,7 +2100,14 @@
      "More and more spider species are found losing their ability to migrate."
     ],
     "answer": "B",
-    "explain": "正确答案 B。依据（原文）：「But conservationists are most concerned about those varieties that are threatened due to habitat loss and fragmentation, which makes it impossible for them to migrate.」"
+    "explain": "正确答案 B。依据（原文）：「But conservationists are most concerned about those varieties that are threatened due to habitat loss and fragmentation, which makes it impossible for them to migrate.」",
+    "stemCn": "文章指出，保护主义者最大的担忧是什么？",
+    "optionsCn": [
+     "由于沼泽和荒地的污染，多种蜘蛛正受到威胁。",
+     "由于自然栖息地的丧失，某些蜘蛛物种濒临灭绝。",
+     "越来越多的蜘蛛被致命的农药杀死。",
+     "越来越多的蜘蛛物种被发现正在失去迁徙的能力。"
+    ]
    },
    "vocab": [
     {
@@ -1851,7 +2152,14 @@
      "There would be more people appreciating spiders' splendour."
     ],
     "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「But as they reveal themselves in all their splendour this autumn, it would be a good thing if more animal lovers recognised the ways in which spiders are simply terrific.」"
+    "explain": "正确答案 D。依据（原文）：「But as they reveal themselves in all their splendour this autumn, it would be a good thing if more animal lovers recognised the ways in which spiders are simply terrific.」",
+    "stemCn": "作者在文章结尾处表达了什么愿望？",
+    "optionsCn": [
+     "更多的人会认识到蜘蛛在生态系统中的独特地位。",
+     "人们对蜘蛛的热情会比对蝴蝶更大。",
+     "会有足够的通道供蜘蛛移动。",
+     "会有更多的人欣赏蜘蛛的壮丽。"
+    ]
    },
    "vocab": [
     {

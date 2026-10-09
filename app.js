@@ -1150,6 +1150,7 @@ function nav(view) {
   if (window.speechSynthesis) speechSynthesis.cancel(); // 切页即停朗读
   if (view === 'wrong') { pendingFavSeg = 'wrong'; view = 'favorites'; }
   if (view === 'todo') { pendingHomePanel = 'todo'; view = 'units'; }
+  if (view === 'daily') { pendingHomePanel = 'daily'; view = 'units'; }
   if (currentView === 'study' && view !== 'study') {
     saveStudyPos();                    // 离开学习页前保存精确位置（词级）
     if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
@@ -1172,11 +1173,12 @@ function nav(view) {
     if (pendingHomePanel) {
       showHomePanel(pendingHomePanel);
       if (pendingHomePanel === 'todo') renderTodo(); // 待办面板打开时刷新列表
+      if (pendingHomePanel === 'daily') Daily.open(); // 每日精进：打开即拉取
       pendingHomePanel = null;
     }
   }
   if (view === 'settings' && typeof showSetPanel === 'function') showSetPanel(null); // 进设置页回到主页列表
-  if (view === 'units') { Reading.renderHome(); Listening.renderHome(); }
+  if (view === 'units') { Reading.renderHome(); Listening.renderHome(); Daily.renderHome(); }
   if (view === 'favorites' && typeof renderFavorites === 'function') {
     Reading.renderWrongVocab(); Listening.renderWrongVocab();
     const target = pendingFavSeg || favSeg; pendingFavSeg = null;
@@ -1759,10 +1761,41 @@ $('#test-mode').addEventListener('click', () => {
   showCard();
 });
 
-function startTest(queue, title) {
+/* ---- 检验会话断点续做：judge 后与退出时存档，当天同 key 再进来从断点继续（已判定词不再出现） ---- */
+const TEST_SESS_KEY = 'sgwd_test_sess';
+function saveTestSess() {
+  if (!test || !test.sessKey) return;
+  try {
+    localStorage.setItem(TEST_SESS_KEY, JSON.stringify({
+      key: test.sessKey, title: test.origin, mode: test.mode, pos: test.pos,
+      right: test.right, miss: test.miss || [], queue: test.queue,
+      day: bjDayStr(), ts: Date.now(),
+    }));
+  } catch (e) { /* 存储满等异常不阻断检验 */ }
+}
+function loadTestSess(key) {
+  try {
+    const s = JSON.parse(localStorage.getItem(TEST_SESS_KEY) || 'null');
+    if (!s || s.key !== key || s.day !== bjDayStr()) return null; // 跨天作废（SRS 到期已变化）
+    if (!Array.isArray(s.queue) || !s.queue.length || s.pos >= s.queue.length) return null; // 已做完
+    return s;
+  } catch (e) { return null; }
+}
+function clearTestSess() { try { localStorage.removeItem(TEST_SESS_KEY); } catch (e) { } }
+
+function startTest(queue, title, sessKey) {
   if (!queue.length) { toast('没有可检验的词'); return; }
-  test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: (test && test.mode) || 'flash' };
-  $('#test-title').textContent = title;
+  const key = sessKey || ('t:' + title);
+  const prev = loadTestSess(key);
+  if (prev) {
+    // 断点续做：恢复队列/进度/判定结果，已判定的词不再出现
+    test = { queue: prev.queue, pos: prev.pos, phase: 'read', origin: prev.title, right: prev.right || 0, miss: prev.miss || [], mode: prev.mode || 'flash', sessKey: key };
+    toast('已回到上次进度（' + (prev.pos + 1) + '/' + prev.queue.length + '）');
+  } else {
+    test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: (test && test.mode) || 'flash', sessKey: key };
+    saveTestSess();
+  }
+  $('#test-title').textContent = test.origin;
   nav('test');
   showCard();
 }
@@ -1873,12 +1906,14 @@ function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   saveState();
 
   test.pos += 1;
+  saveTestSess(); // 判定粒度存档：退出再进从下一词继续
   showCard();
   if (typeof renderToday === 'function') renderToday();
   if (currentView === 'units') renderHeat();
 }
 
 function finishTest() {
+  clearTestSess(); // 做完整组才清档
   $('#test-stage').classList.add('hidden');
   $('#test-done').classList.remove('hidden');
   const n = test.queue.length;
@@ -1899,23 +1934,23 @@ function finishTest() {
     const missSnapshot = test.miss.slice();
     setTimeout(() => {
       if (currentView !== 'test' || !test || $('#test-done').classList.contains('hidden')) return;
-      startTest(missSnapshot, '错词回炉 · 再来一轮');
+      startTest(missSnapshot, '错词回炉 · 再来一轮', 'retry');
     }, 3000);
   }
 }
 
 $('#btn-test-again').addEventListener('click', () => {
   if (!test || !test.miss.length) { toast('没有需要重测的词'); return; }
-  startTest(test.miss.slice(), '重测没记住的');
+  startTest(test.miss.slice(), '重测没记住的', 'retry');
 });
 
 $('#btn-test-unit').addEventListener('click', () => {
   const u = unitById(studyUnitId);
-  startTest(buildQueueByUnit(studyUnitId), `检验 ${u.name}`);
+  startTest(buildQueueByUnit(studyUnitId), `检验 ${u.name}`, 'unit:' + studyUnitId);
 });
 
 $('#btn-test-wrong').addEventListener('click', () => {
-  startTest(buildQueueWrong(), '检验错词本');
+  startTest(buildQueueWrong(), '检验错词本', 'wrong');
 });
 
 /* ================= 收藏夹 ================= */
@@ -2069,7 +2104,7 @@ $('#btn-test-fav').addEventListener('click', () => {
   const q = buildQueueFavorites();
   if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
   const title = favFilter === 'all' ? '检验收藏' : '检验收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
-  startTest(q, title);
+  startTest(q, title, 'fav');
 });
 
 /* ================= 错词本 ================= */
@@ -2400,6 +2435,219 @@ function renderRdQuiz(box, data) {
   });
 }
 
+/* ================= 每日精进（毛选 & AI 方法论）=================
+   数据流：每天早上由电脑上的定时任务生成讲解+题目 → 云端 → 这里读；
+   用户作答 → 云端；次日早上点评写回云端 → 这里显示。
+   摘要（light=1）只拉每条的状态，供首页卡片；全量在打开面板时拉。 */
+const Daily = (() => {
+  let DATA = null;    // 全量 {today, days, pending}
+  let SUM = null;     // 摘要（首页卡片用）
+  let LOADING = false;
+  let SUM_AT = 0;
+  const OPEN = {};    // 展开态：'day:<date>' / 'it:<date>:<src>'
+  const EDIT = {};    // 'date:src' -> true（正在改答案）
+
+  const SRC_NAME = { mao: '毛选', ai: '方法论' };
+  const WD = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+  function dayLabel(date) {
+    const t = Date.parse(String(date) + 'T00:00:00+08:00');
+    if (isNaN(t)) return String(date || '');
+    const d = new Date(t + 8 * 3600e3);
+    return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日 ' + WD[d.getUTCDay()];
+  }
+  function fmtTime(ts) {
+    if (!ts) return '';
+    const d = new Date(Number(ts) + 8 * 3600e3);
+    const p = (n) => (n < 10 ? '0' : '') + n;
+    return (d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes());
+  }
+
+  /** 摘要：只拉状态不拉正文（首页卡片用，避免每次打开都下全量） */
+  async function loadSummary(force) {
+    if (!force && SUM && Date.now() - SUM_AT < 5 * 60 * 1000) { renderHome(); return; }
+    try {
+      const r = await Sync.request('daily.get', { light: 1 }, 15000);
+      SUM = r; SUM_AT = Date.now();
+      renderHome();
+    } catch (e) { /* 静默：首页卡片保持"点开看看" */ }
+  }
+
+  /** 全量：面板用 */
+  async function loadFull(force) {
+    if (LOADING) return;
+    const box = $('#daily-body');
+    if (DATA && !force) { renderPanel(); return; }
+    LOADING = true;
+    if (box && !DATA) box.innerHTML = '<div class="daily-empty">加载中…</div>';
+    try {
+      const r = await Sync.request('daily.get', {}, 25000);
+      DATA = { today: r.today || '', days: r.days || [], pending: r.pending || [] };
+      renderPanel(); renderHome();
+    } catch (e) {
+      const m = e.code === 'BAD_CODE'
+        ? '先在「设置 → 云同步」开启同步，作答才能存到云端'
+        : ('加载失败：' + esc(e.message || '网络错误') + '<br><span class="daily-hint">点右上角「刷新」重试</span>');
+      if (box) box.innerHTML = '<div class="daily-empty">' + m + '</div>';
+    } finally { LOADING = false; }
+  }
+
+  const src = () => DATA || SUM;
+
+  function renderHome() {
+    const sub = $('#daily-card-sub'), badge = $('#daily-card-badge');
+    if (!sub) return;
+    const s = src();
+    if (!s) { sub.textContent = '毛选 + AI 方法论 · 点开看看'; if (badge) badge.classList.add('hidden'); return; }
+    const t = (s.days || []).find((d) => d.date === s.today);
+    const pd = (s.pending || []).length;
+    if (!t) {
+      sub.textContent = '今天的内容还没到（每天约 8 点更新）' + (pd ? ' · 待补 ' + pd + ' 题' : '');
+      if (badge) badge.classList.add('hidden');
+      return;
+    }
+    const n = (t.items || []).length;
+    const left = (t.items || []).filter((it) => !it.answer).length;
+    const reviewed = (t.items || []).filter((it) => it.review).length;
+    sub.textContent = (left ? '今日 ' + n + ' 题 · 待答 ' + left : '今日 ' + n + ' 题已答完 ✓' + (reviewed ? ' · 点评已到' : '')) + (pd ? ' · 待补 ' + pd : '');
+    if (badge) {
+      badge.textContent = left ? String(left) : '✓';
+      badge.classList.remove('hidden');
+      badge.classList.toggle('done', !left);
+    }
+  }
+
+  /** 正文首行若与标题重复（只差加粗记号），剥掉避免双标题 */
+  function stripDupTitle(body, title) {
+    const s = String(body || '');
+    const t = String(title || '').replace(/\*\*/g, '').trim();
+    const nl = s.indexOf('\n');
+    const first = (nl >= 0 ? s.slice(0, nl) : s).replace(/\*\*/g, '').trim();
+    if (!t || !first) return s;
+    if (first === t) return nl >= 0 ? s.slice(nl + 1) : '';
+    return s;
+  }
+
+  function itemHtml(d, it) {
+    const key = d.date + ':' + it.source;
+    const openKey = 'it:' + key;
+    const isToday = d.date === DATA.today;
+    const bodyOpen = OPEN[openKey] !== undefined ? OPEN[openKey] : isToday;
+    const editing = !!EDIT[key];
+    let h = '<div class="daily-item">';
+    h += '<div class="daily-item-head" data-daily-act="fold" data-key="' + openKey + '">'
+       + '<span class="daily-tag ' + it.source + '">' + (SRC_NAME[it.source] || it.source) + '</span>'
+       + '<span class="daily-item-title">' + esc(it.title || '') + '</span>'
+       + '<span class="daily-arw' + (bodyOpen ? ' open' : '') + '">›</span></div>';
+    h += '<div class="daily-item-body daily-md' + (bodyOpen ? '' : ' hidden') + '">' + AI.mdLite(stripDupTitle(it.body, it.title)) + '</div>';
+    h += '<div class="daily-q"><span class="daily-qlabel">作答</span>' + esc(it.question || '') + '</div>';
+    if (it.answer && !editing) {
+      h += '<div class="daily-ans"><i class="daily-ans-label">我的作答 · ' + fmtTime(it.answer.at) + '</i>' + esc(it.answer.text) + '</div>';
+      h += '<button class="ghost-btn mini-inline" data-daily-act="edit" data-key="' + key + '">修改</button>';
+    } else {
+      h += '<textarea class="daily-ta" data-daily-ta="' + key + '" rows="3" placeholder="写几句，不用长…">' + (it.answer ? esc(it.answer.text) : '') + '</textarea>';
+      h += '<button class="primary-btn daily-submit" data-daily-act="submit" data-date="' + d.date + '">提交作答</button>';
+    }
+    if (it.review) {
+      h += '<div class="daily-review daily-md"><i class="daily-review-label">' + (SRC_NAME[it.source] || '') + '点评 · ' + fmtTime(it.review.at) + '</i>' + AI.mdLite(it.review.text) + '</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function dayHtml(d) {
+    const isToday = d.date === DATA.today;
+    const key = 'day:' + d.date;
+    const open = OPEN[key] !== undefined ? OPEN[key] : isToday;
+    const items = d.items || [];
+    const a = items.filter((it) => it.answer).length;
+    const r = items.filter((it) => it.review).length;
+    const stat = !items.length ? '' : (a === 0 ? '待答 ' + items.length : (a < items.length ? '已答 ' + a + '/' + items.length : '已答完' + (r ? ' · 已评' : '')));
+    let h = '<div class="daily-day' + (isToday ? ' is-today' : '') + '">';
+    h += '<button class="daily-day-head" data-daily-act="day" data-key="' + key + '">'
+       + '<span class="daily-day-title">' + (isToday ? '今天 · ' : '') + dayLabel(d.date) + '</span>'
+       + '<span class="daily-day-stat' + (items.length && a === items.length ? ' ok' : '') + '">' + stat + '</span>'
+       + '<span class="daily-arw' + (open ? ' open' : '') + '">›</span></button>';
+    h += '<div class="daily-day-body' + (open ? '' : ' hidden') + '">' + items.map((it) => itemHtml(d, it)).join('') + '</div>';
+    return h + '</div>';
+  }
+
+  function renderPanel() {
+    const box = $('#daily-body');
+    if (!box || !DATA) return;
+    const days = DATA.days || [];
+    if (!days.length) {
+      box.innerHTML = '<div class="daily-empty">云端还没有内容。<br><span class="daily-hint">每天早上约 8 点，毛选一条与 AI 方法论一讲会自动送到这里。</span></div>';
+      return;
+    }
+    let h = '';
+    const pd = DATA.pending || [];
+    if (pd.length) {
+      h += '<div class="daily-pending">待补 ' + pd.length + ' 题：'
+         + pd.map((p) => dayLabel(p.date) + ' ' + (SRC_NAME[p.source] || '')).join('、')
+         + ' —— 不催，有空补上；补答后会在下次点评里一起批。</div>';
+    }
+    for (const d of days) h += dayHtml(d);
+    h += '<div class="set-note" style="margin-top:12px">作答后，第二天早上这里出现 AI 点评；点评与后续内容会按你的作答自适应调整。</div>';
+    box.innerHTML = h;
+  }
+
+  async function submit(date) {
+    const day = (DATA.days || []).find((d) => d.date === date);
+    if (!day) return;
+    const answers = {};
+    for (const s of ['mao', 'ai']) {
+      const ta = document.querySelector('[data-daily-ta="' + date + ':' + s + '"]');
+      if (!ta) continue;
+      const text = (ta.value || '').trim();
+      if (text) answers[s] = { text, at: Date.now() };
+    }
+    if (!Object.keys(answers).length) { toast('先写两句再提交'); return; }
+    const btn = document.querySelector('[data-daily-act="submit"][data-date="' + date + '"]');
+    if (btn) { btn.disabled = true; btn.textContent = '提交中…'; }
+    try {
+      await Sync.request('daily.answer', { date, answers }, 20000);
+      for (const k in EDIT) if (k.indexOf(date + ':') === 0) delete EDIT[k];
+      toast('已提交 ✓ 明天早上来看点评');
+      await loadFull(true);
+      loadSummary(true);
+    } catch (e) {
+      toast('提交失败：' + (e.message || '网络错误'));
+      if (btn) { btn.disabled = false; btn.textContent = '提交作答'; }
+    }
+  }
+
+  function onClick(e) {
+    const t = e.target.closest('[data-daily-act]');
+    if (!t) return;
+    const act = t.dataset.dailyAct, key = t.dataset.key || '';
+    if (act === 'fold' || act === 'day') {
+      const host = act === 'day' ? t.closest('.daily-day') : t.closest('.daily-item');
+      const wrap = host && host.querySelector(act === 'day' ? '.daily-day-body' : '.daily-item-body');
+      if (!wrap) return;
+      const hid = wrap.classList.toggle('hidden');
+      OPEN[key] = !hid;
+      const arw = t.querySelector('.daily-arw');
+      if (arw) arw.classList.toggle('open', !hid);
+      return;
+    }
+    if (act === 'edit') { EDIT[key] = true; renderPanel(); return; }
+    if (act === 'submit') { submit(t.dataset.date); return; }
+  }
+
+  function open() { loadFull(false); if (!DATA) loadFull(false); }
+
+  function init() {
+    const box = $('#daily-body');
+    if (box && !box.dataset.dbound) { box.dataset.dbound = '1'; box.addEventListener('click', onClick); }
+    const rf = $('#daily-refresh');
+    if (rf && !rf.dataset.dbound) { rf.dataset.dbound = '1'; rf.addEventListener('click', () => { loadFull(true); loadSummary(true); }); }
+    loadSummary(false);
+  }
+
+  return { init, open, renderHome, loadSummary, loadFull };
+})();
+
 /* ================= 阅读随手练 ================= */
 const Reading = (() => {
   let ITEMS = null, PROMISE = null;
@@ -2579,9 +2827,11 @@ const Reading = (() => {
       </div>
       <div class="rd-ai-box hidden" id="rd-fullai-box"></div>
       <div class="rd-text" id="rd-text"></div>
-      <div class="rd-q">${it.q.stem}</div>
-      <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => `
-        <button class="rd-opt" data-opt="${c}"><b>${c}</b> ${it.q.options[i]}</button>`).join('')}
+      <div class="rd-q">${it.q.stem}${it.q.stemCn ? `<div class="rd-q-cn">${it.q.stemCn}</div>` : ''}</div>
+      <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => {
+        const cn = it.q.optionsCn && it.q.optionsCn[i];
+        return `<button class="rd-opt" data-opt="${c}"><span class="opt-en"><b>${c}</b> ${wrapWords(it.q.options[i] || '')}</span>${cn ? `<span class="opt-cn">${cn}</span>` : ''}</button>`;
+      }).join('')}
       </div>
       <div id="rd-result" class="hidden"></div>
       <div class="rd-actions hidden" id="rd-actions">
@@ -2593,6 +2843,7 @@ const Reading = (() => {
     const applyCn = () => {
       const on = rdCnOn();
       $('#rd-text').innerHTML = rdTextHtml(it, on);
+      box.classList.toggle('show-cn', on); // 题干/选项中文跟随同一开关
       cnSw.textContent = on ? '隐藏译文' : '对照译文';
       cnSw.classList.toggle('on', on);
     };
@@ -2612,7 +2863,18 @@ const Reading = (() => {
       fa.textContent = '收起精讲';
       StudyAI.ask('rdFull', { text: it.text }, fab, '全文精讲生成中，约 10~20 秒…');
     });
-    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', () => pick(it, b.dataset.opt)));
+    // 选项里的单词=查词（不答题，也不受"已答"影响）；点空白处才是答题
+    box.addEventListener('click', (ev) => {
+      const s = ev.target.closest('.rd-opt .rd-w');
+      if (!s) return;
+      const en = s.closest('.opt-en');
+      const info = findSentence(en ? en.textContent : '', s.textContent);
+      WordCard.show(s.textContent, info.sent, info.ctx);
+    });
+    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', (ev) => {
+      if (ev.target.closest('.rd-w')) return; // 点在单词上=查词
+      pick(it, b.dataset.opt);
+    }));
     // 朗读：播放中可暂停/继续/停止
     const speakBtn = $('#rd-speak');
     const ttsCtrl = $('#rd-tts-ctrl');
@@ -2663,6 +2925,9 @@ const Reading = (() => {
   }
 
   function pick(it, letter) {
+    const pickBox = $('#reading-quiz');
+    if (!pickBox || pickBox.dataset.answered === '1') return; // 防重入（替代 disabled：已答选项里的单词仍可点查）
+    pickBox.dataset.answered = '1';
     const r = rState();
     const ok = letter === it.q.answer;
     // 记录（重做覆盖）
@@ -2670,7 +2935,7 @@ const Reading = (() => {
     saveState();
     // 渲染结果
     document.querySelectorAll('#reading-quiz .rd-opt').forEach((b) => {
-      b.disabled = true;
+      b.classList.add('answered');
       if (b.dataset.opt === it.q.answer) b.classList.add('right');
       else if (b.dataset.opt === letter) b.classList.add('wrong');
     });
@@ -3911,7 +4176,7 @@ function renderTodayList() {
     } else if (g === 'review') {
       const q = srsDueCapped();
       if (!q.length) { toast('今日复习已清空 ✓'); return; }
-      startTest(q, `今日复习 ${q.length} 词`);
+      startTest(q, `今日复习 ${q.length} 词`, 'srs');
     } else if (g === 'reading') nav('reading');
     else if (g === 'listening') nav('listening');
   }));
@@ -4011,6 +4276,7 @@ $('#home-main').addEventListener('click', (e) => {
   if (!b) return;
   showHomePanel(b.dataset.homepanel);
   if (b.dataset.homepanel === 'todo') renderTodo(); // 待办列表随面板打开刷新
+  if (b.dataset.homepanel === 'daily') Daily.open(); // 每日精进：打开即拉取
 });
 $$('#view-units [data-homeback]').forEach((b) => b.addEventListener('click', () => showHomePanel(null)));
 // 今日任务卡：改为进面板（面板里有清单与「开始复习」）
@@ -4018,7 +4284,7 @@ $('#today-card').addEventListener('click', () => showHomePanel('today'));
 $('#today-start-review').addEventListener('click', () => {
   const q = srsDueCapped();
   if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
-  startTest(q, `今日复习 ${q.length} 词`);
+  startTest(q, `今日复习 ${q.length} 词`, 'srs');
 });
 
 function heatLevel(total) {
@@ -4187,13 +4453,13 @@ const AI = (() => {
     if (op === 'review') {
       const q = srsDueCapped();
       if (!q.length) return '今日没有到期的复习词';
-      startTest(q, '今日复习 ' + q.length + ' 词');
+      startTest(q, '今日复习 ' + q.length + ' 词', 'srs');
       return '已开始今日复习（' + q.length + ' 词）';
     }
     if (op === 'quiz') {
       const n = Number(a.unit);
       const u = (n >= 1 && n <= DATA.units.length) ? DATA.units[n - 1] : DATA.units[Math.floor(Math.random() * DATA.units.length)];
-      startTest(buildQueueByUnit(u.id), u.name + ' 检验');
+      startTest(buildQueueByUnit(u.id), u.name + ' 检验', 'unit:' + u.id);
       return '已开始「' + u.name + '」检验';
     }
     if (op === 'nav') {
@@ -4580,11 +4846,12 @@ async function boot() {
   Reading.renderHome();
   Listening.bind();
   Listening.renderHome();
+  Daily.init();
 
   // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units|settings 直达对应页
   try {
     const qv = new URLSearchParams(location.search).get('view');
-    if (qv && ['todo', 'favorites', 'wrong', 'units', 'settings'].includes(qv)) nav(qv);
+    if (qv && ['todo', 'favorites', 'wrong', 'units', 'settings', 'daily'].includes(qv)) nav(qv);
   } catch (e) { /* ignore */ }
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）

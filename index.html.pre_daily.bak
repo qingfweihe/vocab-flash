@@ -34,14 +34,6 @@
       <div id="search-results" class="hidden"></div>
     </div>
       <div class="settings-box set-entries">
-      <button id="daily-card" class="todo-card" data-homepanel="daily">
-        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M9 18h6%27/%3E%3Cpath d=%27M10 22h4%27/%3E%3Cpath d=%27M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14%27/%3E%3C/svg%3E&quot;)"></i></div>
-        <div class="todo-card-main">
-          <div class="todo-card-title">每日精进</div>
-          <div class="todo-card-sub" id="daily-card-sub">毛选 + AI 方法论 · 点击加载</div>
-        </div>
-        <div class="reading-pct hidden" id="daily-card-badge">0</div>
-      </button>
       <button id="today-card" class="todo-card">
         <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%276%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27/%3E%3C/svg%3E&quot;)"></i></div>
         <div class="todo-card-main">
@@ -133,12 +125,6 @@
       <button class="primary-btn" id="todo-save">保存待办</button>
       <div class="set-note">到点会推送通知；错过 12 小时内联网会补推一次。</div>
     </div>
-    </div>
-
-    <!-- 二级面板：每日精进 -->
-    <div id="homepanel-daily" class="set-panel hidden">
-      <div class="subhead"><button class="back-btn" data-homeback>‹ 首页</button><div class="subhead-title">每日精进</div><button class="test-btn" id="daily-refresh">刷新</button></div>
-      <div id="daily-body"><div class="daily-empty">加载中…</div></div>
     </div>
 
     <!-- 二级面板：背单词（进度 + 单元列表） -->
