@@ -699,8 +699,8 @@
      "What steps are taken to minimize their detrimental impact.",
      "How well bosses make known their purpose of monitoring."
     ],
-    "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「A lot depends on how such monitoring initiatives are communicated and this could prevent possible revolts being staged.」",
+    "answer": "D",
+    "explain": "正确答案 D。依据（原文）：「A lot depends on how such monitoring initiatives are communicated」定位逻辑：题干问监控积极效果的依赖因素，原文直接指出这取决于沟通方式，而D选项“老板如何传达监控目的”与此一致。",
     "stemCn": "监控举措的大部分积极效果取决于什么？",
     "optionsCn": [
      "员工被监控的频率。",
@@ -1131,8 +1131,8 @@
      "The cult of tax cuts has been relentlessly propagated by all policymakers.",
      "There appears to be a misunderstanding of the formula among the public."
     ],
-    "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「When Democrats do talk about encouraging economic growth, they often sound like Republicans.」",
+    "answer": "B",
+    "explain": "正确答案 B。依据（原文）：「And while the cult of tax cuts has attracted many critics, it lacks for obvious rivals.」 因为原文指出减税公式缺乏明显的竞争对手，所以没有其他选项可以替代它，因此它仍然流行。",
     "stemCn": "为什么减税方案尽管无效却依然受欢迎？",
     "optionsCn": [
      "批评者的声音在全国范围内没有被听到。",
@@ -1175,8 +1175,8 @@
      "Increasing the compensation for labor.",
      "Introducing even more extensive tax cuts."
     ],
-    "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Raising the wages of American workers ought to be the priority of economic policymakers.」",
+    "answer": "C",
+    "explain": "正确答案 C。依据（原文）：「higher wages can fuel the engine of economic growth.」」因为题干问作者认为什么措施更有效推动经济增长，原文明确指出提高工资是经济增长的驱动因素，并作为政策优先事项。",
     "stemCn": "作者认为，在美国，推动经济增长的更有效措施是什么？",
     "optionsCn": [
      "帮助经济增长中的落伍者。",
@@ -1423,8 +1423,8 @@
      "She has refrained from using social media.",
      "She has succeeded in a bid on the internet"
     ],
-    "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「She has spoken extensively about the relationship between her social media usage and her mental wellbeing, recalling feeling like “an addict” when she became Instagram's most followed user in 2016.」",
+    "answer": "C",
+    "explain": "正确答案 C。依据（原文）：「Taking a break from social media was the best decision that I've ever made for my mental health」定位逻辑：题干询问Selena Gomez过去四年半的行为，原文首句明确她停止使用互联网，关键句直接说明她停止使用社交媒体，与选项C一致。",
     "stemCn": "关于歌手兼演员赛琳娜·戈麦斯，我们在过去四年半里了解到什么？",
     "optionsCn": [
      "她经历了恶化的心理问题。",
@@ -1579,8 +1579,8 @@
      "They provide a necessary device for a digital detox.",
      "They create a virtual community on the internet."
     ],
-    "answer": "A",
-    "explain": "正确答案 A。依据（原文）：「Digital exclusion is a major threat to wider societal equality in the UK, so witnessing companies like Facebook championing the _metaverse_ (元宇宙) as the next great frontier when schoolchildren are struggling to complete their homework feels particularly irritating.」",
+    "answer": "B",
+    "explain": "正确答案 B。依据（原文）：「many other people benefit from the strong sense of community that sharing platforms can breed.」 定位逻辑：题干询问社交媒体平台值得记住的方面，原文最后一句直接对应，强调平台帮助许多人获得社区感，从而与他人建立连接。",
     "stemCn": "关于社交媒体平台，有什么值得记住的吗？",
     "optionsCn": [
      "它们有助于促进社会平等。",
@@ -1631,8 +1631,8 @@
      "Getting more educational resources.",
      "Opening more social media accounts."
     ],
-    "answer": "D",
-    "explain": "正确答案 D。依据（原文）：「It's crucial that people who feel that social media is having a detrimental effect on their mental health are allowed to switch off and for those living in digital exclusion to be able to switch on in the first place.」",
+    "answer": "A",
+    "explain": "正确答案 A。依据（原文）：「provide the underprivileged with the connectivity they desperately need to learn, work, and live.」 作者在第三段直接指出，互联网接入是数字排斥人群的必要条件，以支持基本生活和学习需求，对应选项 A。",
     "stemCn": "作者认为，对于生活在数字鸿沟中的人们来说，什么才是真正重要的？",
     "optionsCn": [
      "能够接入互联网。",
