@@ -4568,9 +4568,74 @@ const AI = (() => {
     }
     throw new Error('未知操作：' + op); // 不可达（白名单前置），兜底
   }
+  /* ================= 迷你对话弹窗（词卡讲解 / 错词锚点就地展开） =================
+     V = 弹窗视图目标（null = AI 页）；对话写入共享历史 hist，弹窗关闭不丢。
+     弹窗只显示弹窗期间的轮次（V.list），模型上下文仍用完整历史窗口。 */
+  let V = null; // { msgs, input, send, list:[{role,content}] }
+  const curMsgs = () => (V ? V.msgs : $('#ai-msgs'));
+  const curInput = () => (V ? V.input : $('#ai-input'));
+  const curSendBtn = () => (V ? V.send : $('#ai-send'));
+  const curRender = () => (V ? renderPop : renderMsgs);
+
+  function ensurePop() {
+    if (document.getElementById('ai-pop')) return;
+    const el = document.createElement('div');
+    el.id = 'ai-pop';
+    el.className = 'hidden';
+    el.innerHTML = `
+      <div class="aip-mask"></div>
+      <div class="aip-sheet">
+        <div class="aip-head"><span class="aip-title">AI 助手</span><button class="aip-close">✕</button></div>
+        <div class="aip-msgs" id="ai-pop-msgs"></div>
+        <div class="aip-bar"><input id="ai-pop-input" type="text" maxlength="200" placeholder="继续追问…" autocomplete="off" enterkeyhint="send"><button class="primary-btn" id="ai-pop-send">发送</button></div>
+      </div>`;
+    document.body.appendChild(el);
+    el.querySelector('.aip-mask').addEventListener('click', closePop);
+    el.querySelector('.aip-close').addEventListener('click', closePop);
+    const sendBtn = el.querySelector('#ai-pop-send');
+    sendBtn.addEventListener('click', () => {
+      if (sending) { if (abortCtrl) abortCtrl.abort(); return; } // 生成中=停止
+      send();
+    });
+    const inp = el.querySelector('#ai-pop-input');
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (!sending) send(); }
+    });
+  }
+
+  /** 打开弹窗；question 非空时自动首发（生成中则等用户手动追问） */
+  function openPop(title, question) {
+    ensurePop();
+    const el = document.getElementById('ai-pop');
+    el.querySelector('.aip-title').textContent = title || 'AI 助手';
+    V = { msgs: el.querySelector('#ai-pop-msgs'), input: el.querySelector('#ai-pop-input'), send: el.querySelector('#ai-pop-send'), list: [] };
+    el.classList.remove('hidden');
+    renderPop();
+    if (question && !sending) send(question);
+  }
+  function closePop() {
+    const el = document.getElementById('ai-pop');
+    if (el) el.classList.add('hidden');
+    V = null; // 生成中关闭不 abort：回答照常落历史（finish 渲染到 AI 页）
+  }
+  /** 从外部带着问题弹窗（词卡讲解 / 错词锚点） */
+  function popAsk(question, title) {
+    openPop(title, question);
+  }
+  function renderPop() {
+    if (!V) return;
+    const box = V.msgs;
+    box.innerHTML = V.list.length
+      ? V.list.map((m) => m.role === 'user'
+        ? '<div class="ai-msg user"><span class="ai-user-txt">' + esc(m.content) + '</span></div>'
+        : '<div class="ai-msg bot">' + mdLite(m.content) + '</div>').join('')
+      : '<div class="ai-empty" style="text-align:center;padding:18px 6px">我来讲解～ 生成中可以点「停止」</div>';
+    box.scrollTop = box.scrollHeight;
+  }
+
   /** 顺序执行指令并在最后一条回复气泡后追加回执条 */
   function runActions(acts) {
-    const box = $('#ai-msgs');
+    const box = V ? V.msgs : $('#ai-msgs');
     if (!box) return;
     const bar = document.createElement('div');
     bar.className = 'vf-action-bar';
@@ -4670,18 +4735,19 @@ const AI = (() => {
   let abortCtrl = null; // 当前流式请求的中止句柄（发送键在生成中=停止键）
 
   async function send(text) {
-    const input = $('#ai-input');
+    const input = curInput();
     const msg = String(text !== undefined ? text : (input && input.value) || '').trim();
-    // 生成中：程序化调用（词卡讲解等）静默忽略；「停止」只在按钮/回车层处理（见 bind）
+    // 生成中：程序化调用静默忽略；「停止」只在按钮/回车层处理（见 bind / 弹窗绑定）
     if (!msg || sending) return;
     if (input) input.value = '';
     const h = hist();
     h.push({ role: 'user', content: msg });
     saveHist(h);
-    renderMsgs();
+    if (V) V.list.push({ role: 'user', content: msg });
+    curRender();
     sending = true;
     setSendMode('stop');
-    const box = $('#ai-msgs');
+    const box = curMsgs();
     const bubble = document.createElement('div');
     bubble.className = 'ai-msg bot ai-loading';
     bubble.textContent = '思考中…';
@@ -4713,11 +4779,12 @@ const AI = (() => {
       const h2 = hist();
       h2.push({ role: 'assistant', content: clean });
       saveHist(h2);
+      if (V) V.list.push({ role: 'assistant', content: clean });
       clearInterval(tick);
       sending = false;
       abortCtrl = null;
       setSendMode('send');
-      renderMsgs();
+      curRender();
       if (acts.length) setTimeout(() => runActions(acts), 100); // 渲染完再执行（quiz/review 会切页）
       const live = document.getElementById('sr-live');
       if (live) live.textContent = clean; // 读屏只播最新一条
@@ -4761,8 +4828,9 @@ const AI = (() => {
           const h3 = hist();
           h3.push({ role: 'assistant', content: '请求失败：' + txt });
           saveHist(h3);
+          if (V) V.list.push({ role: 'assistant', content: '请求失败：' + txt });
         }
-        renderMsgs();
+        curRender();
         return;
       }
     }
@@ -4770,7 +4838,7 @@ const AI = (() => {
 
   /** 发送键双态：send=发消息 / stop=停止生成 */
   function setSendMode(mode) {
-    const btn = $('#ai-send');
+    const btn = curSendBtn();
     if (!btn) return;
     btn.classList.toggle('stopping', mode === 'stop');
     btn.innerHTML = mode === 'stop' ? '■<span class="ai-stop-txt">停止</span>' : '发送';
@@ -4834,15 +4902,16 @@ const AI = (() => {
 
   const backBtn = document.getElementById('ai-back');
   if (backBtn) backBtn.addEventListener('click', () => { returnView = null; }); // data-nav 委托负责跳转
-  return { bind, renderMsgs, askWith, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn };
+  return { bind, renderMsgs, askWith, popAsk, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn };
 })();
 
-/* 对外快捷入口：词卡讲解 / 错词记忆 */
+/* 对外快捷入口：词卡讲解 / 错词记忆（就地弹窗，不跳 AI 页） */
 function aiExplainWord(w) {
-  AI.askWith(`详细讲解考研单词 "${w}"：词源拆解、常见搭配、易混词辨析、一个巧记方法和两个真题级例句（带中文）。`);
+  if (typeof WordCard !== 'undefined' && WordCard.hide) { try { WordCard.hide(); } catch (e) { } }
+  AI.popAsk(`详细讲解考研单词 "${w}"：词源拆解、常见搭配、易混词辨析、一个巧记方法和两个真题级例句（带中文）。`, 'AI 讲解 · ' + w);
 }
 function aiRememberWord(w) {
-  AI.askWith(`我总是记不住单词 "${w}"，请给我一个强记忆锚点（谐音/画面/词根联想都行），越生动越好，并给一个用了这个锚点的例句。`);
+  AI.popAsk(`我总是记不住单词 "${w}"，请给我一个强记忆锚点（谐音/画面/词根联想都行），越生动越好，并给一个用了这个锚点的例句。`, '记忆锚点 · ' + w);
 }
 
 /* ================= 启动 ================= */
