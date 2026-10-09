@@ -2391,7 +2391,16 @@ const StudyAI = (() => {
     boxEl.innerHTML = `<div class="ai-msg bot ai-loading">${waitText || 'AI 讲解生成中…'}</div>`;
     try {
       if (typeof Sync === 'undefined' || !Sync.request) throw new Error('请先在设置 → 云同步 注册账号');
-      const r = await Sync.request('ai.study', Object.assign({ kind }, payload), 90000);
+      let r;
+      try {
+        r = await Sync.request('ai.study', Object.assign({ kind }, payload), 90000);
+      } catch (e1) {
+        // 偶发空回复/上游抖动自动重试一次；限额、密钥类不浪费重试
+        const RETRY = ['AI_EMPTY', 'TIMEOUT', 'AI_UPSTREAM'];
+        if (RETRY.indexOf(e1 && e1.code) < 0) throw e1;
+        await new Promise((r2) => setTimeout(r2, 800));
+        r = await Sync.request('ai.study', Object.assign({ kind }, payload), 90000);
+      }
       if (r && r.left != null && typeof AI !== 'undefined' && AI.showLeft) AI.showLeft(r.left);
       if (renderData && r && r.data !== undefined) { renderData(boxEl, r.data); return true; }
       boxEl.innerHTML = `<div class="ai-msg bot">${AI.mdLite(r && r.text)}</div>`;
