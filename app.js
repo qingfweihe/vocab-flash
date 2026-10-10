@@ -11,7 +11,7 @@ const DEFAULT_STATE = {
   wrong: {},     // unitId(str) -> {wordKey: true} 错词
   favorites: {}, // unitId(str) -> {wordKey: true} 收藏（以后再复习）
   stats: { tested: 0, correct: 0 },
-  settings: { rate: 0.9, fontSize: 17, sakura: true, theme: 'auto' },
+  settings: { rate: 0.9, fontSize: 17, sakura: true, theme: 'auto', hideCn: false },  // hideCn=遮住中文（自测）
   scrolls: {},   // unitId(str) -> 学习页滚动位置
   lastUnit: null,
   reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
@@ -1452,23 +1452,52 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /** 单词详情行（背单词页与收藏页共用）：词根/例句/族/近/反/注 */
+/** 例句"英文 中文"拆分（遮中文时英文照常显示、译文蒙住）：按第一个汉字切 */
+function splitEx(s) {
+  const str = String(s || '');
+  const m = str.match(/[\u4e00-\u9fff]/);
+  if (!m) return { en: str, cn: '' };
+  return { en: str.slice(0, m.index).trim(), cn: str.slice(m.index).trim() };
+}
 function wordDetailRows(w) {
   const rows = [];
-  if (w.root) rows.push(`<div class="row"><span class="lab ji">记</span>${w.root}</div>`);
+  if (w.root) rows.push(`<div class="row"><span class="lab ji">记</span><span class="det-cn">${w.root}</span></div>`);
   if (w.exs && w.exs.length) {
-    rows.push(`<div class="row"><span class="lab">例</span></div>` + w.exs.map((x) => `<div class="wc-ex">${x}</div>`).join(''));
+    rows.push(`<div class="row"><span class="lab">例</span></div>` + w.exs.map((x) => {
+      const sp = splitEx(x);
+      return `<div class="wc-ex"><span class="ex-en">${sp.en}</span>${sp.cn ? ' <span class="ex-cn">' + sp.cn + '</span>' : ''}</div>`;
+    }).join(''));
   }
-  if (w.fam) rows.push(`<div class="row"><span class="lab zu">族</span>${w.fam}</div>`);
-  if (w.syn) rows.push(`<div class="row"><span class="lab li">近</span>${w.syn}</div>`);
-  if (w.ant) rows.push(`<div class="row"><span class="lab fan">反</span>${w.ant}</div>`);
-  if (w.note) rows.push(`<div class="row"><span class="lab">注</span>${w.note}</div>`);
+  if (w.fam) rows.push(`<div class="row"><span class="lab zu">族</span><span class="det-cn">${w.fam}</span></div>`);
+  if (w.syn) rows.push(`<div class="row"><span class="lab li">近</span><span class="det-cn">${w.syn}</span></div>`);
+  if (w.ant) rows.push(`<div class="row"><span class="lab fan">反</span><span class="det-cn">${w.ant}</span></div>`);
+  if (w.note) rows.push(`<div class="row"><span class="lab">注</span><span class="det-cn">${w.note}</span></div>`);
   return rows.join('') || '<div class="row" style="color:#9a9aab">（无更多信息）</div>';
+}
+
+/** 遮中文：卡片内全部中文内容的遮蔽切换（释义/例句译文/词根助记/族近反注） */
+function setCardCnHidden(card, hidden) {
+  card.querySelectorAll('.wc-cn, .ex-cn, .det-cn').forEach((x) => x.classList.toggle('hide-cn', hidden));
+  card.dataset.revealed = hidden ? '0' : '1';
+}
+/** 点卡片：遮住模式下=反复揭开/盖上该词的中文（返回 true 表示已消费该次点击） */
+function toggleCardCn(card) {
+  if (!state.settings.hideCn) return false;
+  setCardCnHidden(card, card.dataset.revealed === '1'); // 已揭开→盖上；未揭开→揭开
+  return true;
+}
+/** 渲染后按遮住模式给卡片批量施加遮蔽 + 详情默认展开（列表页通用） */
+function applyHideCnToCard(card, detail) {
+  if (!state.settings.hideCn) return;
+  card.querySelectorAll('.wc-cn, .ex-cn, .det-cn').forEach((x) => x.classList.add('hide-cn'));
+  card.dataset.revealed = '0';
+  if (detail) detail.classList.remove('collapsed');
 }
 
 function renderWordList() {
   const u = unitById(studyUnitId);
   const box = $('#word-list');
-  const hideCn = $('#chk-hide-cn').checked;
+  const hideCn = !!state.settings.hideCn;
   box.innerHTML = '';
 
   u.words.forEach((w, idx) => {
@@ -1496,13 +1525,13 @@ function renderWordList() {
           <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${isLearned(studyUnitId, w.w) ? 'checked' : ''}></label>
         </div>
       </div>
-      <div class="wc-detail collapsed" data-detail="${idx}">${rowsHtml}</div>`;
+      <div class="wc-detail${hideCn ? '' : ' collapsed'}" data-detail="${idx}">${rowsHtml}</div>`;
+    applyHideCnToCard(card, card.querySelector('.wc-detail')); // 遮住模式：详情全展开+中文全蒙
 
-    // 点击卡片主体：展开详情 / 恢复模糊的中文
+    // 点击卡片主体：遮住模式下=反复揭开/盖上该词中文；否则展开/收起详情
     card.addEventListener('click', (ev) => {
       if (ev.target.closest('.speak-btn') || ev.target.closest('input')) return;
-      const cn = card.querySelector('.wc-cn');
-      if (cn.classList.contains('hide-cn')) { cn.classList.remove('hide-cn'); return; }
+      if (toggleCardCn(card)) return;
       const d = card.querySelector('.wc-detail');
       d.classList.toggle('collapsed');
     });
@@ -1543,7 +1572,18 @@ function renderWordList() {
   if (!u.words.length) box.innerHTML = '<div class="empty-tip">本单元暂无词条数据</div>';
 }
 
-$('#chk-hide-cn').addEventListener('change', () => renderWordList());
+/** 遮中文开关切换（学习页/收藏页双开关共用）：写设置 + 联动另一开关 + 重渲染当前列表 */
+function applyHideCnChange(on) {
+  state.settings.hideCn = !!on;
+  saveState();
+  const hc = $('#chk-hide-cn'), hf = $('#chk-hide-cn-fav');
+  if (hc) hc.checked = !!on;
+  if (hf) hf.checked = !!on;
+  if (currentView === 'study') renderWordList();
+  if (currentView === 'favorites') { renderFavorites(); renderWrongList(); }
+}
+$('#chk-hide-cn').addEventListener('change', (e) => applyHideCnChange(e.target.checked));
+$('#chk-hide-cn-fav').addEventListener('change', (e) => applyHideCnChange(e.target.checked));
 
 $('#btn-mark-all').addEventListener('click', () => {
   const u = unitById(studyUnitId);
@@ -2062,6 +2102,7 @@ if (favSegBar) favSegBar.addEventListener('click', (e) => {
 function renderFavorites() {
   const box = $('#fav-list');
   if (!box) return;
+  const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
   box.innerHTML = '';
   renderFavChips();
   const items = [];
@@ -2096,7 +2137,7 @@ function renderFavorites() {
             ${w.freq ? `<span class="wc-freq">${w.freq}</span>` : ''}
           </div>
           ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
-          <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
+          <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
         </div>
         <div class="wc-actions">
           <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
@@ -2104,10 +2145,12 @@ function renderFavorites() {
         </div>
       </div>
       <button class="star-btn" data-star aria-label="熟练度"><span>熟练度</span> <b>${favStarHtml(star)}</b><span class="star-hint">点一下加一星</span></button>
-      <div class="wc-detail${favOpen.has(key) ? '' : ' collapsed'}">${wordDetailRows(w)}</div>`;
-    // 点卡片主体展开详情（避开按钮）；记住展开状态，重渲染后不折叠
+      <div class="wc-detail${(favOpen.has(key) || hideCn) ? '' : ' collapsed'}">${wordDetailRows(w)}</div>`;
+    applyHideCnToCard(card, card.querySelector('.wc-detail')); // 遮住模式：详情展开+中文蒙住
+    // 点卡片主体：遮住模式下=反复揭开/盖上该词中文；否则展开详情（记状态，重渲染不折叠）
     card.addEventListener('click', (ev) => {
       if (ev.target.closest('.star-btn') || ev.target.closest('.speak-btn') || ev.target.closest('[data-unfav]')) return;
+      if (toggleCardCn(card)) return;
       const d = card.querySelector('.wc-detail');
       d.classList.toggle('collapsed');
       if (d.classList.contains('collapsed')) favOpen.delete(key); else favOpen.add(key);
@@ -2162,6 +2205,7 @@ $('#btn-test-fav').addEventListener('click', () => {
 /* ================= 错词本 ================= */
 function renderWrongList() {
   const box = $('#wrong-list');
+  const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
   box.innerHTML = '';
   // 顶部统计行：错词数 / 涉及单元 / 累计正确率
   let total = 0, units = 0;
@@ -2199,13 +2243,18 @@ function renderWrongList() {
               <span class="mini-btn tag-r">${u.name}</span>
             </div>
             ${w.ph ? `<div class="wc-phon">[${w.ph}]</div>` : ''}
-            <div class="wc-cn">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
+            <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>')}</div>
           </div>
           <div class="wc-actions">
             <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
             <button class="mini-btn" data-remove>掌握</button>
           </div>
         </div>`;
+      applyHideCnToCard(card); // 遮住模式：释义蒙住（错词本无详情区）
+      if (hideCn) card.addEventListener('click', (ev) => {
+        if (ev.target.closest('.speak-btn') || ev.target.closest('[data-remove]')) return;
+        toggleCardCn(card); // 点一下揭开、再点盖上
+      });
       card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
       card.querySelector('[data-remove]').addEventListener('click', (ev) => {
         ev.stopPropagation();
@@ -2226,6 +2275,10 @@ function applySettings() {
   $('#set-rate').value = s.rate;
   $('#set-fontsize').value = s.fontSize;
   $('#set-sakura').checked = !!s.sakura;
+  // 遮中文双开关（学习页 + 收藏页）同步设置值
+  const _hc1 = $('#chk-hide-cn'), _hc2 = $('#chk-hide-cn-fav');
+  if (_hc1) _hc1.checked = !!s.hideCn;
+  if (_hc2) _hc2.checked = !!s.hideCn;
   dailyCfg(); // 迁移默认值（老 dailyGoal → dailyCfg.newWords.goal）
   Sakura.setEnabled(!!s.sakura);
   applyTheme();

@@ -483,7 +483,8 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
 .wc-phon { font-size: .8em; color: var(--ink-3); font-family: var(--mono); margin-top: 1px; }
 .wc-cn { font-size: .93em; color: var(--ink-2); margin-top: 4px; line-height: 1.62; }
 .wc-cn .pos { color: var(--brand); font-weight: 600; font-style: italic; margin-right: 3px; }
-.wc-cn.hide-cn { filter: blur(7px); transition: filter .2s; cursor: pointer; }
+.wc-cn.hide-cn, .ex-cn.hide-cn, .det-cn.hide-cn { filter: blur(7px); transition: filter .2s; cursor: pointer; user-select: none; }
+.fav-hidetool { display: flex; justify-content: flex-end; padding: 2px 4px 4px; }
 .wc-actions { flex: none; display: flex; flex-direction: column; gap: 7px; align-items: center; }
 .speak-btn {
   border: none; background: var(--brand-soft); color: var(--brand);
