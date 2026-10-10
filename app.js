@@ -1222,6 +1222,7 @@ function nav(view) {
   if (view === 'reading') Reading.renderPage();
   if (view === 'ai') { AI.renderMsgs(); AI.applyBackBtn(); }
   if (view === 'listening') Listening.renderPage();
+  if (view === 'writing') Writing.renderPage();
   saveNavState(false); // 页面记忆：更新当前视图（滚动位置由切后台/离开时补记）
 }
 
@@ -1251,7 +1252,7 @@ function applyNavRestore(nv) {
     if (DATA.units.length) go(); else ensureData().then(go);
     return;
   }
-  if (nv.view === 'reading' || nv.view === 'listening') { nav(nv.view); }
+  if (nv.view === 'reading' || nv.view === 'listening' || nv.view === 'writing') { nav(nv.view); }
   else if (['units', 'favorites', 'settings', 'ai'].includes(nv.view)) {
     if (nv.view === 'favorites' && nv.favSeg === 'wrong') pendingFavSeg = 'wrong';
     if (nv.view === 'units' && nv.homePanel) pendingHomePanel = nv.homePanel;
@@ -1259,7 +1260,7 @@ function applyNavRestore(nv) {
     if (nv.view === 'settings' && nv.setPanel) showSetPanel(nv.setPanel);
   } else { nav('units'); return; }
   // 收藏页/错词本滚动交给 restoreListPos（词级）；学习页交给 restorePos；其余视图像素级恢复
-  if (nv.y && ['units', 'reading', 'listening', 'settings'].includes(nv.view)) {
+  if (nv.y && ['units', 'reading', 'listening', 'writing', 'settings'].includes(nv.view)) {
     const v0 = nv.view, y0 = nv.y;
     setTimeout(() => { if (currentView === v0) window.scrollTo({ top: y0 }); }, 160);
     if (v0 === 'reading' || v0 === 'listening') {
@@ -5275,7 +5276,9 @@ async function boot() {
   renderTodoRemBar();
   AI.bind();
   AI.renderMsgs();
+
   Reading.bind();
+  Writing.bind();
   Reading.renderHome();
   Listening.bind();
   Listening.renderHome();
@@ -5299,5 +5302,100 @@ async function boot() {
 setInterval(() => {
   if (currentView === 'study' && studyUnitId != null) saveStudyPos();
 }, 3000);
+
+/* ================= 作文助手 ================= */
+const Writing = (() => {
+  let DATA = null, PROMISE = null;
+  let tab = 'tpl', cat = '全部';
+
+  function ensure() {
+    if (DATA) return Promise.resolve(true);
+    if (!PROMISE) {
+      PROMISE = fetch('data/writing.json', { cache: 'no-cache' })
+        .then((r) => r.json())
+        .then((j) => { if (j && j.templates && j.templates.length) { DATA = j; return true; } return false; })
+        .catch(() => { PROMISE = null; return false; });
+    }
+    return PROMISE;
+  }
+
+  function renderPage() {
+    const body = $('#writing-body');
+    if (!body) return;
+    ensure().then((ok) => {
+      if (!ok) { body.innerHTML = '<div class="set-note">资料加载失败，请联网重试</div>'; return; }
+      $$('#writing-tabs .wr-tab').forEach((b) => b.classList.toggle('on', b.dataset.wtab === tab));
+      if (tab === 'tpl') renderTpl(body);
+      else if (tab === 'sent') renderSent(body);
+      else if (tab === 'tips') renderTips(body);
+      else renderGrade(body);
+    });
+  }
+
+  function renderTpl(box) {
+    const list = DATA.templates.filter((t) => cat === '全部' || t.cat === cat);
+    box.innerHTML = '<div class="wrt-cat">' + ['全部'].concat(DATA.cats).map((c) => `<button class="wrt-catb ${c === cat ? 'on' : ''}" data-cat="${c}">${c}</button>`).join('') + '</div>'
+      + '<div>' + list.map((t) => `
+      <div class="wrt-card">
+        <div class="wrt-title">${esc(t.title)}</div>
+        <div class="wrt-note">${esc(t.note)}</div>
+        ${t.tip ? `<div class="wrt-tip">${esc(t.tip)}</div>` : ''}
+        ${(t.sents || []).map((s) => `<div class="wrt-sent"><div class="wrt-en">${esc(s.en)}</div><div class="wrt-zh">${esc(s.zh)}</div></div>`).join('')}
+      </div>`).join('') + '</div>';
+    box.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.cat; renderTpl(box); }));
+  }
+
+  function renderSent(box) {
+    box.innerHTML = DATA.sentences.map((s, i) => `
+      <div class="wrt-card">
+        <div class="wrt-title">${esc(s.src)} <button class="wrt-speak" data-en="${esc(s.en)}"> 朗读</button></div>
+        <div class="wrt-en">${esc(s.en)}</div>
+        <div class="wrt-zh">${esc(s.zh)}</div>
+        ${s.parse ? `<button class="ghost-btn wrt-more" data-i="${i}">结构解析 ▾</button><div class="wrt-parse hidden" data-parse="${i}">${esc(s.parse)}${s.cut ? '\n断句：' + s.cut : ''}</div>` : ''}
+      </div>`).join('');
+    box.querySelectorAll('.wrt-more').forEach((b) => b.addEventListener('click', () => {
+      const p = box.querySelector(`[data-parse="${b.dataset.i}"]`);
+      p.classList.toggle('hidden');
+      b.textContent = p.classList.contains('hidden') ? '结构解析 ▾' : '收起 ▴';
+    }));
+    box.querySelectorAll('.wrt-speak').forEach((b) => b.addEventListener('click', () => speak(b.dataset.en)));
+  }
+
+  function renderTips(box) {
+    box.innerHTML = DATA.tips.map((t) => `
+      <div class="wrt-card">
+        <div class="wrt-title">${esc(t.title)}</div>
+        <div class="wrt-note">${esc(t.text)}</div>
+      </div>`).join('');
+  }
+
+  function renderGrade(box) {
+    box.innerHTML = `
+      <div class="wrt-card">
+        <div class="wrt-title">AI 作文批改 <span class="wrt-tip">（六级评分标准 · 满分 106.5）</span></div>
+        <input id="wr-topic" placeholder="作文题目（可留空）" maxlength="300">
+        <textarea id="wr-essay" placeholder="把你的作文粘贴到这里（建议 150~200 词）…"></textarea>
+        <button class="primary-btn" id="wr-grade-send" style="width:100%;margin-top:8px">提交批改</button>
+        <div class="wrt-tip" style="margin-top:6px">计入每天 100 次 AI 额度 · 批改约 15~40 秒</div>
+      </div>
+      <div id="wr-grade-box" class="hidden"></div>`;
+    $('#wr-grade-send').addEventListener('click', () => {
+      const topic = $('#wr-topic').value.trim();
+      const essay = $('#wr-essay').value.trim();
+      if (essay.length < 40) { toast('作文太短啦（至少 40 个字符）'); return; }
+      StudyAI.ask('essayGrade', { topic, essay }, $('#wr-grade-box'), '批改生成中，约 15~40 秒…');
+    });
+  }
+
+  function bind() {
+    const card = $('#writing-card');
+    if (card) card.addEventListener('click', () => nav('writing'));
+    const gbtn = $('#btn-writing-grade');
+    if (gbtn) gbtn.addEventListener('click', () => { tab = 'grade'; nav('writing'); });
+    $$('#writing-tabs .wr-tab').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.wtab; renderPage(); }));
+  }
+
+  return { ensure, renderPage, bind };
+})();
 
 boot();

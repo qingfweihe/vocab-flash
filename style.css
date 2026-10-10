@@ -1417,3 +1417,25 @@ html.dark .rd-dock-body .rd-q5-explain { background: #1a1c24; color: var(--ink-2
 
 /* 解析多行显示（正确答案/依据 换行 + 排除行） */
 .rd-dock-body .rd-q5-explain { white-space: pre-line; }
+
+/* ---------- 作文助手 ---------- */
+.wr-tabs { display: flex; gap: 6px; margin: 10px 0; overflow-x: auto; }
+.wr-tab { flex: none; border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-2); border-radius: 999px; padding: 7px 13px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.wr-tab.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.wrt-cat { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
+.wrt-catb { border: 1px solid var(--line-strong); background: var(--card); border-radius: 8px; padding: 4px 10px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
+.wrt-catb.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+.wrt-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.wrt-title { font-weight: 700; font-size: 14.5px; margin-bottom: 6px; color: var(--ink); }
+.wrt-note { font-size: 13px; color: var(--ink-2); line-height: 1.7; margin-bottom: 6px; }
+.wrt-tip { font-size: 12.5px; color: var(--ink-3); line-height: 1.7; }
+.wrt-sent { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
+.wrt-en { font-size: 13.5px; color: var(--ink); line-height: 1.6; }
+.wrt-zh { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
+.wrt-more { margin-top: 6px; }
+.wrt-parse { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; white-space: pre-line; margin-top: 6px; }
+.wrt-speak { border: 1px solid var(--line-strong); background: var(--card); border-radius: 8px; padding: 2px 8px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
+#wr-topic, #wr-essay { width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: var(--card); color: var(--ink); margin-bottom: 8px; }
+#wr-essay { min-height: 180px; resize: vertical; line-height: 1.6; }
+html.dark .wrt-card { background: #242631; border-color: #34363f; }
+html.dark #wr-topic, html.dark #wr-essay { background: #242631; border-color: #34363f; color: var(--ink); }
