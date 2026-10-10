@@ -1414,3 +1414,6 @@ html.dark .rd-dock-body .rd-q5-explain { background: #1a1c24; color: var(--ink-2
 .rd-dock.collapsed .rd-dock-status { margin-left: 0; font-size: 13px; color: var(--ink-2); }
 .rd-dock.collapsed #rd-dock-toggle { margin-left: auto; }
 .rd-dock.collapsed #rd-submit-inline { margin-left: auto; }
+
+/* 解析多行显示（正确答案/依据 换行 + 排除行） */
+.rd-dock-body .rd-q5-explain { white-space: pre-line; }
