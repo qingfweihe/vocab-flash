@@ -2810,6 +2810,8 @@ const Daily = (() => {
 const Reading = (() => {
   let ITEMS = null, PROMISE = null;
   let cur = null; // 当前正在做的题
+  let dockPadSync = null; // 当前测验的面板底距同步器（横竖屏切换时重算）
+  window.addEventListener('resize', () => { if (dockPadSync) dockPadSync(); });
 
   function ensure() {
     if (ITEMS) return Promise.resolve(true);
@@ -3120,6 +3122,7 @@ const Reading = (() => {
     $('#rd-dock-toggle').addEventListener('click', (ev) => { ev.stopPropagation(); setCollapsed(box.dataset.dockCollapsed !== '1'); });
     box._renderQ = renderQ; // submitReading 交卷后调用重绘批改态
     box._syncDockPad = syncDockPad;
+    dockPadSync = syncDockPad;
     dock.addEventListener('click', (ev) => {
       // 收起态：点窄条空白处展开（交卷小按钮与切换按钮除外）
       if (box.dataset.dockCollapsed === '1' && !ev.target.closest('#rd-submit-inline') && !ev.target.closest('#rd-dock-toggle')) { setCollapsed(false); return; }
@@ -3181,7 +3184,7 @@ const Reading = (() => {
     });
     $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
     $('#rd-next').addEventListener('click', () => { start(); });
-    $('#rd-back').addEventListener('click', () => { stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); renderPage(); });
+    $('#rd-back').addEventListener('click', () => { stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); dockPadSync = null; renderPage(); });
     window.scrollTo({ top: 0 });
   }
 
