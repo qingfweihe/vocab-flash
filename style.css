@@ -1353,7 +1353,7 @@ html.dark .rd-q5 .rd-opt.wrong { background: #2e1c1c; border-color: #b04848; }
 html.dark .rd-q5-explain { background: #1a1c24; color: var(--ink-2); }
 
 /* ---------- 阅读单题底部作答面板（v3） ---------- */
-#reading-quiz.quiz-on { padding-bottom: calc(46vh + 90px); }
+#reading-quiz.quiz-on { padding-bottom: calc(38vh + 56px); }
 .rd-dock {
   position: fixed; left: 50%; width: 100%; max-width: 640px;
   transform: translateX(-50%) translateZ(0);
@@ -1391,3 +1391,26 @@ html.dark .rd-nav, html.dark .rd-dot { background: #242631; border-color: #34363
 html.dark .rd-dock-body .rd-opt.right { background: #1c2b21; border-color: #3f8f5f; }
 html.dark .rd-dock-body .rd-opt.wrong { background: #2e1c1c; border-color: #b04848; }
 html.dark .rd-dock-body .rd-q5-explain { background: #1a1c24; color: var(--ink-2); }
+
+/* ---------- 阅读底部面板 v4：紧凑化 + 可收起 ---------- */
+.rd-dock { padding: 6px 10px 8px; }
+.rd-dock-head { gap: 5px; margin-bottom: 4px; }
+.rd-nav { width: 32px; height: 28px; font-size: 15px; }
+.rd-dots { gap: 5px; }
+.rd-dot { width: 26px; height: 26px; font-size: 11.5px; }
+.rd-dock-status { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; margin-left: auto; }
+.rd-dock-toggle { margin-left: 0; }
+.rd-dock-body .rd-q { font-size: 14px; margin: 2px 0 6px; }
+.rd-dock-body .rd-opts { gap: 6px; margin-bottom: 2px; }
+.rd-dock-body .rd-opt { font-size: 13.5px; padding: 9px 10px; }
+.rd-dock-foot { margin-top: 4px; }
+.rd-dock-foot:empty { margin-top: 0; }
+.rd-submit-inline { width: auto; padding: 0 10px; font-size: 12px; height: 28px; background: var(--brand); color: #fff; border-color: var(--brand); }
+/* 收起态：一条窄条 */
+.rd-dock.collapsed { padding: 0 10px; cursor: pointer; }
+.rd-dock.collapsed .rd-dock-head { margin: 0; height: 42px; align-items: center; }
+.rd-dock.collapsed #rd-prev, .rd-dock.collapsed #rd-nextq, .rd-dock.collapsed .rd-dots { display: none; }
+.rd-dock.collapsed .rd-dock-body, .rd-dock.collapsed .rd-dock-foot { display: none; }
+.rd-dock.collapsed .rd-dock-status { margin-left: 0; font-size: 13px; color: var(--ink-2); }
+.rd-dock.collapsed #rd-dock-toggle { margin-left: auto; }
+.rd-dock.collapsed #rd-submit-inline { margin-left: auto; }

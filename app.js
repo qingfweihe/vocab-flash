@@ -2997,6 +2997,7 @@ const Reading = (() => {
     delete box.dataset.answered; // 换篇重置答题标志（box 是固定元素，innerHTML 不清 dataset）
     box.classList.remove('show-cn');
     box.classList.add('quiz-on'); // 底部固定面板占位：给内容区留出滚动底距
+    box.dataset.dockCollapsed = ''; // 每篇重置为展开态
     const questions = it.q5 || [];
     const picks = {}; // {num: 'A'} 交卷前可改选
     box._picks = picks; // submitReading 从这里读选择
@@ -3025,6 +3026,9 @@ const Reading = (() => {
           <button class="rd-nav" id="rd-prev" aria-label="上一题">‹</button>
           <div class="rd-dots" id="rd-dots"></div>
           <button class="rd-nav" id="rd-nextq" aria-label="下一题">›</button>
+          <span class="rd-dock-status" id="rd-dock-status"></span>
+          <button class="rd-nav rd-submit-inline hidden" id="rd-submit-inline">交卷</button>
+          <button class="rd-nav rd-dock-toggle" id="rd-dock-toggle" aria-label="收起或展开答题面板">▾</button>
         </div>
         <div class="rd-dock-body" id="rd-dock-body"></div>
         <div class="rd-dock-foot" id="rd-dock-foot"></div>
@@ -3084,19 +3088,41 @@ const Reading = (() => {
       }).join('');
       $('#rd-prev').disabled = qi === 0;
       $('#rd-nextq').disabled = qi === questions.length - 1;
-      if (!answered) {
-        const doneN = questions.filter((qq) => picks[qq.num]).length;
-        dockFoot.innerHTML = (doneN === questions.length)
-          ? '<button class="primary-btn rd-submit-btn" id="rd-submit">交卷</button>'
-          : `<div class="rd-hint">已答 ${doneN}/${questions.length} 题 · ‹ › 或点数字可切换</div>`;
-        const sub = $('#rd-submit');
-        if (sub) sub.addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
-      } else {
-        dockFoot.innerHTML = '<div class="rd-hint">批改模式 · ‹ › 或点数字逐题查看对错与解析</div>';
+      const doneN = questions.filter((qq) => picks[qq.num]).length;
+      const rightN = questions.filter((qq) => picks[qq.num] === qq.answer).length;
+      const allDone = doneN === questions.length;
+      const st = $('#rd-dock-status');
+      st.textContent = answered ? `${rightN}/${questions.length} 对` : `已答 ${doneN}/${questions.length}`;
+      if (box.dataset.dockCollapsed === '1') st.textContent = `第 ${qi + 1}/${questions.length} 题 · ` + st.textContent;
+      // 底部行只在"展开态且答满"时承载交卷按钮，其余情况不占高度
+      dockFoot.innerHTML = (!answered && allDone && box.dataset.dockCollapsed !== '1')
+        ? '<button class="primary-btn rd-submit-btn" id="rd-submit">交卷</button>'
+        : '';
+      const sub = $('#rd-submit');
+      if (sub) sub.addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
+      // 窄条上的交卷小按钮（收起且答满时）
+      const inl = $('#rd-submit-inline');
+      inl.classList.toggle('hidden', !(!answered && allDone && box.dataset.dockCollapsed === '1'));
+      if (!inl._bound) {
+        inl._bound = 1;
+        inl.addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
       }
+      syncDockPad();
     };
+    /** 正文底距 = 面板实际高度（收起时原文几乎全屏） */
+    const syncDockPad = () => { box.style.paddingBottom = (dock.offsetHeight + 24) + 'px'; };
+    const setCollapsed = (v) => {
+      box.dataset.dockCollapsed = v ? '1' : '';
+      dock.classList.toggle('collapsed', v);
+      $('#rd-dock-toggle').textContent = v ? '▴' : '▾';
+      renderQ();
+    };
+    $('#rd-dock-toggle').addEventListener('click', (ev) => { ev.stopPropagation(); setCollapsed(box.dataset.dockCollapsed !== '1'); });
     box._renderQ = renderQ; // submitReading 交卷后调用重绘批改态
+    box._syncDockPad = syncDockPad;
     dock.addEventListener('click', (ev) => {
+      // 收起态：点窄条空白处展开（交卷小按钮与切换按钮除外）
+      if (box.dataset.dockCollapsed === '1' && !ev.target.closest('#rd-submit-inline') && !ev.target.closest('#rd-dock-toggle')) { setCollapsed(false); return; }
       const jump = ev.target.closest('[data-jump]');
       if (jump) { box._qi = Number(jump.dataset.jump) || 0; renderQ(); return; }
       if (ev.target.closest('#rd-prev')) { if (box._qi > 0) { box._qi--; renderQ(); } return; }
@@ -3175,7 +3201,10 @@ const Reading = (() => {
     r.done[it.id] = { picks: Object.assign({}, picks), right, total, ok: right >= Math.ceil(total * 0.6), ts: Date.now() };
     saveState();
     box.dataset.answered = '1';
+    box.dataset.dockCollapsed = ''; // 交卷后展开看批改
+    const dk0 = $('#rd-dock'); if (dk0) dk0.classList.remove('collapsed');
     if (box._renderQ) box._renderQ(); // 底部面板切批改态：逐题对错高亮 + 解析
+    if (box._syncDockPad) box._syncDockPad();
     toast('已交卷 · 点数字或 ‹ › 逐题看对错与解析');
     const passLine = right >= Math.ceil(total * 0.6) ? ' ✓' : '';
     const vocabHtml = (it.vocab || []).length ? `
