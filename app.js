@@ -1192,7 +1192,53 @@ function nav(view) {
   if (view === 'reading') Reading.renderPage();
   if (view === 'ai') { AI.renderMsgs(); AI.applyBackBtn(); }
   if (view === 'listening') Listening.renderPage();
+  saveNavState(false); // 页面记忆：更新当前视图（滚动位置由切后台/离开时补记）
 }
+
+/* ===== 页面记忆：切后台/重开恢复上次所在视图（本机 UI 状态，独立键，不参与云同步） ===== */
+let homePanelCur = null, setPanelCur = null;
+const NAV_MEM_KEY = 'sgwd_nav';
+function saveNavState(withScroll) {
+  try {
+    localStorage.setItem(NAV_MEM_KEY, JSON.stringify({
+      view: currentView,
+      favSeg: favSeg,
+      homePanel: homePanelCur,
+      setPanel: setPanelCur,
+      study: (currentView === 'study' && studyUnitId != null) ? studyUnitId : null,
+      // 换视图时像素位置清零：不把上一页的滚动量错配给新页（切后台时会被真实值覆盖）
+      y: withScroll ? window.scrollY : 0,
+      ts: Date.now()
+    }));
+  } catch (e) { }
+}
+/** 恢复：?view= 直达参数优先；test（拼写检验）不恢复——检验会话有自己的断点续做 */
+function applyNavRestore(nv) {
+  if (!nv || !nv.view) { nav('units'); return; }
+  if (nv.view === 'study' && nv.study != null) {
+    // 全量词库未就绪时先等加载，避免"词库加载中"打扰
+    const go = () => { if (unitById(nv.study)) openStudy(nv.study); else nav('units'); };
+    if (DATA.units.length) go(); else ensureData().then(go);
+    return;
+  }
+  if (nv.view === 'reading' || nv.view === 'listening') { nav(nv.view); }
+  else if (['units', 'favorites', 'settings', 'ai'].includes(nv.view)) {
+    if (nv.view === 'favorites' && nv.favSeg === 'wrong') pendingFavSeg = 'wrong';
+    if (nv.view === 'units' && nv.homePanel) pendingHomePanel = nv.homePanel;
+    nav(nv.view);
+    if (nv.view === 'settings' && nv.setPanel) showSetPanel(nv.setPanel);
+  } else { nav('units'); return; }
+  // 收藏页/错词本滚动交给 restoreListPos（词级）；学习页交给 restorePos；其余视图像素级恢复
+  if (nv.y && ['units', 'reading', 'listening', 'settings'].includes(nv.view)) {
+    const v0 = nv.view, y0 = nv.y;
+    setTimeout(() => { if (currentView === v0) window.scrollTo({ top: y0 }); }, 160);
+    if (v0 === 'reading' || v0 === 'listening') {
+      setTimeout(() => { if (currentView === v0) window.scrollTo({ top: y0 }); }, 1100); // 列表异步渲染完补一次
+    }
+  }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNavState(true); });
+window.addEventListener('pagehide', () => saveNavState(true));
 
 document.addEventListener('click', (e) => {
   const navBtn = e.target.closest('[data-nav]');
@@ -2005,6 +2051,7 @@ function setFavSeg(seg) {
   if (tw) tw.classList.toggle('hidden', favSeg !== 'wrong');
   if (favSeg === 'wrong') { renderWrongList(); restoreListPos('#wrong-list', 'wrong'); }
   else { renderFavorites(); restoreListPos('#fav-list', 'fav'); }
+  saveNavState(false); // 页面记忆：记录当前分段（点分段切换不经过 nav）
 }
 const favSegBar = document.querySelector('.fav-seg-bar');
 if (favSegBar) favSegBar.addEventListener('click', (e) => {
@@ -2223,14 +2270,16 @@ $('#set-sakura').addEventListener('change', (e) => {
 
 /* ================= 设置页二级面板（主页条目 → 面板切换） ================= */
 function showSetPanel(name) {
+  setPanelCur = name || null;
   const home = $('#settings-home');
   if (!home) return;
   $$('#view-settings .set-panel').forEach((p) => p.classList.add('hidden'));
-  if (!name) { home.classList.remove('hidden'); return; }
+  if (!name) { home.classList.remove('hidden'); saveNavState(false); return; }
   home.classList.add('hidden');
   const el = $('#setpanel-' + name);
   if (el) el.classList.remove('hidden');
   window.scrollTo({ top: 0 });
+  saveNavState(false);
 }
 $('#settings-home').addEventListener('click', (e) => {
   const b = e.target.closest('[data-setpanel]');
@@ -2718,7 +2767,7 @@ const Reading = (() => {
       pct.textContent = s.pct + '%';
       pct.classList.remove('hidden');
     } else {
-      sub.textContent = '六级真题 · 一篇一题 · 随手刷';
+      sub.textContent = '六级真题 · 整篇精读 · 5 题一组';
       pct.classList.add('hidden');
     }
   }
@@ -2755,7 +2804,7 @@ const Reading = (() => {
             return `<div class="rd-item ${d.ok ? 'ok' : 'no'}" data-rd="${id}">
               <span class="rd-mark">${d.ok ? '✓' : '✗'}</span>
               <span class="rd-src">${it ? it.src : id}</span>
-              <span class="rd-pick">选了 ${d.pick}</span>
+              <span class="rd-pick">${d.picks ? ('得分 ' + d.right + '/' + d.total) : ('选了 ' + d.pick)}</span>
             </div>`;
           }).join('')
         : '');
@@ -2768,7 +2817,12 @@ const Reading = (() => {
       const lines = ids.map((id) => {
         const it2 = ITEMS && ITEMS.find((x) => x.id === id);
         const d2 = r.done[id];
-        return (it2 ? it2.q.stem.slice(0, 70) : id) + ' | ' + d2.pick + ' | ' + (it2 ? it2.q.answer : '?');
+        if (d2 && d2.picks && it2) {
+          const wrong = (it2.q5 || []).filter(function (q) { return d2.picks[q.num] && d2.picks[q.num] !== q.answer; });
+          const ws2 = wrong.map(function (q) { return q.stem.slice(0, 40) + ' | 我的 ' + d2.picks[q.num] + ' | 对 ' + q.answer; }).join('; ');
+          return ws2 || (it2.src + ' 全对');
+        }
+        return (it2 && it2.q ? it2.q.stem.slice(0, 70) : id) + ' | ' + (d2 ? d2.pick : '?') + ' | ?';
       }).join('\n');
       StudyAI.ask('rdPattern', { records: lines }, pbox, '分析错题模式中…');
     });
@@ -2841,12 +2895,15 @@ const Reading = (() => {
     box.classList.remove('hidden');
     delete box.dataset.answered; // 换篇重置答题标志（box 是固定元素，innerHTML 不清 dataset）
     box.classList.remove('show-cn');
+    const questions = it.q5 || [];
+    const picks = {}; // {num: 'A'} 交卷前可改选
+    box._picks = picks; // submitReading 从这里读选择
     box.innerHTML = `
-      <div class="rd-src-line">${it.src} · 约 ${it.words} 词
+      <div class="rd-src-line">${it.src} · 约 ${it.words} 词 · ${questions.length} 题
         <button class="rd-speak" id="rd-speak"> 朗读</button>
         <span class="rd-tts-ctrl hidden" id="rd-tts-ctrl">
-          <button class="rd-speak" id="rd-pause"><i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停</button>
-          <button class="rd-speak" id="rd-stop"><i class="ico ls-ico" style="--ico:url(undefined)"></i>停止</button>
+          <button class="rd-speak" id="rd-pause">暂停</button>
+          <button class="rd-speak" id="rd-stop">停止</button>
         </span>
       </div>
       <div class="rd-tools">
@@ -2855,55 +2912,60 @@ const Reading = (() => {
       </div>
       <div class="rd-ai-box hidden" id="rd-fullai-box"></div>
       <div class="rd-text" id="rd-text"></div>
-      <div class="rd-q">${it.q.stem}${it.q.stemCn ? `<div class="rd-q-cn">${it.q.stemCn}</div>` : ''}</div>
-      <div class="rd-opts">${['A', 'B', 'C', 'D'].map((c, i) => {
-        const cn = it.q.optionsCn && it.q.optionsCn[i];
-        return `<button class="rd-opt" data-opt="${c}"><span class="opt-en"><b>${c}</b> ${wrapWords(it.q.options[i] || '')}</span>${cn ? `<span class="opt-cn">${cn}</span>` : ''}</button>`;
-      }).join('')}
+      <div id="rd-qs">
+        ${questions.map((q, qi) => `
+        <div class="rd-q5" data-num="${q.num}">
+          <div class="rd-q"><b>${qi + 1}.</b> ${q.stem}${q.stemCn ? `<div class="rd-q-cn">${q.stemCn}</div>` : ''}</div>
+          <div class="rd-opts">${q.options.map((o, oi) => `
+            <button class="rd-opt" data-num="${q.num}" data-opt="${'ABCD'[oi]}"><span class="opt-en"><b>${'ABCD'[oi]}</b> ${wrapWords(o)}</span>${(q.optionsCn && q.optionsCn[oi]) ? `<span class="opt-cn">${q.optionsCn[oi]}</span>` : ''}</button>`).join('')}
+          </div>
+          <div class="rd-q5-explain hidden"></div>
+        </div>`).join('')}
       </div>
+      <button class="primary-btn hidden" id="rd-submit">交卷</button>
       <div id="rd-result" class="hidden"></div>
       <div class="rd-actions hidden" id="rd-actions">
         <button class="primary-btn" id="rd-next">再来一篇</button>
         <button class="ghost-btn" id="rd-back">返回阅读页</button>
       </div>`;
-    // 原文渲染 + 对照译文开关（切开关只换 innerHTML；点词监听挂在元素上只挂一次，重复挂会叠加触发）
+    // 原文渲染 + 对照译文开关
     const cnSw = $('#rd-cn-sw');
     const applyCn = () => {
       const on = rdCnOn();
       $('#rd-text').innerHTML = rdTextHtml(it, on);
-      box.classList.toggle('show-cn', on); // 题干/选项中文跟随同一开关
+      box.classList.toggle('show-cn', on);
       cnSw.textContent = on ? '隐藏译文' : '对照译文';
       cnSw.classList.toggle('on', on);
     };
     $('#rd-text').addEventListener('click', (ev) => {
-      const s = ev.target.closest('.rd-w');
-      if (!s) return;
-      const p = s.closest('.rd-p');
-      const info = findSentence(p ? p.textContent : '', s.textContent);
-      WordCard.show(s.textContent, info.sent, info.ctx);
+      const s2 = ev.target.closest('.rd-w');
+      if (!s2) return;
+      const p = s2.closest('.rd-p');
+      const info = findSentence(p ? p.textContent : '', s2.textContent);
+      WordCard.show(s2.textContent, info.sent, info.ctx);
     });
     applyCn();
     cnSw.addEventListener('click', () => { setCnOn(!rdCnOn()); applyCn(); });
-    // 全文精讲（文章级：长难句/核心词/篇章脉络，云端缓存共享）
+    // 全文精讲
     const fa = $('#rd-fullai'), fab = $('#rd-fullai-box');
     fa.addEventListener('click', () => {
       if (!fab.classList.contains('hidden')) { fab.classList.add('hidden'); fa.textContent = '全文精讲'; return; }
       fa.textContent = '收起精讲';
       StudyAI.ask('rdFull', { text: it.text }, fab, '全文精讲生成中，约 10~20 秒…');
     });
-    // 选项里的单词=查词（不答题，也不受"已答"影响）；点空白处才是答题
-    box.addEventListener('click', (ev) => {
-      const s = ev.target.closest('.rd-opt .rd-w');
-      if (!s) return;
-      const en = s.closest('.opt-en');
-      const info = findSentence(en ? en.textContent : '', s.textContent);
-      WordCard.show(s.textContent, info.sent, info.ctx);
-    });
+    // 选项点选（v2：选择不判分，交卷统一判；点选项里的单词=查词）
     box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', (ev) => {
-      if (ev.target.closest('.rd-w')) return; // 点在单词上=查词
-      pick(it, b.dataset.opt);
+      const wk = ev.target.closest('.rd-w');
+      if (wk) { WordCard.show(wk.textContent); return; } // 选项里的单词=查词（不误触答题）
+      if (box.dataset.answered) return; // 交卷后不可改选
+      const num = b.dataset.num;
+      b.closest('.rd-opts').querySelectorAll('.rd-opt').forEach((x) => x.classList.remove('picked'));
+      b.classList.add('picked');
+      picks[num] = b.dataset.opt;
+      $('#rd-submit').classList.toggle('hidden', !questions.every((q) => picks[q.num]));
     }));
-    // 朗读：播放中可暂停/继续/停止
+    $('#rd-submit').addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
+    // 朗读（TTS，壳内走系统语音）
     const speakBtn = $('#rd-speak');
     const ttsCtrl = $('#rd-tts-ctrl');
     const pauseBtn = $('#rd-pause');
@@ -2920,7 +2982,7 @@ const Reading = (() => {
     };
     speakBtn.addEventListener('click', () => {
       const text = it.text.replace(/\n/g, ' ');
-      if (inShell) { // 壳内走系统 TTS（无暂停能力，只给停止）
+      if (inShell) {
         pauseBtn.classList.add('hidden');
         window.vfShell.speak(text);
         speakBtn.classList.add('hidden');
@@ -2939,11 +3001,11 @@ const Reading = (() => {
       pauseBtn.classList.remove('hidden');
       speakBtn.classList.add('hidden');
       ttsCtrl.classList.remove('hidden');
-      pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停';
+      pauseBtn.textContent = '暂停';
     });
     pauseBtn.addEventListener('click', () => {
-      if (ttsPaused) { speechSynthesis.resume(); pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停'; }
-      else { speechSynthesis.pause(); pauseBtn.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>继续'; }
+      if (ttsPaused) { speechSynthesis.resume(); pauseBtn.textContent = '暂停'; }
+      else { speechSynthesis.pause(); pauseBtn.textContent = '继续'; }
       ttsPaused = !ttsPaused;
     });
     $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
@@ -2952,23 +3014,35 @@ const Reading = (() => {
     window.scrollTo({ top: 0 });
   }
 
-  function pick(it, letter) {
-    const pickBox = $('#reading-quiz');
-    if (!pickBox || pickBox.dataset.answered === '1') return; // 防重入（替代 disabled：已答选项里的单词仍可点查）
-    pickBox.dataset.answered = '1';
+  /** v2 交卷：统一判分 + 成绩总览 + 逐题解析 */
+  function submitReading(it) {
+    const box = $('#reading-quiz');
+    const picks = box._picks || {};
+    const questions = it.q5 || [];
     const r = rState();
-    const ok = letter === it.q.answer;
-    // 记录（重做覆盖）
-    r.done[it.id] = { pick: letter, ok, ts: Date.now() };
-    saveState();
-    // 渲染结果
-    document.querySelectorAll('#reading-quiz .rd-opt').forEach((b) => {
-      b.classList.add('answered');
-      if (b.dataset.opt === it.q.answer) b.classList.add('right');
-      else if (b.dataset.opt === letter) b.classList.add('wrong');
+    let right = 0;
+    const wrongQs = [];
+    questions.forEach((q) => {
+      const my = picks[q.num] || '';
+      const okQ = my === q.answer;
+      if (okQ) right++; else wrongQs.push(q);
+      const blk = box.querySelector('.rd-q5[data-num="' + q.num + '"]');
+      if (blk) {
+        blk.querySelectorAll('.rd-opt').forEach((b) => {
+          b.classList.add('answered');
+          if (b.dataset.opt === q.answer) b.classList.add('right');
+          else if (b.dataset.opt === my) b.classList.add('wrong');
+        });
+        const ex = blk.querySelector('.rd-q5-explain');
+        if (ex) { ex.textContent = q.explain; ex.classList.remove('hidden'); }
+      }
     });
-    const res = $('#rd-result');
-    res.classList.remove('hidden');
+    const total = questions.length;
+    r.done[it.id] = { picks: Object.assign({}, picks), right, total, ok: right >= Math.ceil(total * 0.6), ts: Date.now() };
+    saveState();
+    box.dataset.answered = '1';
+    $('#rd-submit').classList.add('hidden');
+    const passLine = right >= Math.ceil(total * 0.6) ? ' ✓' : '';
     const vocabHtml = (it.vocab || []).length ? `
       <div class="rd-vocab-sec">
         <div class="rd-vhead"><b>本篇生词 · 点词翻面背诵</b><button class="rd-reveal" id="rd-vocab-reveal">全部显示</button></div>
@@ -2983,30 +3057,27 @@ const Reading = (() => {
     const cnHtml = it.cn ? `
       <button class="ghost-btn rd-cn-toggle" id="rd-cn-toggle">查看全文翻译</button>
       <div class="rd-cn hidden" id="rd-cn">${it.cn}</div>` : '';
+    const aiHtml = wrongQs.length ? `
+      <button class="ghost-btn rd-ai-btn" id="rd-ai-wrong">AI 分析我的错题</button>
+      <div class="rd-ai-box hidden" id="rd-ai-wrong-box"></div>` : '';
+    const res = $('#rd-result');
+    res.classList.remove('hidden');
     res.innerHTML = `
-      <div class="rd-verdict ${ok ? 'ok' : 'no'}">${ok ? '✓ 答对了' : `✗ 答错了，正确答案 ${it.q.answer}`}</div>
-      <div class="rd-explain">${it.q.explain}</div>
-      <button class="ghost-btn rd-ai-btn" id="rd-ai-explain">AI 深度讲解</button>
-      <div class="rd-ai-box hidden" id="rd-ai-box"></div>
-      <button class="ghost-btn rd-ai-btn" id="rd-quiz-btn">AI 出 3 道小练</button>
-      <div class="rd-ai-box hidden" id="rd-quiz-box"></div>
+      <div class="rd-verdict ${right >= Math.ceil(total * 0.6) ? 'ok' : 'no'}">得分 ${right} / ${total}${passLine}</div>
+      ${aiHtml}
       ${vocabHtml}
       ${cnHtml}`;
-    // 逐题 AI 讲解（定位原句/解题逻辑/干扰项分析，云端缓存共享）
-    const ax = $('#rd-ai-explain'), ab = $('#rd-ai-box');
-    ax.addEventListener('click', () => {
-      if (!ab.classList.contains('hidden')) { ab.classList.add('hidden'); ax.textContent = 'AI 深度讲解'; return; }
-      ax.textContent = '收起讲解';
-      StudyAI.ask('rdExplain', { text: it.text, q: it.q.stem, opts: it.q.options, ans: it.q.answer }, ab, '生成讲解中，约 10 秒…');
-    });
-    // AI 出 3 道小练（词汇/短语/句子理解，云端缓存共享；即时判分不进 SRS）
-    const qb = $('#rd-quiz-btn'), qbox = $('#rd-quiz-box');
-    qb.addEventListener('click', () => {
-      if (!qbox.classList.contains('hidden')) { qbox.classList.add('hidden'); qb.textContent = 'AI 出 3 道小练'; return; }
-      qb.textContent = '收起小练';
-      StudyAI.ask('rdQuiz', { text: it.text }, qbox, '出题中，最长约 1 分钟…', renderRdQuiz);
-    });
-    // 生词交互：翻面+发音；全部显示；收藏
+    // AI 错题分析（错题题干|我的答案|正确答案）
+    const ab = $('#rd-ai-wrong-box');
+    if (ab) {
+      const abBtn = $('#rd-ai-wrong');
+      abBtn.addEventListener('click', () => {
+        if (!ab.classList.contains('hidden')) { ab.classList.add('hidden'); return; }
+        const records = wrongQs.map((q) => q.stem.slice(0, 60) + ' | 我的答案 ' + (picks[q.num] || '?') + ' | 正确 ' + q.answer).join('\n');
+        StudyAI.ask('rdPattern', { records }, ab, '分析错题模式中…');
+      });
+    }
+    // 生词交互
     res.querySelectorAll('.vw-main').forEach((b) => b.addEventListener('click', () => {
       const back = b.querySelector('.vw-back');
       back.classList.toggle('hidden');
@@ -3015,8 +3086,8 @@ const Reading = (() => {
     const reveal = $('#rd-vocab-reveal');
     if (reveal) reveal.addEventListener('click', () => {
       const backs = res.querySelectorAll('.vw-back');
-      const show = res.querySelectorAll('.vw-back:not(.hidden)').length < backs.length; // 未全显示→全显示
-      backs.forEach((s) => s.classList.toggle('hidden', !show));
+      const show = res.querySelectorAll('.vw-back:not(.hidden)').length < backs.length;
+      backs.forEach((x) => x.classList.toggle('hidden', !show));
       reveal.textContent = show ? '全部遮住' : '全部显示';
     });
     res.querySelectorAll('.vw-fav').forEach((b) => b.addEventListener('click', () => {
@@ -3027,9 +3098,9 @@ const Reading = (() => {
     }));
     const cnT = $('#rd-cn-toggle');
     if (cnT) cnT.addEventListener('click', () => {
-      const box = $('#rd-cn');
-      box.classList.toggle('hidden');
-      cnT.textContent = box.classList.contains('hidden') ? '查看全文翻译' : '收起翻译';
+      const c2 = $('#rd-cn');
+      c2.classList.toggle('hidden');
+      cnT.textContent = c2.classList.contains('hidden') ? '查看全文翻译' : '收起翻译';
     });
     $('#rd-actions').classList.remove('hidden');
     renderHome();
@@ -4325,14 +4396,16 @@ $('#daily-task-add').addEventListener('click', () => {
 
 /* ================= 首页二级面板（主页条目 → 面板切换） ================= */
 function showHomePanel(name) {
+  homePanelCur = name || null;
   const home = $('#home-main');
   if (!home) return;
   $$('#view-units .set-panel').forEach((p) => p.classList.add('hidden'));
-  if (!name) { home.classList.remove('hidden'); return; }
+  if (!name) { home.classList.remove('hidden'); saveNavState(false); return; }
   home.classList.add('hidden');
   const el = $('#homepanel-' + name);
   if (el) el.classList.remove('hidden');
   window.scrollTo({ top: 0 });
+  saveNavState(false);
 }
 $('#home-main').addEventListener('click', (e) => {
   const b = e.target.closest('[data-homepanel]');
@@ -4956,6 +5029,10 @@ $('#apk-check').addEventListener('click', async () => {
 });
 
 async function boot() {
+  // 页面记忆须在 nav('units') 覆盖记录前读入内存
+  let pendingNav = null;
+  try { pendingNav = JSON.parse(localStorage.getItem(NAV_MEM_KEY) || 'null'); } catch (e) { }
+
   // 阶段一：轻量索引，秒开首页
   try {
     const m = await (await fetch('data/meta.json', { cache: 'no-cache' })).json();
@@ -4996,10 +5073,12 @@ async function boot() {
   Listening.renderHome();
   Daily.init();
 
-  // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units|settings 直达对应页
+  // 从通知/桌面快捷方式点进来：?view=todo|favorites|wrong|units|settings 直达对应页；
+  // 无参数时恢复上次所在页面（切后台/重开不再弹回首页）
   try {
     const qv = new URLSearchParams(location.search).get('view');
     if (qv && ['todo', 'favorites', 'wrong', 'units', 'settings', 'daily'].includes(qv)) nav(qv);
+    else applyNavRestore(pendingNav);
   } catch (e) { /* ignore */ }
 
   // 阶段二：全量词库后台加载（含离线时的 SW 缓存回退）

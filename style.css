@@ -1325,3 +1325,19 @@ html.dark .daily-md b { color: var(--brand); }
 #ai-pop .aip-bar input { flex: 1; border: 1px solid var(--line-strong); border-radius: 999px; padding: 10px 14px; font-size: 14px; font-family: inherit; background: var(--card); color: var(--ink); }
 #ai-pop .aip-bar .primary-btn { padding: 0 18px; border-radius: 999px; font-size: 14px; }
 #ai-pop .aip-bar .primary-btn.stopping { background: var(--danger); }
+
+/* ---------- 阅读 v2：5 题题组 ---------- */
+#rd-qs { margin-top: 14px; }
+.rd-q5 { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.rd-q5 .rd-q { font-weight: 600; margin-bottom: 8px; }
+.rd-q5 .rd-opt { width: 100%; text-align: left; margin-bottom: 6px; }
+.rd-q5 .rd-opt.picked { border-color: var(--brand); background: var(--brand-soft); }
+.rd-q5 .rd-opt.answered { cursor: default; }
+.rd-q5 .rd-opt.right { border-color: #3f8f5f; background: #eef7f0; }
+.rd-q5 .rd-opt.wrong { border-color: #b04848; background: #fbeeee; }
+.rd-q5-explain { font-size: 12.5px; color: var(--ink-2); background: var(--page-bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
+html.dark .rd-q5 { background: #242631; border-color: #34363f; }
+html.dark .rd-q5 .rd-opt.picked { background: #2c3d5e; border-color: var(--brand); }
+html.dark .rd-q5 .rd-opt.right { background: #1c2b21; border-color: #3f8f5f; }
+html.dark .rd-q5 .rd-opt.wrong { background: #2e1c1c; border-color: #b04848; }
+html.dark .rd-q5-explain { background: #1a1c24; color: var(--ink-2); }
