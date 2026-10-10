@@ -19,6 +19,7 @@ const DEFAULT_STATE = {
   reading: { done: {}, vocab: {} },  // 阅读随手练 done:{id:{pick,ok,ts}} vocab:{word:{cn,ts}}
   listen: { done: {}, vocab: {} },   // 听力精听 done:{taskId:{answered,correct,ts}} vocab:{word:{cn,ts}}
   favStars: {},  // 收藏星级 unitId -> {wordKey: {v:0..3, ts}}（星越多越熟练）
+  mig46: 0,      // 四六级全量扩展迁移版本号（旧单元已掌握 → 新单元按词头继承，一次性）
   sync: { code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '', pushplusToken: '' },  // 云同步（tomb=删除墓碑 key→±ts）
 };
 
@@ -88,6 +89,7 @@ function normalizeProgress(s) {
     reading: normalizeReading(s.reading),
     listen: normalizeListen(s.listen),
     favStars: obj(s.favStars),
+    mig46: s.mig46 || 0,
     sync: Object.assign({ code: '', partner: '', on: false, lastSync: 0, tomb: {}, ntfyTopic: '', pushplusToken: '' }, s.sync || {}),
     srs: obj(s.srs),
     dayLog: obj(s.dayLog),
@@ -458,6 +460,9 @@ const Sync = (() => {
           } else if (k.startsWith('lv:')) {
             const w = k.slice(3);
             if (state.listen.vocab[w]) { delete state.listen.vocab[w]; changed = true; }
+          } else if (k.startsWith('rd:')) {
+            const id = k.slice(3);
+            if (state.reading.done[id]) { delete state.reading.done[id]; changed = true; }
           } else if (k.startsWith('t:')) {
             const id = k.slice(2);
             if ((state.todo || []).some(x => x.id === id)) { state.todo = state.todo.filter(x => x.id !== id); changed = true; }
@@ -977,6 +982,31 @@ function migrateProgress() {
         changed = true;
       }
     }
+  }
+  // 四六级全量扩展（id>=27 为新单元）：旧单元(1-26)已掌握的词 → 新单元按词头继承「已掌握」。
+  // 收藏/错词/星级不迁移（留在原单元，避免收藏夹跨书重复）。幂等：mig46 版本号只跑一次。
+  if (!state.mig46 && DATA.units.some((u) => u.id >= 27)) {
+    const legacyLearned = {};
+    for (const u of DATA.units) {
+      if (u.id <= 26) {
+        const m = state.learned[String(u.id)] || {};
+        for (const k in m) if (m[k]) legacyLearned[k] = true;
+      }
+    }
+    if (Object.keys(legacyLearned).length) {
+      for (const u of DATA.units) {
+        if (u.id >= 27) {
+          const uid = String(u.id);
+          const m = state.learned[uid] || (state.learned[uid] = {});
+          for (const w of u.words) {
+            const k = wordKey(w.w);
+            if (legacyLearned[k] && !m[k]) { m[k] = true; changed = true; }
+          }
+        }
+      }
+    }
+    state.mig46 = 1;
+    changed = true;
   }
   if (changed) saveState();
 }
@@ -2786,10 +2816,26 @@ const Reading = (() => {
     if (!PROMISE) {
       PROMISE = fetch('data/readings.json', { cache: 'no-cache' })
         .then((r) => r.json())
-        .then((j) => { if (j && j.items && j.items.length) { ITEMS = j.items; return true; } return false; })
+        .then((j) => { if (j && j.items && j.items.length) { ITEMS = j.items; cleanGhosts(); return true; } return false; })
         .catch(() => { PROMISE = null; return false; });
     }
     return PROMISE;
+  }
+
+  /** 清理题库里已不存在的老记录（题库换代后 id 对不上的）：本地删除 + 云墓碑防同步复活 */
+  function cleanGhosts() {
+    const r = rState();
+    const known = new Set(ITEMS.map((x) => x.id));
+    let n = 0;
+    for (const id of Object.keys(r.done)) {
+      if (!known.has(id)) {
+        delete r.done[id];
+        if (typeof Sync !== 'undefined') Sync.tomb('rd:' + id);
+        n++;
+      }
+    }
+    if (n) saveState();
+    return n;
   }
 
   function rState() {
@@ -2803,7 +2849,8 @@ const Reading = (() => {
 
   function stats() {
     const r = rState();
-    const ids = Object.keys(r.done);
+    const known = ITEMS ? new Set(ITEMS.map((x) => x.id)) : null;
+    const ids = Object.keys(r.done).filter((k) => !known || known.has(k));
     const okN = ids.filter((k) => r.done[k].ok).length;
     // 连续刷题天数（北京时间）：与听力共用同一套打卡（见 practiceDays）
     const streak = streakFrom(practiceDays());
@@ -2832,7 +2879,7 @@ const Reading = (() => {
     if (q) q.classList.add('hidden');
     if (l) l.classList.remove('hidden');
     // 先确保题库已加载：否则「做过的篇目」只能显示编号且点击无法定位文章（重做失灵的根因）
-    ensure().then((ok) => { if (ok) renderPageInner(); });
+    ensure().then((ok) => { if (ok) { cleanGhosts(); renderPageInner(); } });
   }
 
   function renderPageInner() {
@@ -2843,9 +2890,10 @@ const Reading = (() => {
       <div class="rs-item"><b>${s.done ? s.pct + '%' : '—'}</b><span>正确率</span></div>
       <div class="rs-item"><b>${s.streak}</b><span>连刷天数</span></div>
       <div class="rs-item"><b>${s.total}</b><span>题库总量</span></div>`;
-    // 做过列表（最近在前，可重做）
+    // 做过列表（最近在前，可重做）；题库换代后的幽灵 id 在这里兜底过滤（正常已在 cleanGhosts 清掉）
     const r = rState();
-    const doneIds = Object.keys(r.done).sort((a, b) => r.done[b].ts - r.done[a].ts);
+    const knownSet = new Set(ITEMS.map((x) => x.id));
+    const doneIds = Object.keys(r.done).filter((id) => knownSet.has(id)).sort((a, b) => r.done[b].ts - r.done[a].ts);
     const list = $('#reading-list');
     list.innerHTML = (doneIds.length >= 3
       ? '<button class="ghost-btn" id="rd-pattern-btn" style="margin:12px 2px 4px;width:100%">AI 分析我的错题</button><div class="rd-ai-box hidden" id="rd-pattern-box"></div>'
@@ -2948,9 +2996,11 @@ const Reading = (() => {
     box.classList.remove('hidden');
     delete box.dataset.answered; // 换篇重置答题标志（box 是固定元素，innerHTML 不清 dataset）
     box.classList.remove('show-cn');
+    box.classList.add('quiz-on'); // 底部固定面板占位：给内容区留出滚动底距
     const questions = it.q5 || [];
     const picks = {}; // {num: 'A'} 交卷前可改选
     box._picks = picks; // submitReading 从这里读选择
+    box._qi = 0;        // 单题底部作答：当前题号
     box.innerHTML = `
       <div class="rd-src-line">${it.src} · 约 ${it.words} 词 · ${questions.length} 题
         <button class="rd-speak" id="rd-speak"> 朗读</button>
@@ -2965,21 +3015,19 @@ const Reading = (() => {
       </div>
       <div class="rd-ai-box hidden" id="rd-fullai-box"></div>
       <div class="rd-text" id="rd-text"></div>
-      <div id="rd-qs">
-        ${questions.map((q, qi) => `
-        <div class="rd-q5" data-num="${q.num}">
-          <div class="rd-q"><b>${qi + 1}.</b> ${q.stem}${q.stemCn ? `<div class="rd-q-cn">${q.stemCn}</div>` : ''}</div>
-          <div class="rd-opts">${q.options.map((o, oi) => `
-            <button class="rd-opt" data-num="${q.num}" data-opt="${'ABCD'[oi]}"><span class="opt-en"><b>${'ABCD'[oi]}</b> ${wrapWords(o)}</span>${(q.optionsCn && q.optionsCn[oi]) ? `<span class="opt-cn">${q.optionsCn[oi]}</span>` : ''}</button>`).join('')}
-          </div>
-          <div class="rd-q5-explain hidden"></div>
-        </div>`).join('')}
-      </div>
-      <button class="primary-btn hidden" id="rd-submit">交卷</button>
       <div id="rd-result" class="hidden"></div>
       <div class="rd-actions hidden" id="rd-actions">
         <button class="primary-btn" id="rd-next">再来一篇</button>
         <button class="ghost-btn" id="rd-back">返回阅读页</button>
+      </div>
+      <div class="rd-dock" id="rd-dock">
+        <div class="rd-dock-head">
+          <button class="rd-nav" id="rd-prev" aria-label="上一题">‹</button>
+          <div class="rd-dots" id="rd-dots"></div>
+          <button class="rd-nav" id="rd-nextq" aria-label="下一题">›</button>
+        </div>
+        <div class="rd-dock-body" id="rd-dock-body"></div>
+        <div class="rd-dock-foot" id="rd-dock-foot"></div>
       </div>`;
     // 原文渲染 + 对照译文开关
     const cnSw = $('#rd-cn-sw');
@@ -3006,18 +3054,62 @@ const Reading = (() => {
       fa.textContent = '收起精讲';
       StudyAI.ask('rdFull', { text: it.text }, fab, '全文精讲生成中，约 10~20 秒…');
     });
-    // 选项点选（v2：选择不判分，交卷统一判；点选项里的单词=查词）
-    box.querySelectorAll('.rd-opt').forEach((b) => b.addEventListener('click', (ev) => {
+    // 单题底部作答面板：一次只显示一题，选完自动翻下一题，交卷前可回看改选
+    // （v2：选择不判分，交卷统一判；点选项里的单词=查词不误触答题）
+    const dock = $('#rd-dock'), dockBody = $('#rd-dock-body'), dockFoot = $('#rd-dock-foot'), dotsBox = $('#rd-dots');
+    const renderQ = () => {
+      const qi = box._qi || 0;
+      const q = questions[qi];
+      if (!q) { dockBody.innerHTML = ''; return; }
+      const answered = box.dataset.answered === '1';
+      dockBody.innerHTML = `
+        <div class="rd-q"><b>${qi + 1}.</b> ${q.stem}${q.stemCn ? `<div class="rd-q-cn">${q.stemCn}</div>` : ''}</div>
+        <div class="rd-opts">${q.options.map((o, oi) => {
+          const opt = 'ABCD'[oi];
+          const picked = picks[q.num] === opt;
+          let cls = 'rd-opt';
+          if (answered) {
+            cls += ' answered';
+            if (opt === q.answer) cls += ' right';
+            else if (picked) cls += ' wrong';
+          } else if (picked) cls += ' picked';
+          return `<button class="${cls}" data-num="${q.num}" data-opt="${opt}"><span class="opt-en"><b>${opt}</b> ${wrapWords(o)}</span>${(q.optionsCn && q.optionsCn[oi]) ? `<span class="opt-cn">${q.optionsCn[oi]}</span>` : ''}</button>`;
+        }).join('')}</div>
+        ${(answered && q.explain) ? `<div class="rd-q5-explain">${q.explain}</div>` : ''}`;
+      dotsBox.innerHTML = questions.map((qq, i) => {
+        let st = picks[qq.num] ? 'on' : '';
+        if (answered) st = (picks[qq.num] === qq.answer) ? 'ok' : 'no';
+        if (i === qi) st += ' cur';
+        return `<button class="rd-dot ${st}" data-jump="${i}">${i + 1}</button>`;
+      }).join('');
+      $('#rd-prev').disabled = qi === 0;
+      $('#rd-nextq').disabled = qi === questions.length - 1;
+      if (!answered) {
+        const doneN = questions.filter((qq) => picks[qq.num]).length;
+        dockFoot.innerHTML = (doneN === questions.length)
+          ? '<button class="primary-btn rd-submit-btn" id="rd-submit">交卷</button>'
+          : `<div class="rd-hint">已答 ${doneN}/${questions.length} 题 · ‹ › 或点数字可切换</div>`;
+        const sub = $('#rd-submit');
+        if (sub) sub.addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
+      } else {
+        dockFoot.innerHTML = '<div class="rd-hint">批改模式 · ‹ › 或点数字逐题查看对错与解析</div>';
+      }
+    };
+    box._renderQ = renderQ; // submitReading 交卷后调用重绘批改态
+    dock.addEventListener('click', (ev) => {
+      const jump = ev.target.closest('[data-jump]');
+      if (jump) { box._qi = Number(jump.dataset.jump) || 0; renderQ(); return; }
+      if (ev.target.closest('#rd-prev')) { if (box._qi > 0) { box._qi--; renderQ(); } return; }
+      if (ev.target.closest('#rd-nextq')) { if (box._qi < questions.length - 1) { box._qi++; renderQ(); } return; }
       const wk = ev.target.closest('.rd-w');
       if (wk) { WordCard.show(wk.textContent); return; } // 选项里的单词=查词（不误触答题）
-      if (box.dataset.answered) return; // 交卷后不可改选
-      const num = b.dataset.num;
-      b.closest('.rd-opts').querySelectorAll('.rd-opt').forEach((x) => x.classList.remove('picked'));
-      b.classList.add('picked');
-      picks[num] = b.dataset.opt;
-      $('#rd-submit').classList.toggle('hidden', !questions.every((q) => picks[q.num]));
-    }));
-    $('#rd-submit').addEventListener('click', () => { if (!box.dataset.answered) submitReading(it); });
+      const b = ev.target.closest('.rd-opt');
+      if (!b || box.dataset.answered) return; // 交卷后不可改选
+      picks[b.dataset.num] = b.dataset.opt;
+      if (box._qi < questions.length - 1) box._qi++;   // 答完自动轮到下一题；最后一题停在原地出交卷
+      renderQ();
+    });
+    renderQ();
     // 朗读（TTS，壳内走系统语音）
     const speakBtn = $('#rd-speak');
     const ttsCtrl = $('#rd-tts-ctrl');
@@ -3077,24 +3169,14 @@ const Reading = (() => {
     const wrongQs = [];
     questions.forEach((q) => {
       const my = picks[q.num] || '';
-      const okQ = my === q.answer;
-      if (okQ) right++; else wrongQs.push(q);
-      const blk = box.querySelector('.rd-q5[data-num="' + q.num + '"]');
-      if (blk) {
-        blk.querySelectorAll('.rd-opt').forEach((b) => {
-          b.classList.add('answered');
-          if (b.dataset.opt === q.answer) b.classList.add('right');
-          else if (b.dataset.opt === my) b.classList.add('wrong');
-        });
-        const ex = blk.querySelector('.rd-q5-explain');
-        if (ex) { ex.textContent = q.explain; ex.classList.remove('hidden'); }
-      }
+      if (my === q.answer) right++; else wrongQs.push(q);
     });
     const total = questions.length;
     r.done[it.id] = { picks: Object.assign({}, picks), right, total, ok: right >= Math.ceil(total * 0.6), ts: Date.now() };
     saveState();
     box.dataset.answered = '1';
-    $('#rd-submit').classList.add('hidden');
+    if (box._renderQ) box._renderQ(); // 底部面板切批改态：逐题对错高亮 + 解析
+    toast('已交卷 · 点数字或 ‹ › 逐题看对错与解析');
     const passLine = right >= Math.ceil(total * 0.6) ? ' ✓' : '';
     const vocabHtml = (it.vocab || []).length ? `
       <div class="rd-vocab-sec">
