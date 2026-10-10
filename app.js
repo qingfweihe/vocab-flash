@@ -4781,6 +4781,7 @@ const AI = (() => {
     if (code === 'LIMIT') return '今天次数用完了（每天 100 次）';
     if (code === 'NO_KEY') return 'AI 还没配置好（找青峰放 Key）';
     if (code === 'AI_AUTH') return 'AI 密钥失效（' + m.slice(0, 90) + '）';
+    if (code === 'AI_BALANCE') return 'AI 额度已用完（资源包耗尽）——需充值或等额度刷新，重试解决不了';
     if (code === 'AI_RATE') return 'AI 正被限流，等十几秒再试';
     if (code === 'AI_MODEL') return '模型不可用：' + m.slice(0, 90);
     if (code === 'AI_UPSTREAM' || code === 'AI_EMPTY') return 'AI 服务异常：' + m.slice(0, 90);
@@ -4788,9 +4789,36 @@ const AI = (() => {
     return m.slice(0, 90);
   }
 
-  /** 握手类失败自动重试（仅网络/上游瞬时错误；限额、密钥、内容类不重试） */
+  /** 握手类失败自动重试（限流/网络/上游瞬时错误；额度、密钥、内容类不重试） */
   function isRetryable(e) {
-    return e && (e.code === 'TIMEOUT' || e.code === 'NO_STREAM' || e.code === 'AI_UPSTREAM');
+    return e && (e.code === 'TIMEOUT' || e.code === 'NO_STREAM' || e.code === 'AI_UPSTREAM' || e.code === 'AI_RATE');
+  }
+
+  /** 重试等待：限流场景显示倒计时提示条（n>0 时），可被「停止」中断 */
+  function retryWait(ms, n, signal) {
+    return new Promise((resolve) => {
+      const box = curMsgs();
+      let el = null;
+      if (box) {
+        el = document.createElement('div');
+        el.className = 'ai-retry-note';
+        box.appendChild(el);
+        box.scrollTop = box.scrollHeight;
+      }
+      let iv = 0;
+      const done = () => { clearInterval(iv); if (el) el.remove(); resolve(); };
+      if (signal) { try { signal.addEventListener('abort', done, { once: true }); } catch (e) { } }
+      const t0 = Date.now();
+      const tick = () => {
+        const left = Math.max(0, Math.ceil((ms - (Date.now() - t0)) / 1000));
+        if (el) el.textContent = n
+          ? ('⏳ AI 正忙（被限流），' + left + ' 秒后自动重试（第 ' + n + '/2 次，点「停止」可取消）…')
+          : ('⏳ 网络不稳，' + left + ' 秒后自动重试…');
+        if (left <= 0) done();
+      };
+      iv = setInterval(tick, 250);
+      tick();
+    });
   }
 
   /** 上下文折叠：12 条窗口外的早期用户提问压成清单，随 earlier 上传（不静默丢失） */
@@ -4875,7 +4903,7 @@ const AI = (() => {
         } catch (se) {
           if (se.code === 'ABORTED') { finish(se.partialText || raw || '（已停止）'); return; }
           // 流式通道不可达/异常 → 降级走原非流式（业务类错误码不降级，如实报错）
-          const BIZ = ['LIMIT', 'NO_KEY', 'AI_AUTH', 'AI_RATE', 'AI_MODEL', 'BAD_CODE', 'BAD_MSGS', 'NO_SUCH_CODE'];
+          const BIZ = ['LIMIT', 'NO_KEY', 'AI_AUTH', 'AI_RATE', 'AI_BALANCE', 'AI_MODEL', 'BAD_CODE', 'BAD_MSGS', 'NO_SUCH_CODE'];
           if (attempt === 0 && BIZ.indexOf(se.code) < 0) {
             attempt++;
             r = await Sync.request('ai.chat', payload, 90000);
@@ -4888,8 +4916,12 @@ const AI = (() => {
       } catch (e) {
         if (e.code === 'ABORTED') { finish(e.partialText || raw || '（已停止）'); return; }
         attempt++;
-        if (attempt <= 2 && isRetryable(e)) { // 网络类失败自动重试（指数退避）
-          await new Promise((r2) => setTimeout(r2, 700 * attempt));
+        if (attempt <= 2 && isRetryable(e)) {
+          // 限流用长退避（上游恢复要时间），网络类用短退避；提示条可点「停止」取消
+          const isRate = e.code === 'AI_RATE';
+          const waitMs = Math.round((isRate ? (attempt === 1 ? 8000 : 15000) : 700 * attempt) * (window.__aiRetryScale || 1));
+          await retryWait(waitMs, isRate ? attempt : 0, abortCtrl ? abortCtrl.signal : null);
+          if (abortCtrl && abortCtrl.signal && abortCtrl.signal.aborted) { finish(raw || '（已停止）'); return; }
           continue;
         }
         const txt = errText(e);

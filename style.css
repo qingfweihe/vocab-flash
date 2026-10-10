@@ -1129,6 +1129,12 @@ html.dark .wc-detail .lab { color: var(--brand-deep); }
 .ai-msg.user { margin-left: auto; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
 .ai-msg.bot { margin-right: auto; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
 .ai-msg.bot.ai-loading { color: var(--ink-3); }
+.ai-retry-note {
+  margin: 6px auto; padding: 8px 14px; border-radius: 12px; font-size: 13px;
+  color: var(--ink-2); background: var(--brand-bg); border: 1px dashed var(--brand-soft);
+  text-align: center; max-width: 92%;
+}
+html.dark .ai-retry-note { background: #23273a; border-color: #3a4160; color: var(--ink-2); }
 .ai-empty { text-align: center; color: var(--ink-2); font-size: 13.5px; line-height: 2; padding: 30px 12px; }
 .ai-chips { display: flex; gap: 6px; overflow-x: auto; padding: 6px 0; -webkit-overflow-scrolling: touch; }
 .ai-chips .mini-btn { flex: none; font-size: 12px; }
