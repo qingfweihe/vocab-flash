@@ -4068,6 +4068,7 @@ const WordCard = (() => {
         <div class="wchead"><span class="wcword"></span><button class="wcclose">✕</button></div>
         <div class="wcphon"></div>
         <div class="wccn"></div>
+        <div class="wc-exs hidden"></div>
         <div class="wcacts">
           <button class="wcbtn wcspeak"> 发音</button>
           <button class="wcbtn wcai">AI 讲解</button>
@@ -4138,6 +4139,14 @@ const WordCard = (() => {
     fav.classList.toggle('on', faved);
     fav.textContent = faved ? '★ 已收藏' : '☆ 收藏生词';
     box.classList.add('open');
+    // 例句：词库词条自带（六级词已补录 / 考研词原书）+ 词典
+    const exBox = box.querySelector('.wc-exs');
+    const hit = (typeof AI !== 'undefined' && AI.findWord) ? AI.findWord(w) : null;
+    const exs = (hit && hit.entry && hit.entry.exs) || [];
+    if (exs.length) {
+      exBox.innerHTML = '<div class="wc-exs-head">例句</div>' + exs.map((x) => '<div class="wc-ex">' + esc(x) + '</div>').join('');
+      exBox.classList.remove('hidden');
+    } else { exBox.classList.add('hidden'); exBox.innerHTML = ''; }
     const e = await Dict.lookup(w);
     if (box.dataset.w !== w) return; // 期间已切到别的词
     if (e) {
@@ -4577,7 +4586,7 @@ const AI = (() => {
     if (!k) return null;
     for (const u of DATA.units) {
       const w = u.words.find((x) => wordKey(x.w) === k);
-      if (w) return { unitId: u.id, w: w.w };
+      if (w) return { unitId: u.id, w: w.w, entry: w };
     }
     return null;
   }
@@ -4781,7 +4790,7 @@ const AI = (() => {
     if (code === 'LIMIT') return '今天次数用完了（每天 100 次）';
     if (code === 'NO_KEY') return 'AI 还没配置好（找青峰放 Key）';
     if (code === 'AI_AUTH') return 'AI 密钥失效（' + m.slice(0, 90) + '）';
-    if (code === 'AI_BALANCE') return 'AI 额度已用完（资源包耗尽）——需充值或等额度刷新，重试解决不了';
+    if (code === 'AI_BALANCE') return 'AI 额度已用完（资源包耗尽）——去智谱后台充值，或换一个可用的 key';
     if (code === 'AI_RATE') return 'AI 正被限流，等十几秒再试';
     if (code === 'AI_MODEL') return '模型不可用：' + m.slice(0, 90);
     if (code === 'AI_UPSTREAM' || code === 'AI_EMPTY') return 'AI 服务异常：' + m.slice(0, 90);

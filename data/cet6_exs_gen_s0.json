@@ -1,0 +1,5579 @@
+{
+ "abbreviation": {
+  "exs": [
+   {
+    "en": "The abbreviation UN appears frequently in international news articles.",
+    "cn": "缩写词UN在国际新闻文章中频繁出现。"
+   },
+   {
+    "en": "Using an abbreviation can save space, but it may confuse readers if overused.",
+    "cn": "使用缩写可以节省空间，但过度使用可能会让读者困惑。"
+   }
+  ],
+  "root": "ab-（离开）+ brevi（短）→ 缩短 → 缩写"
+ },
+ "abide": {
+  "exs": [
+   {
+    "en": "All employees must abide by the company's new safety regulations.",
+    "cn": "所有员工必须遵守公司新的安全规定。"
+   },
+   {
+    "en": "Unable to abide the constant noise, she moved to a quieter apartment.",
+    "cn": "无法忍受持续噪音，她搬到了更安静的公寓。"
+   }
+  ],
+  "root": "a-（加强）+ bide（停留）→ 停留→遵守/忍受"
+ },
+ "abrupt": {
+  "exs": [
+   {
+    "en": "His abrupt reply ended the long discussion immediately.",
+    "cn": "他唐突的回答立即结束了冗长的讨论。"
+   },
+   {
+    "en": "The cliff face was abrupt, forcing hikers to slow down near the edge.",
+    "cn": "崖壁陡峭，迫使徒步者在边缘附近放慢脚步。"
+   }
+  ],
+  "root": "ab-（离开）+ rupt（断裂）→ 突然断开→突然"
+ },
+ "absorption": {
+  "exs": [
+   {
+    "en": "The absorption of nutrients occurs mainly in the small intestine.",
+    "cn": "营养吸收主要发生在小肠。"
+   },
+   {
+    "en": "His deep absorption in the novel made him miss the bus.",
+    "cn": "他全神贯注读小说，错过了公交车。"
+   }
+  ],
+  "root": "ab-（离开）+ sorb（吸）+ -tion→吸收/专心"
+ },
+ "absurd": {
+  "exs": [
+   {
+    "en": "The plan sounds absurd to most experienced engineers.",
+    "cn": "这个方案在大多数资深工程师看来很荒谬。"
+   },
+   {
+    "en": "It is absurd to ban umbrellas when it rains every day.",
+    "cn": "每天下雨却禁止带伞，这很荒谬。"
+   }
+  ],
+  "root": "ab-（离开）+ surd（不和谐）→ 离谱→荒谬"
+ },
+ "abundance": {
+  "exs": [
+   {
+    "en": "The garden has an abundance of roses in spring.",
+    "cn": "春天花园里有大量玫瑰。"
+   },
+   {
+    "en": "An abundance of evidence suggests that the policy worked.",
+    "cn": "大量证据表明该政策有效。"
+   }
+  ],
+  "root": "ab-（离开）+ und（波浪）→ 水满溢出→丰富"
+ },
+ "accessary": {
+  "exs": [
+   {
+    "en": "The accessary kept silent during the police interrogation.",
+    "cn": "从犯在警方审讯期间保持沉默。"
+   },
+   {
+    "en": "Having hidden the stolen goods, he was charged as an accessary after the fact.",
+    "cn": "藏匿被盗物品后，他被指控为事后从犯。"
+   }
+  ],
+  "root": "ac-（向）+cess（走）→附随→从犯/附件"
+ },
+ "accessible": {
+  "exs": [
+   {
+    "en": "The museum entrance is accessible to wheelchair users.",
+    "cn": "博物馆入口方便轮椅使用者进入。"
+   },
+   {
+    "en": "After installing ramps, the library became accessible to students with disabilities.",
+    "cn": "安装坡道后，图书馆方便残疾学生进入。"
+   }
+  ],
+  "root": "ac-（向）+cess（走）+-ible（能）→易接近"
+ },
+ "accomplishment": {
+  "exs": [
+   {
+    "en": "Her main accomplishment was completing the marathon despite injury.",
+    "cn": "她的主要成就是带伤完成马拉松。"
+   },
+   {
+    "en": "Having trained daily, he finally achieved a remarkable accomplishment in swimming.",
+    "cn": "经过每天训练，他最终在游泳方面取得显著成就。"
+   }
+  ],
+  "root": "ac-（向）+compl（满）→完成的事→成就"
+ },
+ "acquaint": {
+  "exs": [
+   {
+    "en": "The guide acquainted us with local customs during the tour.",
+    "cn": "导游在旅行中让我们了解当地习俗。"
+   },
+   {
+    "en": "Before traveling, she acquainted herself with the visa rules.",
+    "cn": "旅行前，她让自己熟悉了签证规定。"
+   }
+  ],
+  "root": "ac-（向）+cogn（知）→使知道→使认识"
+ },
+ "acquisitive": {
+  "exs": [
+   {
+    "en": "His acquisitive habits made him buy useless gadgets.",
+    "cn": "他的占有欲习惯让他买了无用的小玩意。"
+   },
+   {
+    "en": "Driven by acquisitive desires, collectors paid huge sums for rare coins.",
+    "cn": "受贪欲驱使，收藏家为稀有硬币支付了巨额款项。"
+   }
+  ],
+  "root": "ac-（向）+quis（求）+-itive→总想获取"
+ },
+ "addict": {
+  "exs": [
+   {
+    "en": "The gaming addict rarely left his dark bedroom.",
+    "cn": "游戏成瘾者很少离开他昏暗的卧室。"
+   },
+   {
+    "en": "Having lost his job, he became a gambling addict.",
+    "cn": "失业后，他成了赌博成瘾者。"
+   }
+  ],
+  "root": "ad-（向）+dict（指派）→被束缚→上瘾"
+ },
+ "adjacent": {
+  "exs": [
+   {
+    "en": "The adjacent parking lot is reserved for hotel guests.",
+    "cn": "毗邻的停车场为酒店客人保留。"
+   },
+   {
+    "en": "The adjacent parking lot, which is reserved for hotel guests, fills up quickly.",
+    "cn": "毗邻的停车场为酒店客人保留，很快就满了。"
+   }
+  ],
+  "root": "ad-（向）+ jac（躺）→ 毗连"
+ },
+ "adjoin": {
+  "exs": [
+   {
+    "en": "A small garden adjoins the back of the old library.",
+    "cn": "一个小花园紧邻旧图书馆后部。"
+   },
+   {
+    "en": "The building adjoins a park, where students often study outdoors.",
+    "cn": "这座建筑毗邻公园，学生常在那里户外学习。"
+   }
+  ],
+  "root": "ad-（向）+ join（连）→ 邻接"
+ },
+ "adjustable": {
+  "exs": [
+   {
+    "en": "The adjustable chair supports my back during long study sessions.",
+    "cn": "这把可调节椅子在长时间学习时支撑我的背部。"
+   },
+   {
+    "en": "The adjustable chair, designed for long study sessions, supports the back.",
+    "cn": "这把为长时间学习设计的可调节椅子支撑背部。"
+   }
+  ],
+  "root": "adjust（调节）+ -able → 可调节"
+ },
+ "admiration": {
+  "exs": [
+   {
+    "en": "Her calm voice won admiration from everyone in the meeting room.",
+    "cn": "她平静的声音赢得了会议室里所有人的赞赏。"
+   },
+   {
+    "en": "The teacher spoke with admiration, noting how the students improved.",
+    "cn": "老师带着赞赏说，指出学生们如何进步。"
+   }
+  ],
+  "root": "ad-（向）+ mir（惊奇）→ 赞叹"
+ },
+ "adolescent": {
+  "exs": [
+   {
+    "en": "The adolescent athlete struggled to balance school and training.",
+    "cn": "这位青少年运动员努力平衡学业和训练。"
+   },
+   {
+    "en": "Many adolescent students feel anxious when exams approach every term.",
+    "cn": "许多青少年学生每学期考试临近时都感到焦虑。"
+   }
+  ],
+  "root": "ad-（向）+ al（养）→ 长大 → 青少年"
+ },
+ "adoption": {
+  "exs": [
+   {
+    "en": "The company's adoption of flexible hours improved employee morale.",
+    "cn": "公司采用弹性工作时间提高了员工士气。"
+   },
+   {
+    "en": "The adoption of the new policy, announced yesterday, caused debate.",
+    "cn": "昨天宣布的新政策被采用，引发了争论。"
+   }
+  ],
+  "root": "ad-（向）+ opt（选）→ 采纳"
+ },
+ "adore": {
+  "exs": [
+   {
+    "en": "Many teenagers adore the singer's raw emotional performances.",
+    "cn": "许多青少年崇拜这位歌手真挚而富有情感的表演。"
+   },
+   {
+    "en": "She adores her grandmother's stories, listening attentively every evening.",
+    "cn": "她酷爱听祖母的故事，每晚都专心聆听。"
+   }
+  ],
+  "root": "ad-（向）+ or（祈祷）→ 崇拜"
+ },
+ "advantageous": {
+  "exs": [
+   {
+    "en": "A bilingual resume is advantageous in this competitive market.",
+    "cn": "双语简历在这个竞争激烈的市场中很有优势。"
+   },
+   {
+    "en": "Candidates with internship experience are advantageous because they adapt faster.",
+    "cn": "有实习经验的求职者更具优势，因为他们适应得更快。"
+   }
+  ],
+  "root": "advantage（优势）+ -ous（具有）→ 有利的"
+ },
+ "adverse": {
+  "exs": [
+   {
+    "en": "Adverse weather delayed the rescue operation for hours.",
+    "cn": "恶劣天气使救援行动延误了数小时。"
+   },
+   {
+    "en": "The company suffered losses, facing adverse market conditions abroad.",
+    "cn": "公司遭受了损失，因为它面临不利的海外市场条件。"
+   }
+  ],
+  "root": "ad-（向）+ vers（转）→ 转向对面→不利的"
+ },
+ "aerial": {
+  "exs": [
+   {
+    "en": "The aerial photographs revealed hidden paths in the forest.",
+    "cn": "航拍照片揭示了森林中隐藏的小路。"
+   },
+   {
+    "en": "Aerial surveys, conducted by drones, help farmers monitor crop health.",
+    "cn": "由无人机进行的空中勘测帮助农民监测作物健康状况。"
+   }
+  ],
+  "root": "aer（空气）+ -ial（的）→ 空中的"
+ },
+ "aerospace": {
+  "exs": [
+   {
+    "en": "The aerospace exhibition attracted thousands of engineering students.",
+    "cn": "航空航天展览吸引了数千名工科学生。"
+   },
+   {
+    "en": "Aerospace engineers, designing reusable rockets, aim to lower launch costs.",
+    "cn": "设计可复用火箭的航空航天工程师旨在降低发射成本。"
+   }
+  ],
+  "root": "aero（空气）+ space（空间）→ 航空航天"
+ },
+ "aesthetic": {
+  "exs": [
+   {
+    "en": "The museum's aesthetic design impresses every visiting critic.",
+    "cn": "博物馆的审美设计令每位到访的评论家印象深刻。"
+   },
+   {
+    "en": "The aesthetic choice, which surprised critics, reduced the room's practicality.",
+    "cn": "这一令评论家惊讶的审美选择降低了房间的实用性。"
+   }
+  ],
+  "root": "aesth（感觉）+ -etic（的）→ 审美的"
+ },
+ "affective": {
+  "exs": [
+   {
+    "en": "The therapist noted the patient's flat affective responses during the session.",
+    "cn": "治疗师注意到患者在会谈期间情感反应平淡。"
+   },
+   {
+    "en": "Feeling overwhelmed, she struggled to articulate her affective reactions to the news.",
+    "cn": "她感到不知所措，难以清楚表达自己对这则消息的情感反应。"
+   }
+  ],
+  "root": "affect（情感）+ -ive（形容词）→情感的"
+ },
+ "affiliate": {
+  "exs": [
+   {
+    "en": "The agency will affiliate several local clinics with its network.",
+    "cn": "该机构将把几家本地诊所并入其网络。"
+   },
+   {
+    "en": "After signing the contract, the startup will affiliate with a larger distributor.",
+    "cn": "签署合同后，这家初创公司将与一家更大的经销商建立附属关系。"
+   }
+  ],
+  "root": "ad-（向）+ fil（儿子）→认作亲属→附属"
+ },
+ "affirm": {
+  "exs": [
+   {
+    "en": "The judge will affirm the witness's statement after careful review.",
+    "cn": "法官将在仔细审查后确认证人的陈述。"
+   },
+   {
+    "en": "Despite public doubts, the minister will affirm that the policy continues.",
+    "cn": "尽管公众存疑，部长将确认这项政策继续实施。"
+   }
+  ],
+  "root": "ad-（向）+ firm（坚定）→断言"
+ },
+ "afflict": {
+  "exs": [
+   {
+    "en": "A severe drought will afflict many farming villages next summer.",
+    "cn": "严重干旱将在明年夏天折磨许多农业村庄。"
+   },
+   {
+    "en": "Living with chronic pain, he knows headaches will afflict him every morning.",
+    "cn": "长期受慢性疼痛困扰，他知道头痛每天都会折磨他。"
+   }
+  ],
+  "root": "ad-（向）+ flict（打击）→折磨"
+ },
+ "affluence": {
+  "exs": [
+   {
+    "en": "The old district displays affluence through its marble facades and gardens.",
+    "cn": "老街区通过大理石外墙和花园显示出富裕。"
+   },
+   {
+    "en": "Having inherited a business, she enjoyed affluence but rarely felt content.",
+    "cn": "继承企业后，她生活富裕却很少感到满足。"
+   }
+  ],
+  "root": "ad-（向）+ flu（流）→富裕"
+ },
+ "aggravate": {
+  "exs": [
+   {
+    "en": "Noise pollution will aggravate insomnia in densely populated urban neighborhoods.",
+    "cn": "噪声污染将加剧人口稠密城市社区的失眠。"
+   },
+   {
+    "en": "Ignoring medical advice, the patient will aggravate his condition through excessive drinking.",
+    "cn": "无视医嘱，该患者将因过度饮酒加重病情。"
+   }
+  ],
+  "root": "ad-（向）+ grav（重）→加重"
+ },
+ "aggression": {
+  "exs": [
+   {
+    "en": "The sudden aggression shocked the small border village.",
+    "cn": "突然的侵略震惊了那个小边境村庄。"
+   },
+   {
+    "en": "Officials condemned the aggression after troops crossed the disputed river.",
+    "cn": "官方在部队越过争议河流后谴责了这次侵略。"
+   }
+  ],
+  "root": "ad-（向）+ gress（步）→ 逼近 → 侵犯"
+ },
+ "agitation": {
+  "exs": [
+   {
+    "en": "The public agitation disrupted the quiet morning meeting.",
+    "cn": "公众的骚动扰乱了安静的晨会。"
+   },
+   {
+    "en": "Workers felt agitation while waiting for the delayed wage payment.",
+    "cn": "工人在等待延迟发放工资时感到焦虑。"
+   }
+  ],
+  "root": "agit-（搅动）+ -ation → 骚动、焦虑"
+ },
+ "agreeable": {
+  "exs": [
+   {
+    "en": "The agreeable host offered us warm tea and biscuits.",
+    "cn": "和蔼的主人给我们端上热茶和饼干。"
+   },
+   {
+    "en": "She found the plan agreeable because it saved time.",
+    "cn": "她觉得这个计划令人愉快，因为它节省时间。"
+   }
+  ],
+  "root": "agree + -able → 令人愉快的、同意的"
+ },
+ "alas": {
+  "exs": [
+   {
+    "en": "Alas, the old library closed its doors forever.",
+    "cn": "唉，那座老图书馆永远关门了。"
+   },
+   {
+    "en": "Alas, having missed the final bus, they waited outside.",
+    "cn": "唉，错过末班公交后，他们只能在外面等。"
+   }
+  ],
+  "root": "感叹词，音似“唉啦死”→ 遗憾"
+ },
+ "album": {
+  "exs": [
+   {
+    "en": "The album contains twelve nostalgic family photos and postcards.",
+    "cn": "这本粘贴簿里有十二张怀旧家庭照片和明信片。"
+   },
+   {
+    "en": "She kept the album because it recorded family holidays.",
+    "cn": "她保留这本粘贴簿，因为它记录了家庭假期。"
+   }
+  ],
+  "root": "alb-（白）+ -um → 白色物 → 相册/唱片套"
+ },
+ "alignment": {
+  "exs": [
+   {
+    "en": "The teacher corrected the students' alignment during the drill.",
+    "cn": "老师在训练中纠正了学生的队列。"
+   },
+   {
+    "en": "Engineers checked the alignment before installing the new sensor.",
+    "cn": "工程师在安装新传感器前检查了校准。"
+   }
+  ],
+  "root": "ad-（向）+ line（线）+ -ment → 对齐"
+ },
+ "allegation": {
+  "exs": [
+   {
+    "en": "The company denied the allegation about unsafe working conditions.",
+    "cn": "公司否认了关于工作条件不安全的指控。"
+   },
+   {
+    "en": "Facing public pressure, the CEO rejected the allegation that the factory dumped toxic waste.",
+    "cn": "面对公众压力，首席执行官驳斥了工厂倾倒有毒废物的指控。"
+   }
+  ],
+  "root": "allege（宣称）+ -ation（名词）→ 断言/指控。"
+ },
+ "allege": {
+  "exs": [
+   {
+    "en": "The witness alleged a serious security breach during the trial.",
+    "cn": "证人在庭审中指控存在严重的安全漏洞。"
+   },
+   {
+    "en": "Alleging fraud, the shareholders demanded an independent audit of the financial records.",
+    "cn": "股东们指控存在欺诈，要求对财务记录进行独立审计。"
+   }
+  ],
+  "root": "ad-（向）+ leg（说/法）→ 宣称/指称。"
+ },
+ "allegiance": {
+  "exs": [
+   {
+    "en": "Many citizens pledged allegiance to the new constitution.",
+    "cn": "许多公民宣誓效忠新宪法。"
+   },
+   {
+    "en": "The soldiers, refusing to betray their country, demonstrated unwavering allegiance during the crisis.",
+    "cn": "士兵们拒绝背叛国家，在危机中表现出坚定不移的忠诚。"
+   }
+  ],
+  "root": "ligare（绑）+ -ance → 被绑住的忠诚。"
+ },
+ "alleviate": {
+  "exs": [
+   {
+    "en": "The new policy helped alleviate severe housing shortages.",
+    "cn": "新政策帮助缓解了严重的住房短缺。"
+   },
+   {
+    "en": "By subsidizing local farms, the government aimed to alleviate food price increases.",
+    "cn": "通过补贴当地农场，政府旨在缓解食品价格上涨。"
+   }
+  ],
+  "root": "al-（向）+ levi（轻）→ 使变轻 → 减轻。"
+ },
+ "alliance": {
+  "exs": [
+   {
+    "en": "The two universities formed a research alliance last month.",
+    "cn": "两所大学上月建立了研究联盟。"
+   },
+   {
+    "en": "Hoping to attract investors, the startup entered an alliance with a logistics giant.",
+    "cn": "为了吸引投资者，这家初创公司与一家物流巨头结成联盟。"
+   }
+  ],
+  "root": "ally（联合）+ -ance → 联盟。"
+ },
+ "allied": {
+  "exs": [
+   {
+    "en": "The allied forces secured the bridge before dawn.",
+    "cn": "盟军在黎明前控制了桥梁。"
+   },
+   {
+    "en": "Allied with several hospitals, the agency expanded vaccination programs.",
+    "cn": "该机构与多家医院合作，扩大了疫苗接种项目。"
+   }
+  ],
+  "root": "ally（结盟）+ -ed → 联盟的。"
+ },
+ "allocate": {
+  "exs": [
+   {
+    "en": "The university will allocate extra funding to the rural research team next semester.",
+    "cn": "大学下学期将把额外资金分配给农村研究团队。"
+   },
+   {
+    "en": "To reduce waste, the committee allocated remaining supplies to hospitals that needed them most.",
+    "cn": "为减少浪费，委员会把剩余物资分配给了最需要的医院。"
+   }
+  ],
+  "root": "al-（向）+ loc（地方）→放到指定地方→分配"
+ },
+ "allowance": {
+  "exs": [
+   {
+    "en": "The government gives a monthly allowance to students from low-income families.",
+    "cn": "政府每月给低收入家庭学生发放津贴。"
+   },
+   {
+    "en": "Having saved enough, the teenager received a small allowance for weekend expenses.",
+    "cn": "攒够钱后，青少年得到了一小笔零用钱用于周末开销。"
+   }
+  ],
+  "root": "allow（允许）+ -ance→允许给的额度/津贴"
+ },
+ "ally": {
+  "exs": [
+   {
+    "en": "The small country sought an ally to strengthen its border defenses.",
+    "cn": "小国寻找盟友以加强边境防御。"
+   },
+   {
+    "en": "Wanting to enter overseas markets, the firm chose a local ally.",
+    "cn": "为进入海外市场，公司选择了一个当地盟友。"
+   }
+  ],
+  "root": "al-（向）+ lig（绑）→绑在一起→结盟"
+ },
+ "alteration": {
+  "exs": [
+   {
+    "en": "The tailor made a quick alteration to the wedding dress.",
+    "cn": "裁缝对婚纱做了快速修改。"
+   },
+   {
+    "en": "After the client requested changes, the architect approved an alteration to the floor plan.",
+    "cn": "客户提出改动后，建筑师批准了对平面图的修改。"
+   }
+  ],
+  "root": "alter（改变）+ -ation→改动"
+ },
+ "alternate": {
+  "exs": [
+   {
+    "en": "The two nurses worked alternate shifts during the flu outbreak.",
+    "cn": "两名护士在流感爆发期间轮流值班。"
+   },
+   {
+    "en": "To keep the audience engaged, the director alternated scenes of comedy and tragedy.",
+    "cn": "为保持观众投入，导演交替安排喜剧和悲剧场景。"
+   }
+  ],
+  "root": "alter（另一个）+ -nate→一个接一个→交替"
+ },
+ "ambassador": {
+  "exs": [
+   {
+    "en": "The ambassador delivered a formal speech at the international summit yesterday.",
+    "cn": "大使昨天在国际峰会上发表了正式演讲。"
+   },
+   {
+    "en": "Having served for years, the ambassador negotiated a treaty that eased trade tensions.",
+    "cn": "任职多年后，大使谈判促成了一项缓解贸易紧张局势的条约。"
+   }
+  ],
+  "root": "amb-（周围）+ act（行动）→奔走办事→大使"
+ },
+ "ambient": {
+  "exs": [
+   {
+    "en": "The ambient noise in the cafe disturbed my reading.",
+    "cn": "咖啡馆里的环境噪音干扰了我的阅读。"
+   },
+   {
+    "en": "Ambient lighting, carefully chosen for the museum, enhances visitors' experience without disturbing the artworks.",
+    "cn": "精心选择的博物馆环境照明在不干扰展品的情况下提升观众体验。"
+   }
+  ],
+  "root": "ambi-（周围）+ ent（形容词）→ 周围的"
+ },
+ "ambiguity": {
+  "exs": [
+   {
+    "en": "The contract's ambiguity caused a serious dispute between the two companies last month.",
+    "cn": "合同中的含糊之处上个月导致两家公司发生严重纠纷。"
+   },
+   {
+    "en": "The ambiguity in the instructions led students to submit projects that did not meet the requirements.",
+    "cn": "指令中的含糊导致学生提交了不符合要求的项目。"
+   }
+  ],
+  "root": "ambi-（两边）+ -ity（名词）→ 两可性"
+ },
+ "ambiguous": {
+  "exs": [
+   {
+    "en": "His ambiguous reply left everyone uncertain about the final decision.",
+    "cn": "他含糊的回答让每个人对最终决定感到不确定。"
+   },
+   {
+    "en": "The ambiguous wording, intentionally left by the negotiator, allowed both sides to claim victory.",
+    "cn": "谈判者故意保留的含糊措辞使双方都能宣称胜利。"
+   }
+  ],
+  "root": "ambi-（两边）+ ag（做）+ -uous → 模棱两可"
+ },
+ "amends": {
+  "exs": [
+   {
+    "en": "The company made amends through a full refund and a free service.",
+    "cn": "该公司通过全额退款和免费服务进行了补救。"
+   },
+   {
+    "en": "He tried to make amends for the mistake that had damaged his reputation.",
+    "cn": "他试图弥补损害其声誉的错误。"
+   }
+  ],
+  "root": "a-（加强）+ mend（修补）→ 补救"
+ },
+ "amid": {
+  "exs": [
+   {
+    "en": "The old temple stands amid dense bamboo forests near the quiet mountain village.",
+    "cn": "这座古老寺庙坐落在宁静山村附近的茂密竹林中。"
+   },
+   {
+    "en": "Amid the heavy rain, the volunteers continued delivering supplies to families who were stranded.",
+    "cn": "大雨中，志愿者继续向被困家庭运送物资。"
+   }
+  ],
+  "root": "a-（在）+ mid（中间）→ 在其间"
+ },
+ "ample": {
+  "exs": [
+   {
+    "en": "The hotel offers ample parking spaces for guests with large vehicles.",
+    "cn": "这家酒店为驾驶大型车辆的客人提供充足停车位。"
+   },
+   {
+    "en": "Ample evidence, carefully collected during the investigation, convinced the jury that the defendant was guilty.",
+    "cn": "调查期间精心收集的充分证据让陪审团相信被告有罪。"
+   }
+  ],
+  "root": "ambi-（周围）+ ple（填满）→ 充足"
+ },
+ "amplitude": {
+  "exs": [
+   {
+    "en": "The earthquake's amplitude caused visible cracks along the old highway.",
+    "cn": "地震的幅度使老公路沿线出现明显裂缝。"
+   },
+   {
+    "en": "Because the signal amplitude dropped suddenly, the monitor alarmed the technician.",
+    "cn": "由于信号幅度突然下降，监视器向技术员发出警报。"
+   }
+  ],
+  "root": "ample广阔+-tude名词→幅度"
+ },
+ "amusement": {
+  "exs": [
+   {
+    "en": "The children's amusement filled the park with bright laughter every afternoon.",
+    "cn": "孩子们的娱乐让公园每天下午充满欢快的笑声。"
+   },
+   {
+    "en": "Watching the clumsy magician, the audience burst into amusement despite the rain.",
+    "cn": "看着笨拙的魔术师，观众尽管下雨仍大笑起来。"
+   }
+  ],
+  "root": "amuse逗乐+ment名词→娱乐"
+ },
+ "analogous": {
+  "exs": [
+   {
+    "en": "The new policy is analogous to the old rule in its strict limits.",
+    "cn": "新政策在严格限制方面类似旧规定。"
+   },
+   {
+    "en": "Although the species evolved separately, their wings are analogous for flight.",
+    "cn": "虽然这些物种独立进化，它们的翅膀在飞行功能上类似。"
+   }
+  ],
+  "root": "ana-相应+logos比例→类似的"
+ },
+ "analogue": {
+  "exs": [
+   {
+    "en": "The tablet is a modern analogue of the ancient wax writing board.",
+    "cn": "平板电脑是古代蜡写板的现代类似物。"
+   },
+   {
+    "en": "Designed as an analogue, the circuit imitates the original system's behavior.",
+    "cn": "作为模拟物设计，该电路模仿原始系统的行为。"
+   }
+  ],
+  "root": "analog变体→类似物/模拟物"
+ },
+ "analogy": {
+  "exs": [
+   {
+    "en": "The analogy between hearts and pumps clarified the difficult biology lesson.",
+    "cn": "心脏与水泵的类比使困难的生物课变得清晰。"
+   },
+   {
+    "en": "Comparing the brain to a computer, the professor explained the analogy well.",
+    "cn": "把大脑比作计算机，教授很好地解释了这一类比。"
+   }
+  ],
+  "root": "ana-相应+logos比例→类比"
+ },
+ "analyst": {
+  "exs": [
+   {
+    "en": "The financial analyst reviewed the quarterly report before the board meeting.",
+    "cn": "财务分析师在董事会前审阅了季度报告。"
+   },
+   {
+    "en": "Because the data looked suspicious, the analyst requested a second investigation.",
+    "cn": "由于数据可疑，分析师要求再次调查。"
+   }
+  ],
+  "root": "analyze分析+ist人→分析者"
+ },
+ "analytic": {
+  "exs": [
+   {
+    "en": "The report offers an analytic overview of consumer spending trends across major metropolitan regions.",
+    "cn": "该报告提供了主要大都市地区消费支出趋势的分析概览。"
+   },
+   {
+    "en": "Analyzing survey data, the team discovered that analytic models predicted voting behavior more accurately than intuition did.",
+    "cn": "通过分析调查数据，团队发现分析模型比直觉更准确地预测了投票行为。"
+   }
+  ],
+  "root": "ana-（分开）+lytic（分解）→分解分析→分析的"
+ },
+ "analytical": {
+  "exs": [
+   {
+    "en": "Her analytical skills helped the committee identify the hidden flaws in the proposed urban policy.",
+    "cn": "她的分析能力帮助委员会发现了所提议城市政策中的隐藏缺陷。"
+   },
+   {
+    "en": "By comparing historical records, scholars concluded that analytical methods can reveal patterns invisible to casual observers.",
+    "cn": "通过比较历史记录，学者们得出结论：分析方法能够揭示随意观察者看不到的规律。"
+   }
+  ],
+  "root": "ana-（分）+lytic（解）+al→分析的"
+ },
+ "anniversary": {
+  "exs": [
+   {
+    "en": "The museum celebrated its twentieth anniversary with a special exhibition of restored ancient manuscripts.",
+    "cn": "该博物馆以一场修复古代手稿特别展览庆祝其二十周年。"
+   },
+   {
+    "en": "Families gathered outside the cathedral, remembering the anniversary when their community first rebuilt the school.",
+    "cn": "家人们聚集在大教堂外，纪念他们的社区首次重建学校的那个周年。"
+   }
+  ],
+  "root": "ann-（年）+vers（转）→周年"
+ },
+ "annually": {
+  "exs": [
+   {
+    "en": "The university publishes its research findings annually for public feedback.",
+    "cn": "该大学每年公布其研究发现，供公众反馈。"
+   },
+   {
+    "en": "Companies must submit these financial statements annually, which keeps market information transparent for investors.",
+    "cn": "公司必须每年提交这些财务报表，这使市场信息对投资者透明。"
+   }
+  ],
+  "root": "ann-（年）+ual+ly→每年"
+ },
+ "anode": {
+  "exs": [
+   {
+    "en": "The zinc anode dissolves gradually during the battery's long discharge cycle.",
+    "cn": "锌阳极在电池长时间放电过程中逐渐溶解。"
+   },
+   {
+    "en": "Because the anode releases electrons, corrosion can weaken the metal structure over time.",
+    "cn": "由于阳极释放电子，腐蚀会随时间削弱金属结构。"
+   }
+  ],
+  "root": "ana-（向上）+odos（路）→阳极"
+ },
+ "anonymous": {
+  "exs": [
+   {
+    "en": "An anonymous donor gave the library enough money to purchase rare historical maps.",
+    "cn": "一位匿名捐赠者给了图书馆足够的钱购买稀有的历史地图。"
+   },
+   {
+    "en": "The anonymous message, written in broken English, made investigators doubt its foreign origin.",
+    "cn": "这条匿名信息用破碎的英语写成，使调查者怀疑其外国来源。"
+   }
+  ],
+  "root": "an-（无）+onym（名）→匿名的"
+ },
+ "antarctic": {
+  "exs": [
+   {
+    "en": "The antarctic expedition faced extreme cold and strong winds.",
+    "cn": "南极探险队遭遇了极端寒冷和强风。"
+   },
+   {
+    "en": "Researchers studying the antarctic ice sheet warned that melting could raise sea levels.",
+    "cn": "研究南极冰盖的科学家警告说，融化可能使海平面上升。"
+   }
+  ],
+  "root": "anti-（相对）+ arktos（北）→南极"
+ },
+ "antenna": {
+  "exs": [
+   {
+    "en": "The old television antenna needs replacing after the storm.",
+    "cn": "暴风雨后，旧电视天线需要更换。"
+   },
+   {
+    "en": "Insects use their sensitive antennae to detect chemical signals in the air.",
+    "cn": "昆虫用灵敏的触角探测空气中的化学信号。"
+   }
+  ],
+  "root": "像头上两根小天线，接收信号或气味"
+ },
+ "antique": {
+  "exs": [
+   {
+    "en": "The antique clock in the hallway still keeps perfect time.",
+    "cn": "走廊里的古董钟仍然走时精准。"
+   },
+   {
+    "en": "She collected antique books that had been damaged by dampness.",
+    "cn": "她收集了被潮气损坏的古董书。"
+   }
+  ],
+  "root": "ante（前）→以前的→古老的/古董"
+ },
+ "antisocial": {
+  "exs": [
+   {
+    "en": "His antisocial behavior made neighbors avoid his house.",
+    "cn": "他的反社会行为让邻居们避开他家。"
+   },
+   {
+    "en": "Teenagers who stay isolated for months may develop antisocial habits.",
+    "cn": "长期自我隔离的青少年可能养成反社会习惯。"
+   }
+  ],
+  "root": "anti-（反对）+ social（社会）→反社会"
+ },
+ "appealing": {
+  "exs": [
+   {
+    "en": "The charity poster had an appealing image of a child.",
+    "cn": "慈善海报有一幅动人的儿童画面。"
+   },
+   {
+    "en": "Hearing the appealing plea, many donors contributed to the shelter.",
+    "cn": "听到那恳求般的呼吁，许多捐赠者向收容所捐款。"
+   }
+  ],
+  "root": "appeal（呼吁）+ -ing（令人...的）→动人的"
+ },
+ "appendix": {
+  "exs": [
+   {
+    "en": "The textbook's appendix contains several useful vocabulary lists.",
+    "cn": "这本教科书的附录包含几个有用的词汇表。"
+   },
+   {
+    "en": "Doctors removed the inflamed appendix before it burst.",
+    "cn": "医生在阑尾破裂前切除了发炎的阑尾。"
+   }
+  ],
+  "root": "ad-（向）+ pend（挂）→附加物→附录/阑尾"
+ },
+ "applaud": {
+  "exs": [
+   {
+    "en": "The audience applauded the young pianist after her brilliant performance.",
+    "cn": "观众在她精彩演出后为年轻钢琴家鼓掌。"
+   },
+   {
+    "en": "Applauding the proposal, many delegates argued that it would reduce carbon emissions effectively.",
+    "cn": "许多代表称赞该提案，认为它能有效减少碳排放。"
+   }
+  ],
+  "root": "ap-向+plaud拍手→鼓掌称赞"
+ },
+ "appraisal": {
+  "exs": [
+   {
+    "en": "The bank delayed the appraisal despite the surveyor's urgent report.",
+    "cn": "尽管调查员提交紧急报告，银行仍推迟评估。"
+   },
+   {
+    "en": "Appraising the artwork carefully, the expert noted that its value had doubled.",
+    "cn": "专家仔细评估艺术品，指出其价值已翻倍。"
+   }
+  ],
+  "root": "ap-向+price价格→估价"
+ },
+ "appraise": {
+  "exs": [
+   {
+    "en": "Teachers appraise students' progress through weekly writing portfolios and classroom observation.",
+    "cn": "教师通过每周写作档案和课堂观察评价学生进步。"
+   },
+   {
+    "en": "The manager appraised the project, warning that rising costs could threaten delivery.",
+    "cn": "经理评估项目，警告成本上升可能威胁交付。"
+   }
+  ],
+  "root": "ap-向+price价格→估价"
+ },
+ "appreciable": {
+  "exs": [
+   {
+    "en": "The city saw an appreciable improvement in air quality after stricter emission controls.",
+    "cn": "更严排放控制后，城市空气质量有可感知改善。"
+   },
+   {
+    "en": "Having studied the data, analysts confirmed an appreciable decline in housing prices.",
+    "cn": "研究数据后，分析师确认房价有可评估的下降。"
+   }
+  ],
+  "root": "appreciate评估+-able能→可感知"
+ },
+ "appreciation": {
+  "exs": [
+   {
+    "en": "Her appreciation of classical music grew during the university's summer concert series.",
+    "cn": "在大学夏季音乐会系列中，她对古典音乐的鉴赏力增长。"
+   },
+   {
+    "en": "Appreciating his colleagues' support, he sent a handwritten note to each team.",
+    "cn": "感念同事支持，他给每队寄手写便条。"
+   }
+  ],
+  "root": "ap-向+preci价值+-ation→赏识"
+ },
+ "apt": {
+  "exs": [
+   {
+    "en": "He is apt to forget his keys on busy mornings.",
+    "cn": "忙碌早晨他容易忘带钥匙。"
+   },
+   {
+    "en": "An apt response can defuse tension before the argument escalates further.",
+    "cn": "恰当的回应能在争执进一步升级前缓解紧张。"
+   }
+  ],
+  "root": "apt适合→恰当；易于"
+ },
+ "arc": {
+  "exs": [
+   {
+    "en": "The arc of the bridge reflected softly on the calm river.",
+    "cn": "桥的弧形柔和地倒映在平静的河面上。"
+   },
+   {
+    "en": "The engineer calculated the arc length, considering the load, before approving the design.",
+    "cn": "工程师在批准设计前，考虑了负荷，计算了弧长。"
+   }
+  ],
+  "root": "arc=拉丁arcus弧；像弯弓"
+ },
+ "arch": {
+  "exs": [
+   {
+    "en": "The old stone arch stands quietly beside the narrow village street.",
+    "cn": "古老的石拱门静静地立在狭窄的村街旁。"
+   },
+   {
+    "en": "The arch, built over the canal, supports the weight of the bridge.",
+    "cn": "建在运河上的拱门支撑着桥的重量。"
+   }
+  ],
+  "root": "arch=拉丁arcus拱形；门洞"
+ },
+ "arctic": {
+  "exs": [
+   {
+    "en": "The arctic wind cut through his coat during the early morning hike.",
+    "cn": "清晨徒步时，北极的寒风刺穿了他的外套。"
+   },
+   {
+    "en": "Researchers studying the arctic ice recorded unusual changes in sea temperature.",
+    "cn": "研究北极冰层的研究人员记录了海水温度的异常变化。"
+   }
+  ],
+  "root": "arctic=希腊arktos熊→熊座→极寒"
+ },
+ "array": {
+  "exs": [
+   {
+    "en": "The museum showed an impressive array of ancient coins to visitors.",
+    "cn": "博物馆向参观者展示了令人印象深刻的古代钱币阵列。"
+   },
+   {
+    "en": "A colorful array of fabrics, displayed by the vendor, attracted many tourists.",
+    "cn": "小贩展示的一排彩色布料吸引了许多游客。"
+   }
+  ],
+  "root": "a+ray（光线）→光线排成阵列"
+ },
+ "arrogant": {
+  "exs": [
+   {
+    "en": "The arrogant manager ignored the junior staff's reasonable suggestions in the meeting.",
+    "cn": "傲慢的经理在会议上忽视了年轻职员的合理建议。"
+   },
+   {
+    "en": "Arrogant people, believing themselves superior, often offend colleagues without realizing it.",
+    "cn": "傲慢的人自视甚高，常常冒犯同事而不自知。"
+   }
+  ],
+  "root": "ar-向+rog要求→总要求服从→傲慢"
+ },
+ "articulate": {
+  "exs": [
+   {
+    "en": "The articulate witness described the accident clearly despite her trembling voice.",
+    "cn": "口齿清晰的证人尽管声音颤抖，仍清楚描述了事故。"
+   },
+   {
+    "en": "Students must articulate their ideas, supporting them with concrete examples.",
+    "cn": "学生必须清楚表达观点，并用具体例子加以支持。"
+   }
+  ],
+  "root": "art=关节+ate→连接关节→清晰表达"
+ },
+ "ascend": {
+  "exs": [
+   {
+    "en": "The hikers ascend the steep trail before dawn.",
+    "cn": "登山者在黎明前沿陡峭小径向上攀登。"
+   },
+   {
+    "en": "As they ascend the mountain, the air becomes thinner and colder.",
+    "cn": "当他们向山上攀登时，空气变得越来越稀薄寒冷。"
+   }
+  ],
+  "root": "ad-（向）+scand（爬）→ 上升"
+ },
+ "ascertain": {
+  "exs": [
+   {
+    "en": "The investigators ascertain the truth by examining security camera footage.",
+    "cn": "调查人员通过检查监控录像来查明真相。"
+   },
+   {
+    "en": "To ascertain the cause of the outage, engineers reviewed every server log.",
+    "cn": "为了查明故障原因，工程师们检查了每一条服务器日志。"
+   }
+  ],
+  "root": "ad-（加强）+certain（确定）→ 查明"
+ },
+ "ashore": {
+  "exs": [
+   {
+    "en": "The sailors carried fresh water ashore before setting sail.",
+    "cn": "水手们在起航前把淡水运上岸。"
+   },
+   {
+    "en": "Once the passengers stepped ashore, they found a bustling harbor market.",
+    "cn": "乘客们一上岸，就发现了一个热闹的港口市场。"
+   }
+  ],
+  "root": "a-（在/向）+shore（岸）→ 上岸"
+ },
+ "aspiration": {
+  "exs": [
+   {
+    "en": "Her main aspiration is to become a pediatric doctor in rural areas.",
+    "cn": "她的主要志向是成为农村地区的一名儿科医生。"
+   },
+   {
+    "en": "Pursuing his career aspiration, he overcame financial setbacks and family pressure.",
+    "cn": "在追求职业志向的过程中，他克服了经济困难和家庭压力。"
+   }
+  ],
+  "root": "ad-（向）+spir（呼吸）→ 热望/吸入"
+ },
+ "ass": {
+  "exs": [
+   {
+    "en": "The stubborn ass refused to move despite the farmer's gentle urging.",
+    "cn": "那头固执的驴尽管农夫温和催促仍拒绝移动。"
+   },
+   {
+    "en": "Don't be such an ass; apologize sincerely before the meeting ends.",
+    "cn": "别这么蠢；在会议结束前真诚道歉。"
+   }
+  ],
+  "root": "驴固执→傻瓜；俚语指屁股"
+ },
+ "assassinate": {
+  "exs": [
+   {
+    "en": "The dictator was assassinated by a former bodyguard in a crowded square.",
+    "cn": "独裁者在拥挤的广场被一名前保镖暗杀。"
+   },
+   {
+    "en": "After plotting for months, the rebels attempted to assassinate the visiting minister.",
+    "cn": "策划数月后，叛军试图暗杀到访的部长。"
+   }
+  ],
+  "root": "assassin（刺客）+ -ate→ 暗杀"
+ },
+ "assault": {
+  "exs": [
+   {
+    "en": "The sudden assault on the border checkpoint forced soldiers to withdraw.",
+    "cn": "对边境检查站的突然袭击迫使士兵撤退。"
+   },
+   {
+    "en": "Having been wounded in an armed assault, the officer still guided civilians to safety.",
+    "cn": "在武装袭击中受伤后，这名军官仍引导平民到达安全地点。"
+   }
+  ],
+  "root": "as-(朝向)+salt(跳)→扑向→袭击"
+ },
+ "assert": {
+  "exs": [
+   {
+    "en": "The witness asserted his innocence despite the overwhelming evidence.",
+    "cn": "证人尽管证据确凿，仍坚称自己无罪。"
+   },
+   {
+    "en": "Asserting that the contract was unfair, the employee refused to sign it.",
+    "cn": "员工声称合同不公平，拒绝签字。"
+   }
+  ],
+  "root": "as-(朝向)+sert(连接)→把话接上→断言"
+ },
+ "assertive": {
+  "exs": [
+   {
+    "en": "An assertive tone can make the presentation sound more confident.",
+    "cn": "果断的语气能让演示听起来更自信。"
+   },
+   {
+    "en": "Being overly assertive, he interrupted colleagues before they finished speaking.",
+    "cn": "由于过于武断，他在同事说完前就打断了他们。"
+   }
+  ],
+  "root": "assert(断言)+ive(形容词)→爱断言→武断"
+ },
+ "assessment": {
+  "exs": [
+   {
+    "en": "The tax assessment surprised many small business owners this quarter.",
+    "cn": "本季度的税款评估让许多小企业主感到惊讶。"
+   },
+   {
+    "en": "After completing the risk assessment, engineers redesigned the drainage system.",
+    "cn": "完成风险评估后，工程师重新设计了排水系统。"
+   }
+  ],
+  "root": "assess(评估)+ment(名词)→评估结果"
+ },
+ "assimilate": {
+  "exs": [
+   {
+    "en": "Immigrants gradually assimilate into the local culture through daily interaction.",
+    "cn": "移民通过日常交往逐渐融入当地文化。"
+   },
+   {
+    "en": "Having assimilated the technical terms, the translator completed the project early.",
+    "cn": "吸收了专业术语后，译者提前完成了项目。"
+   }
+  ],
+  "root": "as-(朝向)+simil(相同)→使相同→同化"
+ },
+ "assimilation": {
+  "exs": [
+   {
+    "en": "Cultural assimilation often changes family traditions within two generations.",
+    "cn": "文化同化往往在两代人内改变家庭传统。"
+   },
+   {
+    "en": "Having studied assimilation, she explained how language changes after migration.",
+    "cn": "研究同化后，她解释了移民后语言如何变化。"
+   }
+  ],
+  "root": "assimilate(同化)+ation(名词)→同化过程"
+ },
+ "assurance": {
+  "exs": [
+   {
+    "en": "Her calm voice gave nervous passengers a quiet assurance about the delayed flight.",
+    "cn": "她平静的声音让紧张的乘客对延误航班感到安心。"
+   },
+   {
+    "en": "The bank required assurance that the borrower had a stable income before approving the loan.",
+    "cn": "在批准贷款前，银行要求借款人有稳定收入的保证。"
+   }
+  ],
+  "root": "as-(向)+sure(确定)→使人确定→保证"
+ },
+ "astonishment": {
+  "exs": [
+   {
+    "en": "The magician's final trick filled the entire audience with genuine astonishment.",
+    "cn": "魔术师的最后一个把戏让全场观众感到真正的惊讶。"
+   },
+   {
+    "en": "We watched in astonishment as the tiny seedling split the concrete pavement.",
+    "cn": "我们惊讶地看着那株小苗裂开了混凝土地面。"
+   }
+  ],
+  "root": "联想：像被巨石砸中，目瞪口呆→惊异"
+ },
+ "athletic": {
+  "exs": [
+   {
+    "en": "The athletic student won the hundred-meter dash during the school sports meeting.",
+    "cn": "那名运动型学生在学校运动会中赢得了百米短跑。"
+   },
+   {
+    "en": "Athletic training requires discipline, especially when athletes compete in cold, rainy weather.",
+    "cn": "运动训练需要纪律，尤其是在寒冷多雨的天气中比赛时。"
+   }
+  ],
+  "root": "athl-竞赛+-ic→竞赛的→运动的"
+ },
+ "attachment": {
+  "exs": [
+   {
+    "en": "The email attachment contained the signed lease agreement and two scanned receipts.",
+    "cn": "邮件附件包含已签署的租赁协议和两张扫描收据。"
+   },
+   {
+    "en": "Feeling a strong attachment to his hometown, he declined the overseas promotion.",
+    "cn": "由于对家乡怀有强烈依恋，他拒绝了海外升职的机会。"
+   }
+  ],
+  "root": "at-(向)+tach(固定)→附着→附件/依恋"
+ },
+ "attendance": {
+  "exs": [
+   {
+    "en": "Attendance at the seminar dropped sharply after the unexpected power outage.",
+    "cn": "在意外停电后，研讨会的出席人数急剧下降。"
+   },
+   {
+    "en": "The teacher records attendance by checking each student's name before the class begins.",
+    "cn": "老师在上课前通过核对每个学生的姓名来记录出勤。"
+   }
+  ],
+  "root": "attend(出席)+ance→出席/照料"
+ },
+ "attendant": {
+  "exs": [
+   {
+    "en": "The flight attendant handed warm towels to every passenger during the long journey.",
+    "cn": "长途飞行中，空乘人员给每位乘客递上热毛巾。"
+   },
+   {
+    "en": "Having worked as a station attendant for years, she handled complaints calmly.",
+    "cn": "做车站工作人员多年后，她冷静地处理投诉。"
+   }
+  ],
+  "root": "attend(照料)+ant人→侍者/随从"
+ },
+ "attent": {
+  "exs": [
+   {
+    "en": "The archivist was attent throughout the restoration of the medieval manuscript.",
+    "cn": "档案管理员在整个中世纪手稿修复过程中都很留意。"
+   },
+   {
+    "en": "Attent to every detail, the curator recorded the manuscript's faded annotations.",
+    "cn": "留意每个细节，策展人记录了手稿褪色的批注。"
+   }
+  ],
+  "root": "at-(向)+tent(伸)→心伸向目标→注意"
+ },
+ "attorney": {
+  "exs": [
+   {
+    "en": "The attorney filed the patent application before the federal deadline.",
+    "cn": "律师在联邦截止日期前提交了专利申请。"
+   },
+   {
+    "en": "Having reviewed the contract, the attorney warned the client about hidden liabilities.",
+    "cn": "审阅合同后，律师提醒客户注意隐藏的责任。"
+   }
+  ],
+  "root": "at-(向)+turn(转)→受托转办→代理人/律师"
+ },
+ "augment": {
+  "exs": [
+   {
+    "en": "The company augmented its research team with two data scientists.",
+    "cn": "该公司用两名数据科学家扩充了研究团队。"
+   },
+   {
+    "en": "By augmenting the dataset, the model improved its prediction accuracy.",
+    "cn": "通过扩充数据集，模型提高了预测准确率。"
+   }
+  ],
+  "root": "aug-(增加)+-ment(动作)→增加"
+ },
+ "authentic": {
+  "exs": [
+   {
+    "en": "The museum displayed an authentic Qing dynasty bronze vessel.",
+    "cn": "博物馆展出了一件真正的清代青铜器。"
+   },
+   {
+    "en": "Experts verified that the signature was authentic after examining the paper.",
+    "cn": "专家检查纸张后确认签名是真实的。"
+   }
+  ],
+  "root": "auth-(作者/权威)+-entic→出自权威→真正的"
+ },
+ "automate": {
+  "exs": [
+   {
+    "en": "The factory automated its assembly line to reduce labor costs.",
+    "cn": "该工厂使装配线自动化以降低人工成本。"
+   },
+   {
+    "en": "Automating repetitive tasks, the software frees engineers for creative work.",
+    "cn": "自动化重复任务后，软件让工程师专注于创造性工作。"
+   }
+  ],
+  "root": "auto-(自动)+-ate(使)→使自动化"
+ },
+ "avail": {
+  "exs": [
+   {
+    "en": "The new policy will avail little without public cooperation.",
+    "cn": "没有公众合作，新政策几乎没有用处。"
+   },
+   {
+    "en": "All his efforts availed nothing when the storm damaged the crops.",
+    "cn": "风暴毁坏庄稼时，他所有努力都无济于事。"
+   }
+  ],
+  "root": "a-(向)+val(价值)→有用/有利"
+ },
+ "availability": {
+  "exs": [
+   {
+    "en": "The availability of clean water remains a major concern in many rural areas.",
+    "cn": "清洁水的可用性仍是许多农村地区的主要问题。"
+   },
+   {
+    "en": "Researchers are checking whether the availability of vaccines can be improved before winter.",
+    "cn": "研究人员正在检查疫苗的可用性能否在冬季前得到改善。"
+   }
+  ],
+  "root": "avail（有用）+ ability（能力）→ 可用性"
+ },
+ "avert": {
+  "exs": [
+   {
+    "en": "The new policy averted a serious financial crisis last year.",
+    "cn": "新政策去年避免了一场严重的金融危机。"
+   },
+   {
+    "en": "By reducing emissions, countries can avert more severe climate impacts.",
+    "cn": "通过减少排放，各国可以避免更严重的气候影响。"
+   }
+  ],
+  "root": "a-（离开）+ vert（转）→ 转开→避免"
+ },
+ "axial": {
+  "exs": [
+   {
+    "en": "The axial load on the bridge exceeded the safety limit.",
+    "cn": "桥梁上的轴向载荷超过了安全限值。"
+   },
+   {
+    "en": "Engineers inspected the axial shaft, which had begun to vibrate abnormally.",
+    "cn": "工程师检查了开始异常振动的轴向轴。"
+   }
+  ],
+  "root": "axis（轴）+ -al（形容词）→ 轴向的"
+ },
+ "axle": {
+  "exs": [
+   {
+    "en": "The truck’s rear axle broke during the mountain climb.",
+    "cn": "卡车后轴在爬山时断了。"
+   },
+   {
+    "en": "Mechanics replaced the axle after the wheel suddenly detached.",
+    "cn": "车轮突然脱落后，机械师更换了车轴。"
+   }
+  ],
+  "root": "与axis同源，指轮轴"
+ },
+ "backbone": {
+  "exs": [
+   {
+    "en": "The backbone of the network supports thousands of users daily.",
+    "cn": "网络主干每天支持数千名用户。"
+   },
+   {
+    "en": "Having a strong backbone, he refused to yield to pressure.",
+    "cn": "他因为有坚强的脊梁，拒绝向压力屈服。"
+   }
+  ],
+  "root": "back（背）+ bone（骨）→ 脊骨→支柱"
+ },
+ "bacon": {
+  "exs": [
+   {
+    "en": "She bought a package of bacon for breakfast.",
+    "cn": "她买了一包培根当早餐。"
+   },
+   {
+    "en": "The bacon sizzled in the pan while eggs cooked nearby.",
+    "cn": "鸡蛋在旁边煮着，培根在锅里滋滋作响。"
+   }
+  ],
+  "root": "古法语 bacon（腌猪肉）→ 培根"
+ },
+ "bacterium": {
+  "exs": [
+   {
+    "en": "A single bacterium can multiply rapidly in warm, moist laboratory conditions.",
+    "cn": "单个细菌在温暖潮湿的实验室条件下可迅速繁殖。"
+   },
+   {
+    "en": "The bacterium that caused the outbreak was identified by scientists using genetic sequencing.",
+    "cn": "引发疫情的细菌被科学家用基因测序鉴定出来。"
+   }
+  ],
+  "root": "bacterio-（杆菌）+ -um（单数）→ 细菌单数"
+ },
+ "badge": {
+  "exs": [
+   {
+    "en": "Every volunteer wore a bright yellow badge to be recognized at the event.",
+    "cn": "每位志愿者都佩戴亮黄色徽章，以便在活动中被认出。"
+   },
+   {
+    "en": "The police officer showed his badge before entering the building.",
+    "cn": "警官在进入大楼前出示了徽章。"
+   }
+  ],
+  "root": "挂胸前的小牌，标记身份"
+ },
+ "baffle": {
+  "exs": [
+   {
+    "en": "The locked door baffled the firefighters for several minutes.",
+    "cn": "紧锁的门让消防员困惑了几分钟。"
+   },
+   {
+    "en": "Baffled by the puzzle, the student asked his teacher for help.",
+    "cn": "被谜题难住的学生向老师求助。"
+   }
+  ],
+  "root": "挡板挡路，令人困惑"
+ },
+ "bait": {
+  "exs": [
+   {
+    "en": "A piece of bait lay on the wet rock near the tide.",
+    "cn": "一块鱼饵落在潮水附近的湿岩石上。"
+   },
+   {
+    "en": "The suspect was baited by reporters who asked misleading questions.",
+    "cn": "嫌疑人被提出误导性问题的记者引诱。"
+   }
+  ],
+  "root": "联想bite咬：饵引鱼咬钩"
+ },
+ "bald": {
+  "exs": [
+   {
+    "en": "The old man's bald head reflected sunlight during the long walk.",
+    "cn": "老人的秃头在漫长步行中反射阳光。"
+   },
+   {
+    "en": "Bald after chemotherapy, he wore a hat to feel confident again.",
+    "cn": "化疗后变秃，他戴帽子以重新感到自信。"
+   }
+  ],
+  "root": "联想ball球：光头如球"
+ },
+ "ballet": {
+  "exs": [
+   {
+    "en": "The ballet dancers rehearsed a difficult scene in the studio.",
+    "cn": "芭蕾舞演员在工作室排练一段高难度场景。"
+   },
+   {
+    "en": "Ballet requires years of practice before performers can master graceful movements.",
+    "cn": "芭蕾需要多年练习，表演者才能掌握优雅动作。"
+   }
+  ],
+  "root": "bal-（跳舞）→ 芭蕾舞"
+ },
+ "ballot": {
+  "exs": [
+   {
+    "en": "Voters submitted ballots through an online portal yesterday afternoon.",
+    "cn": "选民昨天下午通过在线投票平台提交了选票。"
+   },
+   {
+    "en": "Because the election was close, officials recounted every ballot carefully.",
+    "cn": "因为选举结果接近，官员们仔细重新清点了每张选票。"
+   }
+  ],
+  "root": "ball（球）+ -otta（小）→ 投球表决 → 投票。"
+ },
+ "bamboo": {
+  "exs": [
+   {
+    "en": "The carpenter built a sturdy bamboo shelf for the small library.",
+    "cn": "木匠为那间小图书馆搭建了一个坚固的竹架。"
+   },
+   {
+    "en": "Having survived the storm, the bamboo grove still stood beside the river.",
+    "cn": "挺过暴风雨后，那片竹林依然矗立在河边。"
+   }
+  ],
+  "root": "谐音“斑竹”，一节一节，坚韧挺拔。"
+ },
+ "bandage": {
+  "exs": [
+   {
+    "en": "The nurse wrapped a clean bandage around the patient's injured wrist.",
+    "cn": "护士用一条干净的绷带包扎了病人受伤的手腕。"
+   },
+   {
+    "en": "After checking the wound, the doctor applied a bandage to stop bleeding.",
+    "cn": "检查伤口后，医生用绷带包扎以止血。"
+   }
+  ],
+  "root": "band（带子）+ -age → 包扎用的带子。"
+ },
+ "bandit": {
+  "exs": [
+   {
+    "en": "A masked bandit robbed the rural post office last winter.",
+    "cn": "一名蒙面强盗去年冬天抢劫了那家乡村邮局。"
+   },
+   {
+    "en": "The villagers fled when they heard that a bandit was approaching.",
+    "cn": "当村民听说有强盗靠近时，他们纷纷逃散。"
+   }
+  ],
+  "root": "ban（放逐令）→ 被放逐者 → 强盗。"
+ },
+ "banker": {
+  "exs": [
+   {
+    "en": "The experienced banker approved the small business loan after careful review.",
+    "cn": "这位经验丰富的银行家经过仔细审核批准了那笔小企业贷款。"
+   },
+   {
+    "en": "Working late at the branch, the banker prepared quarterly financial reports.",
+    "cn": "在分行加班到深夜，这位银行家准备了季度财务报告。"
+   }
+  ],
+  "root": "bank（银行）+ -er（人）→ 经营银行者。"
+ },
+ "bankrupt": {
+  "exs": [
+   {
+    "en": "The old factory became bankrupt this month despite government support.",
+    "cn": "尽管有政府支持，这家老工厂本月还是破产了。"
+   },
+   {
+    "en": "Although the company was bankrupt, its employees received unpaid wages.",
+    "cn": "尽管该公司已经破产，其员工仍收到了未付工资。"
+   }
+  ],
+  "root": "bank（银行长凳）+ rupt（断）→ 破产。"
+ },
+ "bankruptcy": {
+  "exs": [
+   {
+    "en": "The company's bankruptcy shocked its loyal suppliers and employees.",
+    "cn": "公司破产令其忠诚供应商和员工震惊。"
+   },
+   {
+    "en": "Facing bankruptcy, the manager cut costs by closing two factories.",
+    "cn": "面临破产，经理通过关闭两家工厂来削减成本。"
+   }
+  ],
+  "root": "bank钱台+rupt断+cy→资金断裂→破产"
+ },
+ "banquet": {
+  "exs": [
+   {
+    "en": "The mayor hosted a formal banquet for visiting business leaders.",
+    "cn": "市长为来访的商界领袖举办了正式宴会。"
+   },
+   {
+    "en": "Guests enjoyed speeches while they attended the charity banquet.",
+    "cn": "宾客在参加慈善宴会时欣赏了演讲。"
+   }
+  ],
+  "root": "大宴台摆满酒菜→banquet宴会"
+ },
+ "barge": {
+  "exs": [
+   {
+    "en": "A narrow barge carried coal down the quiet river.",
+    "cn": "一艘窄驳船沿平静的河流运送煤炭。"
+   },
+   {
+    "en": "He barged into the meeting, interrupting the important presentation.",
+    "cn": "他闯进会议，打断了重要的演示。"
+   }
+  ],
+  "root": "bar横木撑船→驳船；硬闯→蹒跚"
+ },
+ "barley": {
+  "exs": [
+   {
+    "en": "The farmer planted barley in the fertile field near the town.",
+    "cn": "农民在城镇附近的肥沃田地里种大麦。"
+   },
+   {
+    "en": "Barley grows well where summers are warm and winters are mild.",
+    "cn": "大麦在夏季温暖、冬季温和的地方生长良好。"
+   }
+  ],
+  "root": "巴粒→大麦颗粒→barley"
+ },
+ "barometer": {
+  "exs": [
+   {
+    "en": "The old barometer on the wall predicted the coming storm.",
+    "cn": "墙上那只旧气压计预示了即将到来的风暴。"
+   },
+   {
+    "en": "Watching the barometer, the sailors guessed the weather would change.",
+    "cn": "看着气压计，水手们猜测天气将会变化。"
+   }
+  ],
+  "root": "baro重/压+meter测→气压计"
+ },
+ "baron": {
+  "exs": [
+   {
+    "en": "The wealthy baron owned a large estate beside the forest.",
+    "cn": "这位富有的男爵在森林旁拥有一大片庄园。"
+   },
+   {
+    "en": "Having inherited the title, the baron managed several mines.",
+    "cn": "继承头衔后，男爵经营了几座矿。"
+   }
+  ],
+  "root": "大霸主坐高椅→男爵/大王"
+ },
+ "barren": {
+  "exs": [
+   {
+    "en": "The barren field produced no crops after months of drought.",
+    "cn": "干旱数月后，这片贫瘠的土地没有长出任何庄稼。"
+   },
+   {
+    "en": "Barren soil, lacking nutrients, often forces farmers to abandon their ancestral lands.",
+    "cn": "贫瘠土壤缺乏养分，常迫使农民放弃祖辈的土地。"
+   }
+  ],
+  "root": "联想bar（栅栏）围住荒地，寸草不生。"
+ },
+ "basement": {
+  "exs": [
+   {
+    "en": "The flooded basement damaged boxes of old family photographs.",
+    "cn": "被水淹没的地下室弄坏了整箱旧家庭照片。"
+   },
+   {
+    "en": "Built under the house, the basement stores tools and seasonal decorations.",
+    "cn": "建在房屋下方，地下室存放工具和季节性装饰品。"
+   }
+  ],
+  "root": "base（基础）+ -ment → 建筑底部/墙脚 → 地下室"
+ },
+ "batch": {
+  "exs": [
+   {
+    "en": "The factory produced a batch of defective batteries last week.",
+    "cn": "工厂上周生产了一批有缺陷的电池。"
+   },
+   {
+    "en": "Processing data in batches reduces memory pressure on the server.",
+    "cn": "分批处理数据可减轻服务器内存压力。"
+   }
+  ],
+  "root": "联想一次烤出一炉面包→一批。"
+ },
+ "bazaar": {
+  "exs": [
+   {
+    "en": "The old bazaar sells spices, carpets, and handmade silver jewelry.",
+    "cn": "老集市出售香料、地毯和手工银饰。"
+   },
+   {
+    "en": "We bargained at the bazaar until the vendor lowered his price.",
+    "cn": "我们在集市讨价还价，直到小贩降价。"
+   }
+  ],
+  "root": "音译“巴扎”，中东集市。"
+ },
+ "bead": {
+  "exs": [
+   {
+    "en": "A single bead of sweat rolled down his forehead.",
+    "cn": "一滴汗水从他额头滚下。"
+   },
+   {
+    "en": "She decorated the vase with beads painted in bright colors.",
+    "cn": "她用涂成亮色的珠子装饰花瓶。"
+   }
+  ],
+  "root": "联想念珠：每念一句拨一颗珠。"
+ },
+ "bearing": {
+  "exs": [
+   {
+    "en": "The machine's main bearing overheated and stopped the drill.",
+    "cn": "机器主轴承过热，使钻头停转。"
+   },
+   {
+    "en": "Bearing heavy loads, the shaft requires regular lubrication.",
+    "cn": "承受重载时，轴需要定期润滑。"
+   }
+  ],
+  "root": "bear（承受）+ing→承受部件→轴承"
+ },
+ "beetle": {
+  "exs": [
+   {
+    "en": "A shiny black beetle rested on the damp leaf after the morning rain.",
+    "cn": "一只闪亮的黑甲虫在晨雨后停歇在潮湿的叶片上。"
+   },
+   {
+    "en": "When the gardener lifted the stone, a tiny beetle scurried into the dark soil.",
+    "cn": "当园丁搬开石头时，一只小甲虫迅速钻进了黑暗的泥土。"
+   }
+  ],
+  "root": "甲虫硬壳像小坦克，快速爬行。"
+ },
+ "beneficiary": {
+  "exs": [
+   {
+    "en": "The beneficiary received a monthly pension after his father's death.",
+    "cn": "该受益人在父亲去世后每月领取养老金。"
+   },
+   {
+    "en": "Anyone who becomes a beneficiary must provide proof of identity.",
+    "cn": "任何成为受益人的人都必须提供身份证明。"
+   }
+  ],
+  "root": "bene-（好）+fic（做）→恩惠→受益人"
+ },
+ "benign": {
+  "exs": [
+   {
+    "en": "The doctor described the lump as benign and recommended a simple checkup.",
+    "cn": "医生称肿块是良性的，并建议做一次简单检查。"
+   },
+   {
+    "en": "Although the tumor was benign, the patient felt anxious for weeks.",
+    "cn": "尽管肿瘤是良性的，患者仍焦虑了好几个星期。"
+   }
+  ],
+  "root": "bene-（好）+gen（生）→好的生长→良性"
+ },
+ "bestow": {
+  "exs": [
+   {
+    "en": "The university bestowed an honorary degree on the retired scientist.",
+    "cn": "大学授予这位退休科学家荣誉学位。"
+   },
+   {
+    "en": "Nature bestowed such beauty on the valley that tourists returned yearly.",
+    "cn": "大自然赋予山谷如此美景，游客每年都来。"
+   }
+  ],
+  "root": "be-（加强）+stow（存放）→安放→授予"
+ },
+ "beware": {
+  "exs": [
+   {
+    "en": "Beware of slippery tiles near the swimming pool entrance.",
+    "cn": "小心游泳池入口附近打滑的地砖。"
+   },
+   {
+    "en": "Travelers should beware that pickpockets often target crowded subway stations.",
+    "cn": "旅客应当心，扒手经常盯上拥挤的地铁站。"
+   }
+  ],
+  "root": "be-（加强）+ware（小心）→当心"
+ },
+ "bewilder": {
+  "exs": [
+   {
+    "en": "The complex tax rules bewildered many small business owners.",
+    "cn": "复杂的税规让许多小企业主困惑。"
+   },
+   {
+    "en": "Seeing the sudden price hike, customers were bewildered by the store's new policy.",
+    "cn": "看到价格突然上涨，顾客对商店的新政策感到困惑。"
+   }
+  ],
+  "root": "be-（加强）+wild（狂野）→使迷乱"
+ },
+ "biased": {
+  "exs": [
+   {
+    "en": "The judge's biased ruling disappointed both parties in the courtroom.",
+    "cn": "法官带有偏见的裁决让法庭上的双方都感到失望。"
+   },
+   {
+    "en": "Biased by outdated data, the model misclassified many applicants.",
+    "cn": "由于受陈旧数据影响，模型错误分类了许多申请者。"
+   }
+  ],
+  "root": "bias偏见+ -ed：被偏见影响→有偏见的。"
+ },
+ "bishop": {
+  "exs": [
+   {
+    "en": "The bishop blessed the newly built chapel on Sunday.",
+    "cn": "主教在周日祝福了新建的小教堂。"
+   },
+   {
+    "en": "Walking through the cathedral, the bishop greeted anxious parishioners.",
+    "cn": "主教穿过大教堂，问候焦虑的教区居民。"
+   }
+  ],
+  "root": "epi-（在上）+skop（看）→监督者→主教。"
+ },
+ "blacksmith": {
+  "exs": [
+   {
+    "en": "The blacksmith forged a strong gate for the castle.",
+    "cn": "铁匠为城堡锻造了一扇坚固的大门。"
+   },
+   {
+    "en": "Sparks flying, the blacksmith shaped hot iron into tools.",
+    "cn": "火花四溅，铁匠把烧热的铁锻造成工具。"
+   }
+  ],
+  "root": "black（黑）+smith（工匠）→打铁弄黑→铁匠。"
+ },
+ "blink": {
+  "exs": [
+   {
+    "en": "She did not blink during the tough interview.",
+    "cn": "她在艰难的采访中连眼睛都没眨一下。"
+   },
+   {
+    "en": "Blinking twice, he pretended not to notice the mistake.",
+    "cn": "他眨了两下眼，假装没有注意到这个错误。"
+   }
+  ],
+  "root": "像灯blink一闪一闪→眨眼、闪烁。"
+ },
+ "blunder": {
+  "exs": [
+   {
+    "en": "His careless blunder cost the team a valuable contract.",
+    "cn": "他粗心的大错让团队失去了一份宝贵合同。"
+   },
+   {
+    "en": "Having blundered during the negotiation, he apologized sincerely.",
+    "cn": "他在谈判中犯了大错后，真诚地道歉了。"
+   }
+  ],
+  "root": "撞bl到under桌下→犯大错。"
+ },
+ "blur": {
+  "exs": [
+   {
+    "en": "Rain blurred the windshield during the mountain drive.",
+    "cn": "山区驾驶时，雨水使挡风玻璃变得模糊。"
+   },
+   {
+    "en": "Tears blurring her vision, she could not read the letter.",
+    "cn": "泪水模糊了她的视线，她无法读那封信。"
+   }
+  ],
+  "root": "墨一涂就blur→模糊、弄脏。"
+ },
+ "bourgeois": {
+  "exs": [
+   {
+    "en": "The bourgeois shopkeeper valued stability over radical political change.",
+    "cn": "这位资产阶级店主重视稳定而非激进政治变革。"
+   },
+   {
+    "en": "Seeing the factory's decline, the bourgeois investors chose cautious reinvestment rather than immediate closure.",
+    "cn": "看到工厂的衰落，资产阶级投资者选择谨慎再投资而非立即关闭。"
+   }
+  ],
+  "root": "bourg(城镇)+ois(居民)→市民→资产阶级"
+ },
+ "breakdown": {
+  "exs": [
+   {
+    "en": "The breakdown of the generator delayed production by three hours.",
+    "cn": "发电机故障使生产延误了三个小时。"
+   },
+   {
+    "en": "Having suffered a breakdown, the factory manager ordered an immediate safety review.",
+    "cn": "在发生故障后，工厂经理下令立即进行安全审查。"
+   }
+  ],
+  "root": "break(破)+down(向下)→彻底破损→崩溃"
+ },
+ "bridle": {
+  "exs": [
+   {
+    "en": "The bridle kept the restless horse steady during the crowded parade.",
+    "cn": "马勒让那匹不安分的马在拥挤游行中保持稳定。"
+   },
+   {
+    "en": "Constrained by regulations, the company tried to bridle its rapid expansion.",
+    "cn": "受法规约束，公司试图限制其快速扩张。"
+   }
+  ],
+  "root": "bridle像缰绳勒住马→约束"
+ },
+ "browse": {
+  "exs": [
+   {
+    "en": "The librarian taught students to browse the database efficiently.",
+    "cn": "图书管理员教学生高效地浏览数据库。"
+   },
+   {
+    "en": "Browsing the catalog, the researcher found several rare manuscripts.",
+    "cn": "浏览目录时，研究者发现了几份珍稀手稿。"
+   }
+  ],
+  "root": "像山羊啃嫩枝→随意浏览网页"
+ },
+ "buffalo": {
+  "exs": [
+   {
+    "en": "The water buffalo plowed the muddy field before sunrise.",
+    "cn": "水牛在日出前耕了泥泞的田地。"
+   },
+   {
+    "en": "Riding the buffalo across the flooded village, the farmer rescued two children.",
+    "cn": "农民骑着水牛穿过被淹的村庄，救出了两个孩子。"
+   }
+  ],
+  "root": "大牛扛犁，buffalo是水牛"
+ },
+ "bulletin": {
+  "exs": [
+   {
+    "en": "The bulletin announced the new office hours to all employees.",
+    "cn": "公告向全体员工宣布了新的办公时间。"
+   },
+   {
+    "en": "Having read the bulletin, the committee postponed the scheduled vote.",
+    "cn": "读完公告后，委员会推迟了原定投票。"
+   }
+  ],
+  "root": "bull(泡泡/印章)+etin→盖印公告"
+ },
+ "burglar": {
+  "exs": [
+   {
+    "en": "A burglar stole several diamonds from the jewelry store last night.",
+    "cn": "一名窃贼昨晚从珠宝店偷走了几颗钻石。"
+   },
+   {
+    "en": "The police arrested a burglar who had climbed through the kitchen window before dawn.",
+    "cn": "警方逮捕了一名在黎明前从厨房窗户爬入的窃贼。"
+   }
+  ],
+  "root": "burg（宅/城）→ 闯入宅中的人→窃贼"
+ },
+ "bushel": {
+  "exs": [
+   {
+    "en": "Farmers sold a bushel of fresh corn at the weekend market.",
+    "cn": "农民们在周末市场卖了一蒲式耳新鲜玉米。"
+   },
+   {
+    "en": "The tailor will bushel the coat, smoothing every loose thread before delivery.",
+    "cn": "裁缝将修整这件外套，在交付前抚平每一根松线。"
+   }
+  ],
+  "root": "一筐谷物量词；筐形整衣→蒲式耳/修整"
+ },
+ "bypass": {
+  "exs": [
+   {
+    "en": "Drivers can bypass the flooded road near the river.",
+    "cn": "司机可以绕过河边那条被水淹的路。"
+   },
+   {
+    "en": "The committee decided to bypass the outdated rule, which had blocked many reforms.",
+    "cn": "委员会决定绕过过时的规则，该规则曾阻碍许多改革。"
+   }
+  ],
+  "root": "by（旁边）+ pass（经过）→ 从旁经过→绕过"
+ },
+ "cane": {
+  "exs": [
+   {
+    "en": "The old man tapped his cane on the stone path.",
+    "cn": "老人用手杖轻敲石板路。"
+   },
+   {
+    "en": "The teacher caned the student, who had repeatedly bullied classmates, in front of the blackboard.",
+    "cn": "老师在黑板前用藤杖打了那个屡次欺负同学的学生。"
+   }
+  ],
+  "root": "cane 本义藤条→细茎可制手杖，也作杖击"
+ },
+ "capacitor": {
+  "exs": [
+   {
+    "en": "The engineer tested the capacitor in the laboratory yesterday.",
+    "cn": "工程师昨天在实验室测试了电容器。"
+   },
+   {
+    "en": "The capacitor, which stores electrical energy, powers the camera flash when needed.",
+    "cn": "储存电能的电容器在需要时为相机闪光灯供电。"
+   }
+  ],
+  "root": "capac（容量）+ -or→储电器件→电容器"
+ },
+ "cartoon": {
+  "exs": [
+   {
+    "en": "The cartoon on the front page mocked the mayor's empty promises.",
+    "cn": "头版上的漫画嘲笑了市长空洞的承诺。"
+   },
+   {
+    "en": "Children gathered around the TV, watching a cartoon about a brave robot.",
+    "cn": "孩子们围在电视机旁，观看一部关于勇敢机器人的卡通片。"
+   }
+  ],
+  "root": "cart（纸/卡）+ -oon→纸上夸张画→漫画"
+ },
+ "catalogue": {
+  "exs": [
+   {
+    "en": "The museum catalogue lists thousands of ancient coins from the Silk Road.",
+    "cn": "博物馆目录列出了来自丝绸之路的数千枚古币。"
+   },
+   {
+    "en": "Researchers who catalogued the fragile documents discovered a hidden letter.",
+    "cn": "编目脆弱文献的研究人员发现了一封隐藏的信。"
+   }
+  ],
+  "root": "cata-（向下）+leg（说/列）→目录"
+ },
+ "cater": {
+  "exs": [
+   {
+    "en": "The hotel can cater for large wedding parties with outdoor dining.",
+    "cn": "这家酒店可提供户外用餐，满足大型婚礼派对需求。"
+   },
+   {
+    "en": "Catering to students’ dietary needs, the cafeteria added gluten-free options.",
+    "cn": "为满足学生饮食需求，食堂增加了无麸质选项。"
+   }
+  ],
+  "root": "谐音“开特”→开特供，投合需求"
+ },
+ "cavity": {
+  "exs": [
+   {
+    "en": "The dentist found a small cavity in the child’s left molar.",
+    "cn": "牙医在孩子左侧磨牙上发现了一个小洞。"
+   },
+   {
+    "en": "The skull contains cavities that protect delicate organs.",
+    "cn": "颅骨含有保护娇嫩器官的空腔。"
+   }
+  ],
+  "root": "cav-（洞）+ity→空穴"
+ },
+ "ceramic": {
+  "exs": [
+   {
+    "en": "The museum displays a ceramic vase from the Tang Dynasty.",
+    "cn": "博物馆展出一件唐代陶瓷花瓶。"
+   },
+   {
+    "en": "Ceramic tiles, which line the bathroom floor, resist water well.",
+    "cn": "铺在浴室地面的瓷砖很耐水。"
+   }
+  ],
+  "root": "keram（陶土）+ic→陶瓷的"
+ },
+ "charm": {
+  "exs": [
+   {
+    "en": "The old town’s charm attracts many visitors each spring.",
+    "cn": "这座古镇的魅力每年春天吸引许多游客。"
+   },
+   {
+    "en": "Charming the audience with his wit, the host opened the gala.",
+    "cn": "主持人以机智吸引观众，拉开了晚会序幕。"
+   }
+  ],
+  "root": "carmen（歌/咒）→咒语→魅力"
+ },
+ "cherish": {
+  "exs": [
+   {
+    "en": "She cherishes the small garden beside her apartment.",
+    "cn": "她珍爱公寓旁的小花园。"
+   },
+   {
+    "en": "Cherished by generations, the family recipe remains a treasured heirloom.",
+    "cn": "被几代人珍视的家传菜谱成为珍贵传家宝。"
+   }
+  ],
+  "root": "cher（亲爱）→珍爱"
+ },
+ "chord": {
+  "exs": [
+   {
+    "en": "The guitarist played each string to form a clear chord.",
+    "cn": "吉他手拨动每根弦，形成一个清晰的和弦。"
+   },
+   {
+    "en": "When the singer struck a minor chord, the audience fell silent.",
+    "cn": "当歌手弹出一个柔和的小调和弦时，观众安静下来。"
+   }
+  ],
+  "root": "希腊语chordē（弦）→ 弦、和弦"
+ },
+ "chronic": {
+  "exs": [
+   {
+    "en": "She suffers from chronic back pain after years of sitting.",
+    "cn": "多年久坐后，她患有慢性背痛。"
+   },
+   {
+    "en": "Having chronic insomnia, he often reads quietly in bed.",
+    "cn": "患有慢性失眠，他常在床上安静读书。"
+   }
+  ],
+  "root": "chron-（时间）+ -ic → 与时间有关 → 慢性的"
+ },
+ "cigaret": {
+  "exs": [
+   {
+    "en": "He lit a cigaret and stepped outside after dinner.",
+    "cn": "他晚饭后点燃一支香烟，走到外面。"
+   },
+   {
+    "en": "Smoking a cigaret on the balcony, he watched the city lights fade.",
+    "cn": "他在阳台上抽着香烟，看着城市灯光渐渐暗下去。"
+   }
+  ],
+  "root": "纸卷烟丝冒烟→香烟"
+ },
+ "clamp": {
+  "exs": [
+   {
+    "en": "The worker tightened the clamp on the broken pipe.",
+    "cn": "工人拧紧了破损管道上的夹钳。"
+   },
+   {
+    "en": "To prevent leaks, she clamped the hose with a metal tool.",
+    "cn": "为防止漏水，她用金属工具夹紧了软管。"
+   }
+  ],
+  "root": "钳子夹住木板→夹紧、强加"
+ },
+ "cleanliness": {
+  "exs": [
+   {
+    "en": "The restaurant earns praise for its spotless cleanliness.",
+    "cn": "这家餐厅因一尘不染的清洁而受到赞扬。"
+   },
+   {
+    "en": "Keeping the kitchen clean, the cook values daily cleanliness.",
+    "cn": "保持厨房干净，厨师重视日常清洁。"
+   }
+  ],
+  "root": "clean（干净）+ -ness → 清洁状态"
+ },
+ "cling": {
+  "exs": [
+   {
+    "en": "The old label still clings to the bottle after hours in hot water.",
+    "cn": "旧标签泡在热水里几小时后仍粘在瓶子上。"
+   },
+   {
+    "en": "Clinging to his dream of becoming a surgeon, he worked late into the night despite exhaustion.",
+    "cn": "他紧抱着成为外科医生的梦想，尽管疲惫仍工作到深夜。"
+   }
+  ],
+  "root": "cl像手抓+ing持续→粘紧、坚持"
+ },
+ "clip": {
+  "exs": [
+   {
+    "en": "The metal clip holds the newspaper clippings on the fridge.",
+    "cn": "金属夹子把剪报固定在冰箱上。"
+   },
+   {
+    "en": "After clipping the article, he pinned it beside his study notes.",
+    "cn": "剪下文章后，他把剪报别在学习笔记旁。"
+   }
+  ],
+  "root": "夹子“咔”一声，夹住剪报。"
+ },
+ "clown": {
+  "exs": [
+   {
+    "en": "The clown's exaggerated gestures delighted children in the crowded park.",
+    "cn": "在拥挤的公园里，小丑夸张的动作让孩子们很开心。"
+   },
+   {
+    "en": "Juggling colorful balls, the clown made children laugh loudly.",
+    "cn": "抛接彩色球时，小丑让孩子们大笑起来。"
+   }
+  ],
+  "root": "红鼻子大鞋，滑稽“丑”角。"
+ },
+ "coalition": {
+  "exs": [
+   {
+    "en": "The fragile coalition collapsed after the controversial tax reform.",
+    "cn": "脆弱的联盟在争议性税改后瓦解。"
+   },
+   {
+    "en": "Although they had different views, the parties formed a coalition.",
+    "cn": "尽管观点不同，各政党还是组成了联盟。"
+   }
+  ],
+  "root": "co-（共同）+结合→联盟。"
+ },
+ "coffin": {
+  "exs": [
+   {
+    "en": "The polished coffin rested quietly in the old church hall.",
+    "cn": "光亮的棺材静静放在老教堂大厅里。"
+   },
+   {
+    "en": "Carrying the heavy coffin, the mourners walked slowly toward the grave.",
+    "cn": "抬着沉重棺材，哀悼者缓缓走向墓穴。"
+   }
+  ],
+  "root": "希腊语“篮子”→像篮子→棺材。"
+ },
+ "coincide": {
+  "exs": [
+   {
+    "en": "The survey results coincide with previous findings about urban migration.",
+    "cn": "调查结果与之前关于城市迁移的发现一致。"
+   },
+   {
+    "en": "When the data are plotted, the trends coincide almost perfectly.",
+    "cn": "当数据被绘制出来时，趋势几乎完全重合。"
+   }
+  ],
+  "root": "co-（共同）+incid（落下）→巧合。"
+ },
+ "collide": {
+  "exs": [
+   {
+    "en": "Two cars collide at the intersection during heavy rain.",
+    "cn": "暴雨中两辆车在路口相撞。"
+   },
+   {
+    "en": "The two opinions collide whenever the committee discusses budget cuts.",
+    "cn": "每当委员会讨论削减预算时，两种意见就冲突。"
+   }
+  ],
+  "root": "col-（共同）+撞→互撞。"
+ },
+ "combustion": {
+  "exs": [
+   {
+    "en": "Internal combustion engines power most cars, trucks, and buses worldwide.",
+    "cn": "内燃机为世界上大多数汽车、卡车和公共汽车提供动力。"
+   },
+   {
+    "en": "When oxygen combines with fuel, rapid combustion releases heat and light.",
+    "cn": "当氧气与燃料结合时，剧烈燃烧会释放热量和光。"
+   }
+  ],
+  "root": "com-（一起）+ urere（烧）→燃烧"
+ },
+ "commentary": {
+  "exs": [
+   {
+    "en": "The professor's commentary clarified several ambiguous passages in the ancient manuscript.",
+    "cn": "教授的注释澄清了古代手稿中几处模糊的段落。"
+   },
+   {
+    "en": "While watching the documentary, listeners heard a lively commentary explaining complex historical events.",
+    "cn": "观看纪录片时，听众听到一段生动的解说，解释了复杂的历史事件。"
+   }
+  ],
+  "root": "comment（评论）+ -ary（名词）→评论文字"
+ },
+ "commonwealth": {
+  "exs": [
+   {
+    "en": "The commonwealth passed new legislation for small businesses after the recession.",
+    "cn": "该联邦在衰退后通过了针对小企业的新立法。"
+   },
+   {
+    "en": "The commonwealth, which includes several former colonies, promotes trade and cultural exchange among its members.",
+    "cn": "这个包括若干前殖民地的联邦促进成员国之间的贸易和文化交流。"
+   }
+  ],
+  "root": "common（共同）+ wealth（财富）→联邦"
+ },
+ "compatibility": {
+  "exs": [
+   {
+    "en": "Software compatibility issues often frustrate users during major operating system updates.",
+    "cn": "在重大操作系统更新期间，软件兼容性问题常令用户沮丧。"
+   },
+   {
+    "en": "Before launching the product, engineers tested its compatibility with various devices.",
+    "cn": "在产品发布前，工程师测试了它与各种设备的兼容性。"
+   }
+  ],
+  "root": "com-（共同）+ pati（忍受）→兼容性"
+ },
+ "compensate": {
+  "exs": [
+   {
+    "en": "The company will compensate customers for late deliveries.",
+    "cn": "公司将就延迟交货向客户作出补偿。"
+   },
+   {
+    "en": "If the product fails inspection, the manufacturer must compensate the buyer for the loss.",
+    "cn": "如果产品未通过检验，制造商必须赔偿买方的损失。"
+   }
+  ],
+  "root": "com-（加强）+ pens（支付）→补偿"
+ },
+ "competitor": {
+  "exs": [
+   {
+    "en": "Each competitor lowered prices in the smartphone market last quarter.",
+    "cn": "上季度每个竞争对手都降低了智能手机市场的价格。"
+   },
+   {
+    "en": "The company hired a consultant to analyze how each competitor prices its products.",
+    "cn": "公司聘请顾问分析每个竞争对手如何为其产品定价。"
+   }
+  ],
+  "root": "com-（一起）+ pet（追求）→竞争者"
+ },
+ "complexity": {
+  "exs": [
+   {
+    "en": "Urban traffic congestion adds complexity to emergency medical response.",
+    "cn": "城市交通拥堵增加了紧急医疗响应的复杂性。"
+   },
+   {
+    "en": "The committee postponed the project because the algorithm's complexity exceeded available computing power.",
+    "cn": "委员会推迟了该项目，因为算法复杂性超出了可用算力。"
+   }
+  ],
+  "root": "com-（一起）+ plex（编织）→ 复杂性"
+ },
+ "comply": {
+  "exs": [
+   {
+    "en": "All employees must comply with the new data retention policy.",
+    "cn": "所有员工必须遵守新的数据保留政策。"
+   },
+   {
+    "en": "Failing to comply with safety regulations, the factory was fined heavily.",
+    "cn": "由于未能遵守安全法规，该工厂被重罚。"
+   }
+  ],
+  "root": "一起(com)+弯折(ply)→顺从"
+ },
+ "comprehend": {
+  "exs": [
+   {
+    "en": "The statute comprehends every form of digital harassment.",
+    "cn": "该法规涵盖各种形式的网络骚扰。"
+   },
+   {
+    "en": "Comprehending the data's limits, the analyst avoided bold conclusions.",
+    "cn": "认识到数据的局限后，分析员避免了大胆结论。"
+   }
+  ],
+  "root": "com-（一起）+ prehens（抓）→ 理解"
+ },
+ "concede": {
+  "exs": [
+   {
+    "en": "The government conceded defeat after months of public criticism.",
+    "cn": "政府在数月公众批评后承认失败。"
+   },
+   {
+    "en": "Conceding defeat, the candidate gave a gracious speech to supporters.",
+    "cn": "承认失败后，候选人向支持者发表了优雅演讲。"
+   }
+  ],
+  "root": "con-（一起）+ cede（走）→ 退让"
+ },
+ "concession": {
+  "exs": [
+   {
+    "en": "The union secured a major concession on weekend working hours.",
+    "cn": "工会在周末工作时长上争取到重大让步。"
+   },
+   {
+    "en": "After long negotiations, the company offered a concession to keep the contract.",
+    "cn": "经过长时间谈判，公司作出让步以保住合同。"
+   }
+  ],
+  "root": "concede（让步）+ -ion → 让步"
+ },
+ "confidential": {
+  "exs": [
+   {
+    "en": "Please keep the patient's medical records strictly confidential.",
+    "cn": "请严格保密患者的病历。"
+   },
+   {
+    "en": "The lawyer refused to disclose information that was confidential.",
+    "cn": "律师拒绝披露机密信息。"
+   }
+  ],
+  "root": "con-（一起）+ fid（信任）→ 机密"
+ },
+ "conform": {
+  "exs": [
+   {
+    "en": "Students must conform to the university's strict dress code during exams.",
+    "cn": "学生在考试期间必须遵守学校严格的着装规定。"
+   },
+   {
+    "en": "Conforming to local regulations, the factory reduced waste output before inspectors arrived.",
+    "cn": "为了符合当地法规，工厂在检查人员到达前减少了废物排放。"
+   }
+  ],
+  "root": "con-（共同）+form（形状）→符合"
+ },
+ "congest": {
+  "exs": [
+   {
+    "en": "Heavy rain congested the drainage system beneath the old downtown district.",
+    "cn": "大雨使旧市中心下方的排水系统堵塞。"
+   },
+   {
+    "en": "Congested with holiday traffic, the highway slowed to a crawl near the bridge.",
+    "cn": "因假日车流而拥堵，高速公路在桥附近缓慢爬行。"
+   }
+  ],
+  "root": "con-（一起）+gest（搬运）→拥塞"
+ },
+ "consensus": {
+  "exs": [
+   {
+    "en": "The committee reached a consensus after three hours of heated discussion.",
+    "cn": "委员会经过三小时激烈讨论后达成一致。"
+   },
+   {
+    "en": "A broad consensus emerged once residents realized that the new route would reduce noise.",
+    "cn": "一旦居民意识到新路线能减少噪音，广泛共识便形成了。"
+   }
+  ],
+  "root": "con-（共同）+sens（感觉）→共识"
+ },
+ "console": {
+  "exs": [
+   {
+    "en": "The kind nurse consoled the frightened child with a warm blanket.",
+    "cn": "善良的护士用一条温暖的毯子安慰受惊的孩子。"
+   },
+   {
+    "en": "The engineer checked the console before the experiment began.",
+    "cn": "实验开始前，工程师检查了控制台。"
+   }
+  ],
+  "root": "con-（加强）+sol（安慰）→安慰；控制台联想control"
+ },
+ "constituent": {
+  "exs": [
+   {
+    "en": "Water is a major constituent of most natural beverages.",
+    "cn": "水是大多数天然饮料的主要成分。"
+   },
+   {
+    "en": "The senator listened carefully to the concerns raised by each constituent.",
+    "cn": "参议员仔细倾听每位选民提出的关切。"
+   }
+  ],
+  "root": "con-（共同）+st（站）→成分/选民"
+ },
+ "consul": {
+  "exs": [
+   {
+    "en": "The consul helped stranded students replace their lost passports.",
+    "cn": "领事帮助滞留学生补办丢失的护照。"
+   },
+   {
+    "en": "The consul, who had served abroad for years, spoke fluent Spanish.",
+    "cn": "曾在海外任职多年的领事说一口流利的西班牙语。"
+   }
+  ],
+  "root": "con-（一起）+consult→领事/执政官"
+ },
+ "contaminate": {
+  "exs": [
+   {
+    "en": "The factory contaminated the river with toxic waste.",
+    "cn": "工厂用有毒废料污染了河流。"
+   },
+   {
+    "en": "Leaking from underground tanks, the chemical contaminated nearby wells, forcing residents to buy bottled water.",
+    "cn": "从地下储罐泄漏后，这种化学物质污染了附近的水井，迫使居民购买瓶装水。"
+   }
+  ],
+  "root": "con（一起）+ tam（他）→ 一起脏→污染"
+ },
+ "contemptuous": {
+  "exs": [
+   {
+    "en": "His contemptuous smile made the student feel embarrassed.",
+    "cn": "他那轻蔑的微笑让这名学生感到尴尬。"
+   },
+   {
+    "en": "She spoke in a contemptuous tone, dismissing the argument as nonsense.",
+    "cn": "她用轻蔑的口气说话，把这一论点斥为胡说。"
+   }
+  ],
+  "root": "contempt（蔑视）+ -uous（充满）→ 轻蔑的"
+ },
+ "contradict": {
+  "exs": [
+   {
+    "en": "The witness contradicted the suspect's alibi during questioning.",
+    "cn": "证人在讯问中反驳了嫌疑人的不在场证明。"
+   },
+   {
+    "en": "The new data contradicted what the earlier study had claimed, undermining its credibility.",
+    "cn": "新数据与早前研究所声称的内容相矛盾，削弱了其可信度。"
+   }
+  ],
+  "root": "contra-（反对）+ dict（说）→ 反驳"
+ },
+ "contrived": {
+  "exs": [
+   {
+    "en": "The late plot twist felt contrived and unconvincing.",
+    "cn": "这个后期情节转折显得生硬且难以令人信服。"
+   },
+   {
+    "en": "The writer introduced a contrived coincidence, making the ending seem unnatural.",
+    "cn": "作者安排了一个牵强的巧合，使结局显得不自然。"
+   }
+  ],
+  "root": "contrive 谐音“困特歪”→ 硬造→勉强"
+ },
+ "converse": {
+  "exs": [
+   {
+    "en": "The converse of that assumption is equally questionable.",
+    "cn": "那个假设的反面同样值得怀疑。"
+   },
+   {
+    "en": "Having heard his argument, I considered its converse carefully.",
+    "cn": "听完他的论点后，我仔细考虑了它的反面。"
+   }
+  ],
+  "root": "con-（一起）+ vers（转）→ 相反/交谈"
+ },
+ "convincing": {
+  "exs": [
+   {
+    "en": "Her detailed evidence was convincing to the panel.",
+    "cn": "她详细的证据令评审组信服。"
+   },
+   {
+    "en": "The report presented convincing charts, showing how emissions fell after the policy.",
+    "cn": "报告展示了令人信服的图表，表明政策实施后排放如何下降。"
+   }
+  ],
+  "root": "con-（一起）+ vinc（征服）→ 令人信服"
+ },
+ "correctly": {
+  "exs": [
+   {
+    "en": "The student correctly answered every question in the final mathematics examination yesterday.",
+    "cn": "学生在昨天的数学期末考试中正确回答了每一道题。"
+   },
+   {
+    "en": "Having checked the data twice, the researcher correctly identified the error in the model.",
+    "cn": "在两次核对数据之后，研究人员正确识别出了模型中的错误。"
+   }
+  ],
+  "root": "cor-（一起）+ rect（直）→ 正确地"
+ },
+ "correspondence": {
+  "exs": [
+   {
+    "en": "The correspondence between the two accounts was surprisingly accurate.",
+    "cn": "两份账目之间的相符程度惊人地准确。"
+   },
+   {
+    "en": "The diplomat kept a file of correspondence that revealed secret negotiations.",
+    "cn": "这位外交官保存了一堆通信文件，其中揭露了秘密谈判。"
+   }
+  ],
+  "root": "cor-（一起）+ respond（回应）→ 通信/相符"
+ },
+ "corrupt": {
+  "exs": [
+   {
+    "en": "The corrupt official stole public funds for years.",
+    "cn": "那个腐败官员多年侵吞公款。"
+   },
+   {
+    "en": "Bribes can corrupt a system if they remain unchecked.",
+    "cn": "如果贿赂得不到遏制，它们就会腐蚀整个体制。"
+   }
+  ],
+  "root": "cor-（彻底）+ rupt（断）→ 腐败"
+ },
+ "costume": {
+  "exs": [
+   {
+    "en": "The actress wore a medieval costume during the play.",
+    "cn": "这位女演员在演出中穿了一套中世纪服装。"
+   },
+   {
+    "en": "Dressed in a traditional costume, the dancer looked like a figure from a folk tale.",
+    "cn": "穿着传统服饰，这位舞者宛如民间故事里的人物。"
+   }
+  ],
+  "root": "cost（花费）+ ume（昂贵行头）→ 服装"
+ },
+ "counseling": {
+  "exs": [
+   {
+    "en": "The university offers free counseling to stressed students.",
+    "cn": "这所大学为压力大的学生提供免费咨询服务。"
+   },
+   {
+    "en": "Counseling that focuses on career goals helps graduates choose jobs.",
+    "cn": "聚焦职业目标的咨询服务帮助毕业生选择工作。"
+   }
+  ],
+  "root": "counsel（劝告）+ -ing → 咨询"
+ },
+ "courteous": {
+  "exs": [
+   {
+    "en": "The courteous waiter helped the elderly couple cross the road.",
+    "cn": "那位彬彬有礼的服务员帮助老夫妇过马路。"
+   },
+   {
+    "en": "Although tired, the manager remained courteous toward every customer.",
+    "cn": "尽管疲惫，经理仍对每位顾客保持礼貌。"
+   }
+  ],
+  "root": "court（宫廷）+ -eous → 有礼貌"
+ },
+ "crab": {
+  "exs": [
+   {
+    "en": "The crab scuttled across the wet sand toward the tide.",
+    "cn": "螃蟹在湿沙上匆匆爬向潮水。"
+   },
+   {
+    "en": "The pilot, seeing the crosswind, had to crab left to stay on course.",
+    "cn": "飞行员看到侧风后，不得不向左偏航以保持航向。"
+   }
+  ],
+  "root": "蟹横爬→偏航/脾气乖戾"
+ },
+ "credential": {
+  "exs": [
+   {
+    "en": "Her teaching credential reassured the school of her competence.",
+    "cn": "她的教师资格证让学校对她的能力放心。"
+   },
+   {
+    "en": "The company verified every credential before granting access to the secure database.",
+    "cn": "公司在授予安全数据库访问权限前核验了每项凭证。"
+   }
+  ],
+  "root": "cred-相信+-ential→凭证"
+ },
+ "criteria": {
+  "exs": [
+   {
+    "en": "The judges set clear criteria for the final debate round.",
+    "cn": "评委为决赛辩论轮设定了明确标准。"
+   },
+   {
+    "en": "Once the criteria were published, candidates prepared more focused arguments.",
+    "cn": "标准公布后，参赛者准备了更有针对性的论点。"
+   }
+  ],
+  "root": "crit-判断+eria→标准"
+ },
+ "cruelty": {
+  "exs": [
+   {
+    "en": "The documentary exposed cruelty behind the glamorous circus acts.",
+    "cn": "纪录片揭露了华丽马戏表演背后的残忍。"
+   },
+   {
+    "en": "Witnessing such cruelty, the committee demanded stricter animal welfare laws.",
+    "cn": "目睹这种残忍后，委员会要求制定更严格的动物福利法。"
+   }
+  ],
+  "root": "cruel残酷+ty→残酷"
+ },
+ "culminate": {
+  "exs": [
+   {
+    "en": "The festival culminated in a fireworks display over the lake.",
+    "cn": "节日以湖上烟花表演达到高潮。"
+   },
+   {
+    "en": "Months of negotiations culminated in a treaty that reduced trade barriers.",
+    "cn": "数月谈判最终达成一项减少贸易壁垒的条约。"
+   }
+  ],
+  "root": "culmin-顶点+ate→达到顶点"
+ },
+ "curly": {
+  "exs": [
+   {
+    "en": "The curly lock fell across her forehead during the exam.",
+    "cn": "卷发在考试时垂到她额前。"
+   },
+   {
+    "en": "He brushed the curly hair that kept escaping from the ribbon.",
+    "cn": "他梳理那缕总从发带里逃出来的卷发。"
+   }
+  ],
+  "root": "curl卷曲+y→卷曲的"
+ },
+ "curriculum": {
+  "exs": [
+   {
+    "en": "The university revised its core curriculum to include data science and ethics.",
+    "cn": "大学修订了核心课程，纳入数据科学与伦理。"
+   },
+   {
+    "en": "Hoping to meet industry demands, faculty members redesigned the curriculum within six months.",
+    "cn": "为满足行业需求，教师在六个月内重新设计了课程。"
+   }
+  ],
+  "root": "curr（跑）→ 学习进程 → 课程"
+ },
+ "cutter": {
+  "exs": [
+   {
+    "en": "The skilled cutter trimmed the leather pieces with steady hands.",
+    "cn": "熟练的切割工用稳定的手修剪皮革片。"
+   },
+   {
+    "en": "Using a laser cutter, the factory reduces waste while meeting tight deadlines.",
+    "cn": "使用激光切割器，工厂在满足紧迫工期的同时减少浪费。"
+   }
+  ],
+  "root": "cut（切）+ -er（人/物）→ 切割者"
+ },
+ "damn": {
+  "exs": [
+   {
+    "en": "He did not give a damn about the criticism.",
+    "cn": "他根本不在乎那些批评。"
+   },
+   {
+    "en": "Damn the contract, which promised quick payment but caused endless disputes.",
+    "cn": "诅咒这份合同，它承诺快速付款却引发了无尽纠纷。"
+   }
+  ],
+  "root": "damn（定罪/损害）→ 诅咒/该死"
+ },
+ "deafen": {
+  "exs": [
+   {
+    "en": "The sudden explosion deafened several workers in the factory.",
+    "cn": "突然的爆炸使工厂里的几名工人失聪。"
+   },
+   {
+    "en": "Deafened by the roar, the dog ran behind the sofa for safety.",
+    "cn": "被吼声震聋后，狗跑到沙发后面寻求安全。"
+   }
+  ],
+  "root": "deaf（聋）+ -en（使）→ 使聋"
+ },
+ "deceptive": {
+  "exs": [
+   {
+    "en": "The advertisement contained deceptive claims about the product's lifespan.",
+    "cn": "广告中包含关于产品寿命的欺骗性宣传。"
+   },
+   {
+    "en": "Seemingly harmless, the deceptive email asked users to update their passwords.",
+    "cn": "看似无害的欺诈邮件要求用户更新密码。"
+   }
+  ],
+  "root": "deceive（骗）+ -ive → 欺骗性的"
+ },
+ "decisive": {
+  "exs": [
+   {
+    "en": "The captain made a decisive call during the final quarter.",
+    "cn": "队长在最后时刻做出了果断决定。"
+   },
+   {
+    "en": "A decisive victory, which lifted morale across the region, followed months of planning.",
+    "cn": "一场提振全地区士气的决定性胜利，在数月筹备后到来。"
+   }
+  ],
+  "root": "decide（决定）+ -ive → 决定性的"
+ },
+ "decorative": {
+  "exs": [
+   {
+    "en": "The ceramic tiles are decorative rather than structural.",
+    "cn": "这些陶瓷瓷砖是装饰性的，而非结构性的。"
+   },
+   {
+    "en": "The museum added decorative patterns, enhancing the hall's visual appeal.",
+    "cn": "博物馆添加了装饰图案，增强了大厅的视觉吸引力。"
+   }
+  ],
+  "root": "de+decor(装饰)+ative→装饰性"
+ },
+ "deduct": {
+  "exs": [
+   {
+    "en": "Please deduct ten percent from the total invoice amount.",
+    "cn": "请从发票总金额中扣除百分之十。"
+   },
+   {
+    "en": "If you deduct the deposit, the customer may complain.",
+    "cn": "如果你扣除押金，顾客可能会投诉。"
+   }
+  ],
+  "root": "de+duct(引导)→引走→扣除"
+ },
+ "defendant": {
+  "exs": [
+   {
+    "en": "The defendant denied all charges during the preliminary hearing.",
+    "cn": "被告在初步听证会上否认了所有指控。"
+   },
+   {
+    "en": "The defendant, fearing a harsh sentence, hired an experienced lawyer.",
+    "cn": "被告担心严厉判决，聘请了经验丰富的律师。"
+   }
+  ],
+  "root": "de+fend(打击)+ant→被告"
+ },
+ "deficient": {
+  "exs": [
+   {
+    "en": "The research report is deficient in statistical evidence.",
+    "cn": "该研究报告缺乏统计证据。"
+   },
+   {
+    "en": "Students who are deficient in grammar often struggle in writing.",
+    "cn": "语法薄弱的学生在写作中常常吃力。"
+   }
+  ],
+  "root": "de+fic(做)+ient→不足"
+ },
+ "deflection": {
+  "exs": [
+   {
+    "en": "The engineer measured the deflection of the steel beam.",
+    "cn": "工程师测量了钢梁的偏转。"
+   },
+   {
+    "en": "The light's deflection, caused by the prism, surprised the students.",
+    "cn": "棱镜造成的光线偏转让学生惊讶。"
+   }
+  ],
+  "root": "de+flect(弯)+ion→偏转"
+ },
+ "degrade": {
+  "exs": [
+   {
+    "en": "Air pollution can degrade the quality of soil in rural areas.",
+    "cn": "空气污染会降低农村地区土壤的质量。"
+   },
+   {
+    "en": "Degrading gradually, the soil lost its fertility after years of intensive farming.",
+    "cn": "土壤逐渐退化，在多年集约耕作后失去了肥力。"
+   }
+  ],
+  "root": "de-（向下）+ grade（等级）→ 降级/退化"
+ },
+ "demography": {
+  "exs": [
+   {
+    "en": "Demography helps governments plan schools, hospitals, and social services.",
+    "cn": "人口统计学帮助政府规划学校、医院和社会服务。"
+   },
+   {
+    "en": "Studying demography, she found that the aging population is increasing rapidly.",
+    "cn": "学习人口统计学时，她发现老龄人口正迅速增加。"
+   }
+  ],
+  "root": "demo（人民）+ graphy（学科）→ 人口学"
+ },
+ "denounce": {
+  "exs": [
+   {
+    "en": "The council denounced the factory for polluting the local river.",
+    "cn": "委员会谴责该工厂污染当地河流。"
+   },
+   {
+    "en": "He denounced the policy, claiming that it would harm small farmers.",
+    "cn": "他谴责该政策，声称它会损害小农户的利益。"
+   }
+  ],
+  "root": "de-（加强）+ nounce（说）→ 公开谴责"
+ },
+ "depict": {
+  "exs": [
+   {
+    "en": "The painting depicts villagers harvesting rice under a golden sky.",
+    "cn": "这幅画描绘了村民在金色天空下收割稻谷。"
+   },
+   {
+    "en": "Depicting the disaster honestly, the reporter won public trust.",
+    "cn": "记者如实描绘灾难，赢得了公众信任。"
+   }
+  ],
+  "root": "de-（加强）+ pict（画）→ 描绘"
+ },
+ "deposition": {
+  "exs": [
+   {
+    "en": "The deposition of sediment blocked the harbor entrance for months.",
+    "cn": "沉积物堆积使港口入口堵塞了数月。"
+   },
+   {
+    "en": "Having given a deposition, the witness left the courtroom quietly.",
+    "cn": "完成作证后，证人安静地离开了法庭。"
+   }
+  ],
+  "root": "de-（向下）+ posit（放）→ 沉淀/免职/作证"
+ },
+ "descent": {
+  "exs": [
+   {
+    "en": "The airplane began its descent above the foggy airport.",
+    "cn": "飞机在雾气笼罩的机场上空开始下降。"
+   },
+   {
+    "en": "Descending from the mountain, they saw a valley hidden in mist.",
+    "cn": "从山上下来时，他们看见一个被雾气隐藏的山谷。"
+   }
+  ],
+  "root": "de-（向下）+ scend（爬）→ 下降/降落"
+ },
+ "despatch": {
+  "exs": [
+   {
+    "en": "The manager despatched two technicians to repair the leaking pipeline before midnight.",
+    "cn": "经理派遣两名技术人员在午夜前修理泄漏的管道。"
+   },
+   {
+    "en": "Having checked the inventory, the warehouse clerk despatched the urgent shipment within an hour.",
+    "cn": "核对库存后，仓库职员在一小时内发出了加急货物。"
+   }
+  ],
+  "root": "dis-（离开）+patch（打包）→打包送走→派遣"
+ },
+ "destine": {
+  "exs": [
+   {
+    "en": "The director destined the quiet actress to play a leading role.",
+    "cn": "导演预定让那位安静的女演员出演主角。"
+   },
+   {
+    "en": "Although he was destined to fail, the apprentice kept polishing the brass gears.",
+    "cn": "尽管注定失败，学徒仍继续打磨黄铜齿轮。"
+   }
+  ],
+  "root": "de-（加强）+stin（站）→站定→注定"
+ },
+ "detain": {
+  "exs": [
+   {
+    "en": "Customs officers detained the suspicious traveler for thirty minutes.",
+    "cn": "海关人员扣押可疑旅客三十分钟。"
+   },
+   {
+    "en": "Detained at the checkpoint, the driver waited for a passport check.",
+    "cn": "在检查站被扣留，司机等待护照检查。"
+   }
+  ],
+  "root": "de-（离开）+tain（握持）→握住不放→扣留"
+ },
+ "deteriorate": {
+  "exs": [
+   {
+    "en": "The patient's condition deteriorated rapidly after the surgery.",
+    "cn": "患者病情在手术后迅速恶化。"
+   },
+   {
+    "en": "The soil deteriorated, losing nutrients after years of intensive farming.",
+    "cn": "经过多年集约耕作，土壤恶化并流失养分。"
+   }
+  ],
+  "root": "de-（向下）+terior（更坏）→向下变坏→恶化"
+ },
+ "devotion": {
+  "exs": [
+   {
+    "en": "Her devotion to the elderly patients impressed every nurse on the ward.",
+    "cn": "她对老年患者的热爱让病房里每位护士印象深刻。"
+   },
+   {
+    "en": "Driven by devotion, the researcher spent nights reviewing fragile manuscripts.",
+    "cn": "出于热爱，研究员整夜审阅脆弱的手稿。"
+   }
+  ],
+  "root": "de-（完全）+vot（誓愿）→立誓投入→热爱"
+ },
+ "diagnostic": {
+  "exs": [
+   {
+    "en": "The doctor ordered a diagnostic test to identify the infection.",
+    "cn": "医生安排诊断测试以查明感染。"
+   },
+   {
+    "en": "The engineer ran a diagnostic program after the server crashed repeatedly.",
+    "cn": "服务器反复崩溃后，工程师运行了诊断程序。"
+   }
+  ],
+  "root": "dia-（穿过）+gnostic（知）→知病因→诊断"
+ },
+ "diffuse": {
+  "exs": [
+   {
+    "en": "Agricultural experts diffuse new techniques among remote villages.",
+    "cn": "农业专家在偏远村庄间传播新技术。"
+   },
+   {
+    "en": "Spreading through the crowd, the rumor became diffuse and impossible to trace.",
+    "cn": "谣言在人群中扩散，变得弥漫且难以追溯。"
+   }
+  ],
+  "root": "dif-（分开）+ fuse（流）→ 散开。"
+ },
+ "diligence": {
+  "exs": [
+   {
+    "en": "Her diligence earned her a promotion within months.",
+    "cn": "她的勤奋让她在几个月内获得晋升。"
+   },
+   {
+    "en": "By checking every detail twice, the auditor showed remarkable diligence.",
+    "cn": "通过把每个细节检查两遍，审计员表现出非凡的勤奋。"
+   }
+  ],
+  "root": "di-（分开）+ lig（选）→ 精心挑选 → 勤奋。"
+ },
+ "diploma": {
+  "exs": [
+   {
+    "en": "He displayed his diploma on the office wall.",
+    "cn": "他把文凭挂在办公室墙上。"
+   },
+   {
+    "en": "After graduating with honors, she received a diploma from the university.",
+    "cn": "荣誉毕业后，她从大学获得了一张文凭。"
+   }
+  ],
+  "root": "diplo-（折叠）+ -ma → 折叠证书 → 文凭。"
+ },
+ "disagreement": {
+  "exs": [
+   {
+    "en": "The disagreement between the two departments delayed the project.",
+    "cn": "两个部门之间的分歧延误了项目。"
+   },
+   {
+    "en": "Although they remained friends, their disagreement over housing costs grew.",
+    "cn": "尽管他们仍是朋友，但他们在住房费用上的分歧越来越大。"
+   }
+  ],
+  "root": "dis-（不）+ agree（同意）+ -ment → 不一致。"
+ },
+ "disastrous": {
+  "exs": [
+   {
+    "en": "The disastrous flood destroyed many homes near the river.",
+    "cn": "那场灾难性的洪水摧毁了河边的许多房屋。"
+   },
+   {
+    "en": "Having ignored the warnings, the company suffered disastrous losses.",
+    "cn": "由于忽视警告，该公司遭受了惨重损失。"
+   }
+  ],
+  "root": "disaster（灾难）+ -ous（形容词）→ 灾难性的。"
+ },
+ "discourse": {
+  "exs": [
+   {
+    "en": "The professor's discourse on climate change attracted students.",
+    "cn": "教授关于气候变化的演讲吸引了学生。"
+   },
+   {
+    "en": "Listening carefully, the audience followed the political discourse without interruption.",
+    "cn": "听众认真聆听，不间断地跟上政治演讲。"
+   }
+  ],
+  "root": "dis-（分开）+ curs（跑）→ 来回跑 → 论述。"
+ },
+ "disgrace": {
+  "exs": [
+   {
+    "en": "The scandal brought disgrace to the entire family.",
+    "cn": "丑闻使整个家族蒙受耻辱。"
+   },
+   {
+    "en": "Disgraced by the leaked documents, the minister resigned before the vote.",
+    "cn": "因文件泄露而受辱，部长在投票前辞职。"
+   }
+  ],
+  "root": "dis-（离开）+ grace（体面）→ 失体面"
+ },
+ "dismay": {
+  "exs": [
+   {
+    "en": "The sudden closure filled the workers with dismay.",
+    "cn": "突然倒闭令工人们沮丧。"
+   },
+   {
+    "en": "Seeing the empty factory, the old manager felt deep dismay.",
+    "cn": "看到空荡荡的工厂，老经理深感沮丧。"
+   }
+  ],
+  "root": "惊闻坏消息，心沉如坠石"
+ },
+ "dispatch": {
+  "exs": [
+   {
+    "en": "The company dispatched a repair team to the site.",
+    "cn": "公司派维修队去现场。"
+   },
+   {
+    "en": "Dispatched by headquarters, the urgent message arrived before dawn.",
+    "cn": "由总部发出的急件在黎明前到达。"
+   }
+  ],
+  "root": "把任务派出去送急件，像分派快送"
+ },
+ "displace": {
+  "exs": [
+   {
+    "en": "New technology can displace many manual jobs in factories.",
+    "cn": "新技术能取代工厂里许多体力岗位。"
+   },
+   {
+    "en": "Displaced by the dam project, villagers moved to higher ground.",
+    "cn": "因大坝工程被迫迁移的村民搬到高地。"
+   }
+  ],
+  "root": "dis-（离开）+ place（地方）→ 离开原位"
+ },
+ "disproportionate": {
+  "exs": [
+   {
+    "en": "The punishment seemed disproportionate to the minor offense.",
+    "cn": "处罚似乎与轻微过错不成比例。"
+   },
+   {
+    "en": "Resources are disproportionate when compared with the growing demand.",
+    "cn": "与不断增长的需求相比，资源分配不成比例。"
+   }
+  ],
+  "root": "dis-（不）+ proportion（比例）→ 不成比例"
+ },
+ "disruptive": {
+  "exs": [
+   {
+    "en": "The strike caused disruptive delays across the city.",
+    "cn": "罢工造成全市破坏性延误。"
+   },
+   {
+    "en": "Disruptive technologies, which challenge old industries, attract many investors.",
+    "cn": "挑战旧产业的颠覆性技术吸引许多投资者。"
+   }
+  ],
+  "root": "dis-（分开）+ rupt（断）→ 打断、破坏"
+ },
+ "dissipate": {
+  "exs": [
+   {
+    "en": "He dissipated his inheritance through reckless gambling and poor investments.",
+    "cn": "他通过鲁莽赌博和糟糕投资挥霍了遗产。"
+   },
+   {
+    "en": "As the crowd dissipated after the concert, the police restored order near the station.",
+    "cn": "音乐会后人群散去，警方在车站附近恢复了秩序。"
+   }
+  ],
+  "root": "dis-（分开）+ -ate（动词）→ 使散开→消散/浪费"
+ },
+ "distinctly": {
+  "exs": [
+   {
+    "en": "Her distinctly stronger voice reassured the worried parents.",
+    "cn": "她明显更洪亮的声音让担忧的父母安心。"
+   },
+   {
+    "en": "Standing apart from the crowd, the guide spoke distinctly enough for everyone to hear.",
+    "cn": "站在人群外，导游说话清晰得足以让每个人听见。"
+   }
+  ],
+  "root": "dis-（分开）+ tinct（标记）→ 分得清→明显"
+ },
+ "distract": {
+  "exs": [
+   {
+    "en": "Loud construction work outside the library distracted the students from revision.",
+    "cn": "图书馆外嘈杂的施工使学生们无法专心复习。"
+   },
+   {
+    "en": "While she tried to concentrate, his constant questions distracted her from the essay.",
+    "cn": "当她试图集中注意力时，他不断提问使她无法专心写论文。"
+   }
+  ],
+  "root": "dis-（离开）+ tract（拉）→ 拉走注意力→使分心"
+ },
+ "diversify": {
+  "exs": [
+   {
+    "en": "The small factory diversified its products during the recession.",
+    "cn": "这家小工厂在经济衰退期间使产品多样化。"
+   },
+   {
+    "en": "By diversifying into solar panels, the company reduced its dependence on oil.",
+    "cn": "通过转向太阳能板业务，该公司降低了对石油的依赖。"
+   }
+  ],
+  "root": "divers（不同）+ -fy（使）→ 使多样"
+ },
+ "divine": {
+  "exs": [
+   {
+    "en": "The poet described the mountain lake as a divine mirror of dawn.",
+    "cn": "诗人把山间湖泊描绘成黎明时分的神圣镜子。"
+   },
+   {
+    "en": "Having studied the ancient texts, the scholar interpreted the oracle as divine guidance.",
+    "cn": "研究过古代文献后，学者将神谕解释为神的指引。"
+   }
+  ],
+  "root": "div-（神）+ -ine（形容词）→ 神的"
+ },
+ "documentary": {
+  "exs": [
+   {
+    "en": "The documentary about coastal birds won an international award last spring.",
+    "cn": "这部关于海岸鸟类的纪录片去年春天获得国际奖项。"
+   },
+   {
+    "en": "Filmed over three years, the documentary reveals how rising seas destroy villages.",
+    "cn": "历时三年拍摄的这部纪录片揭示了海平面上升如何摧毁村庄。"
+   }
+  ],
+  "root": "document（文件）+ -ary（名词/形容词）→ 记录片/文件的"
+ },
+ "donate": {
+  "exs": [
+   {
+    "en": "The company donated medical supplies to rural schools last month.",
+    "cn": "该公司上个月向农村学校捐赠了医疗用品。"
+   },
+   {
+    "en": "After seeing the flood footage, volunteers organized a campaign to donate warm clothes.",
+    "cn": "看到洪水画面后，志愿者们组织了一场捐赠保暖衣物的活动。"
+   }
+  ],
+  "root": "don-（给予）+ -ate动词后缀→给予→捐赠"
+ },
+ "dove": {
+  "exs": [
+   {
+    "en": "A white dove symbolizes peace in many cultures.",
+    "cn": "白色鸽子在许多文化中象征和平。"
+   },
+   {
+    "en": "She dove into the pool after the coach blew the whistle.",
+    "cn": "教练吹哨后，她跳进了泳池。"
+   }
+  ],
+  "root": "dove 鸽→和平；dive过去式同形→跳水"
+ },
+ "drastic": {
+  "exs": [
+   {
+    "en": "The government took drastic measures to curb rising housing prices.",
+    "cn": "政府采取了激烈措施来抑制不断上涨的房价。"
+   },
+   {
+    "en": "Because sales fell sharply, the manager made a drastic change to the pricing policy.",
+    "cn": "因为销售额急剧下降，经理对定价政策做了剧烈调整。"
+   }
+  ],
+  "root": "drast-（行动）+ -ic→行动猛烈→激烈的"
+ },
+ "dubious": {
+  "exs": [
+   {
+    "en": "The witness gave a dubious answer under repeated questioning.",
+    "cn": "证人在反复追问下给出了可疑的回答。"
+   },
+   {
+    "en": "Although the report looked promising, investors remained dubious about its long-term profits.",
+    "cn": "尽管报告看起来有前景，投资者仍对其长期利润持怀疑态度。"
+   }
+  ],
+  "root": "dub-（二）→犹豫两难→可疑的"
+ },
+ "duplicate": {
+  "exs": [
+   {
+    "en": "Please email a duplicate of the signed contract to the client.",
+    "cn": "请把已签署合同的副本通过电子邮件发送给客户。"
+   },
+   {
+    "en": "After scanning the document, the clerk created a duplicate to prevent data loss.",
+    "cn": "扫描文件后，职员制作了一份副本以防数据丢失。"
+   }
+  ],
+  "root": "du-（二）+ plic（折叠）→折成两份→副本"
+ },
+ "dynamical": {
+  "exs": [
+   {
+    "en": "The lecture introduced basic concepts of dynamical systems to freshmen.",
+    "cn": "讲座向新生介绍了动力学系统的基本概念。"
+   },
+   {
+    "en": "When forces act unevenly, the motion becomes more complex in a dynamical model.",
+    "cn": "当力作用不均匀时，动力学模型中的运动变得更复杂。"
+   }
+  ],
+  "root": "dynam-（力量）+ -ical形容词→动力的"
+ },
+ "earthenware": {
+  "exs": [
+   {
+    "en": "The museum displayed ancient earthenware pieces from a riverbank village.",
+    "cn": "博物馆展出了来自河岸村庄的古代陶器制品。"
+   },
+   {
+    "en": "Earthenware jars, which held grain for winter, were found beneath the burned floor.",
+    "cn": "存放过冬粮食的陶罐在烧毁的地板下被发现。"
+   }
+  ],
+  "root": "earthen（泥土的）+ ware（器物）→ 陶器"
+ },
+ "eclipse": {
+  "exs": [
+   {
+    "en": "A rare solar eclipse darkened the desert at noon.",
+    "cn": "一次罕见的日食使正午的沙漠变暗。"
+   },
+   {
+    "en": "Her new novel eclipsed earlier works that had won several literary prizes.",
+    "cn": "她的新小说盖过了曾获得多项文学奖的早期作品。"
+   }
+  ],
+  "root": "日/月被黑影遮住→食；光芒被盖过→黯然失色"
+ },
+ "ecosystem": {
+  "exs": [
+   {
+    "en": "A coral reef ecosystem supports thousands of marine species.",
+    "cn": "珊瑚礁生态系统支撑着数千种海洋生物。"
+   },
+   {
+    "en": "The forest ecosystem, which stores carbon and filters water, needs legal protection.",
+    "cn": "储存碳并净化水分的森林生态系统需要法律保护。"
+   }
+  ],
+  "root": "eco-（生态）+ system（系统）→ 生态系统"
+ },
+ "ego": {
+  "exs": [
+   {
+    "en": "A healthy ego helps students handle criticism without anxiety.",
+    "cn": "健康的自我意识有助于学生从容应对批评。"
+   },
+   {
+    "en": "His inflated ego made him reject advice that could have improved the design.",
+    "cn": "他膨胀的自我让他拒绝了本可改进设计的建议。"
+   }
+  ],
+  "root": "ego=拉丁语“我”→ 自我"
+ },
+ "elapse": {
+  "exs": [
+   {
+    "en": "Three weeks elapsed during the quiet summer in the village.",
+    "cn": "在乡村宁静的夏季，三周过去了。"
+   },
+   {
+    "en": "Years had elapsed before the town rebuilt the bridge that collapsed in the flood.",
+    "cn": "多年过去后，该镇才重建了洪水中坍塌的桥梁。"
+   }
+  ],
+  "root": "e-（出）+ laps（滑落）→ 时间流逝→逝去"
+ },
+ "elegant": {
+  "exs": [
+   {
+    "en": "The elegant hall impressed every delegate at the opening.",
+    "cn": "优雅的大厅给开幕式上的每位代表留下了深刻印象。"
+   },
+   {
+    "en": "Her elegant gown, designed with silver thread, reflected the lights of the ballroom.",
+    "cn": "她用银线装饰的优雅礼服映照出舞厅的灯光。"
+   }
+  ],
+  "root": "e-（出）+ leg（挑选）→ 挑出来的→优雅的"
+ },
+ "elevation": {
+  "exs": [
+   {
+    "en": "The village sits at an elevation of 1,200 meters above sea level.",
+    "cn": "这个村庄海拔1200米。"
+   },
+   {
+    "en": "Before the elevation was measured, surveyors climbed the ridge to set up instruments.",
+    "cn": "在测量海拔之前，勘测人员爬上山脊设置仪器。"
+   }
+  ],
+  "root": "e-（向外）+ lev（举起）→ 抬高/海拔"
+ },
+ "elliptical": {
+  "exs": [
+   {
+    "en": "The elliptical orbit of the satellite brings it close to Earth every night.",
+    "cn": "卫星的椭圆轨道使其每晚接近地球。"
+   },
+   {
+    "en": "Using an elliptical equation, the engineer calculated the dimensions of the curved hall.",
+    "cn": "工程师利用椭圆方程计算了弧形大厅的尺寸。"
+   }
+  ],
+  "root": "ellipse（椭圆）+ -ical → 椭圆形的"
+ },
+ "embark": {
+  "exs": [
+   {
+    "en": "Passengers will embark on the cruise ship tonight.",
+    "cn": "乘客今晚将登上这艘邮轮。"
+   },
+   {
+    "en": "After embarking on the project, the team realized the deadline was unrealistic.",
+    "cn": "在着手该项目之后，团队意识到截止日期不现实。"
+   }
+  ],
+  "root": "em-（进入）+ bark（小船）→ 上船/从事"
+ },
+ "emigrate": {
+  "exs": [
+   {
+    "en": "Many families emigrate to Canada for better job opportunities.",
+    "cn": "许多家庭为更好的工作机会移居加拿大。"
+   },
+   {
+    "en": "Having emigrated from Iran, she still celebrated Nowruz in her new city.",
+    "cn": "从伊朗移居后，她仍在新城市庆祝诺鲁兹节。"
+   }
+  ],
+  "root": "e-（出）+ migr（迁移）→ 迁出/移民"
+ },
+ "enchant": {
+  "exs": [
+   {
+    "en": "The old castle enchanted every visitor with its hidden gardens.",
+    "cn": "这座古老城堡以隐秘花园迷住了每位游客。"
+   },
+   {
+    "en": "Enchanted by the violinist, the audience remained silent until the last note faded.",
+    "cn": "被小提琴家迷住的观众保持安静，直到最后一个音符消失。"
+   }
+  ],
+  "root": "en-（使）+ chant（歌/咒语）→ 施魔法/迷住"
+ },
+ "endeavor": {
+  "exs": [
+   {
+    "en": "The students endeavor to improve their spoken English every morning.",
+    "cn": "学生们每天早晨努力提升英语口语。"
+   },
+   {
+    "en": "Endeavoring to finish the report, he skipped lunch and worked through the night.",
+    "cn": "为完成报告，他不吃午餐，整夜工作。"
+   }
+  ],
+  "root": "en-（使）+ devoir（责任）→ 尽力"
+ },
+ "energetic": {
+  "exs": [
+   {
+    "en": "The energetic freshman joined three clubs and still finished every assignment before midnight.",
+    "cn": "这位精力充沛的新生加入了三个社团，仍能午夜前完成所有作业。"
+   },
+   {
+    "en": "Seeing the exhausted team, she offered energetic support that helped them finish the project early.",
+    "cn": "看到疲惫的团队，她提供了积极的帮助，使他们提前完成项目。"
+   }
+  ],
+  "root": "en-（内）+erg（做功）→内在做功→精力充沛"
+ },
+ "enlighten": {
+  "exs": [
+   {
+    "en": "The guest lecture enlightened students about ethical dilemmas in artificial intelligence development.",
+    "cn": "客座讲座使学生了解人工智能开发中的伦理困境。"
+   },
+   {
+    "en": "Reading historical records can enlighten us about how ordinary people shaped major social changes.",
+    "cn": "阅读历史记载能启发我们了解普通人如何推动重大社会变革。"
+   }
+  ],
+  "root": "en-（使）+light（光）→照亮心智→启发"
+ },
+ "entail": {
+  "exs": [
+   {
+    "en": "The new policy will entail enormous costs and strict coordination.",
+    "cn": "新政策将需要巨额成本和严格协调。"
+   },
+   {
+    "en": "The new regulations entail risks that many small businesses cannot absorb without government support.",
+    "cn": "新规定带来许多小企业没有政府支持便无法承受的风险。"
+   }
+  ],
+  "root": "en-（使）+tail（尾）→拖尾而来→需要承担"
+ },
+ "entreat": {
+  "exs": [
+   {
+    "en": "The desperate mother entreated the judge for a lighter sentence.",
+    "cn": "绝望的母亲恳求法官判处较轻刑罚。"
+   },
+   {
+    "en": "Entreating him to reconsider, the committee warned that the plan would endanger local habitats.",
+    "cn": "委员会恳求他重新考虑，并警告该计划会危及当地栖息地。"
+   }
+  ],
+  "root": "en-（使）+treat（处理）→反复求→恳求"
+ },
+ "envisage": {
+  "exs": [
+   {
+    "en": "The report envisages a future with renewable energy.",
+    "cn": "该报告设想了可再生能源普及的未来。"
+   },
+   {
+    "en": "Envisaging possible delays, the engineers revised the schedule so that residents would not lose heat.",
+    "cn": "考虑到可能延期，工程师修改了计划，以免居民供暖中断。"
+   }
+  ],
+  "root": "en-（使）+visage（脸）→让脸浮现→想象"
+ },
+ "equator": {
+  "exs": [
+   {
+    "en": "The expedition crossed the equator during a stormy night.",
+    "cn": "探险队在一个暴风雨的夜晚越过赤道。"
+   },
+   {
+    "en": "Standing near the equator, travelers felt intense sunlight that made every shadow disappear.",
+    "cn": "站在赤道附近，旅行者感到强烈阳光使所有阴影消失。"
+   }
+  ],
+  "root": "equ（相等）+ator→平分地球线→赤道"
+ },
+ "eradicate": {
+  "exs": [
+   {
+    "en": "The government eradicated the disease through nationwide vaccination campaigns.",
+    "cn": "政府通过全国疫苗接种运动根除了这种疾病。"
+   },
+   {
+    "en": "The policy aims to eradicate corruption, which undermines public trust.",
+    "cn": "该政策旨在根除腐败，这种腐败会破坏公众信任。"
+   }
+  ],
+  "root": "e-（出）+ radic（根）→ 拔根 → 根除"
+ },
+ "erroneous": {
+  "exs": [
+   {
+    "en": "The judge corrected the erroneous legal interpretation in court.",
+    "cn": "法官在法庭上纠正了错误的法律解释。"
+   },
+   {
+    "en": "The conclusion is erroneous because it ignores key evidence.",
+    "cn": "该结论是错误的，因为它忽略了关键证据。"
+   }
+  ],
+  "root": "err（错误）+ -ous（充满）→ 错误的"
+ },
+ "escort": {
+  "exs": [
+   {
+    "en": "A police officer escorted the witness safely home.",
+    "cn": "一名警察护送证人安全回家。"
+   },
+   {
+    "en": "The convoy, escorted by helicopters, crossed the border.",
+    "cn": "由直升机护送的车队越过了边境。"
+   }
+  ],
+  "root": "画面：军舰开道护送 → 护航"
+ },
+ "eternal": {
+  "exs": [
+   {
+    "en": "The eternal flame burns brightly at the memorial.",
+    "cn": "永恒之火在纪念碑前明亮燃烧。"
+   },
+   {
+    "en": "Living in the present makes us feel eternal.",
+    "cn": "活在当下让我们感到永恒。"
+   }
+  ],
+  "root": "画面：时间不停走，爱永恒 → 永恒"
+ },
+ "ethnic": {
+  "exs": [
+   {
+    "en": "The museum displays ethnic costumes from remote villages.",
+    "cn": "博物馆展出偏远村庄的民族服饰。"
+   },
+   {
+    "en": "Studying ethnic traditions helps preserve cultural diversity today.",
+    "cn": "研究民族传统有助于在今天保护文化多样性。"
+   }
+  ],
+  "root": "eth（民族）+ -nic（形容词）→ 民族的"
+ },
+ "evenly": {
+  "exs": [
+   {
+    "en": "She spread the butter evenly on warm bread.",
+    "cn": "她把黄油均匀地涂在热面包上。"
+   },
+   {
+    "en": "The team divided the tasks evenly before starting.",
+    "cn": "团队在开始前均匀地分配了任务。"
+   }
+  ],
+  "root": "even（均匀）+ -ly（副词）→ 均匀地"
+ },
+ "evolutionary": {
+  "exs": [
+   {
+    "en": "Evolutionary biology studies the development of modern species.",
+    "cn": "进化生物学研究现代物种的发展。"
+   },
+   {
+    "en": "Researchers studying fossils found that evolutionary changes often occur gradually.",
+    "cn": "研究化石的研究人员发现进化变化通常逐渐发生。"
+   }
+  ],
+  "root": "e-（出）+ volv（卷）→ 展开 → 进化的"
+ },
+ "excrete": {
+  "exs": [
+   {
+    "en": "The kidneys excrete waste products from the bloodstream.",
+    "cn": "肾脏从血流中排泄废物。"
+   },
+   {
+    "en": "Animals excreting concentrated urine conserve water in arid regions.",
+    "cn": "排出浓缩尿液的动物在干旱地区保存水分。"
+   }
+  ],
+  "root": "ex-（向外）+ cret（分离）→ 排出体外"
+ },
+ "exempt": {
+  "exs": [
+   {
+    "en": "Students under eighteen are exempt from the entrance fee.",
+    "cn": "十八岁以下学生免交入场费。"
+   },
+   {
+    "en": "Charities that are exempt from tax rely heavily on public donations.",
+    "cn": "免税的慈善机构严重依赖公众捐款。"
+   }
+  ],
+  "root": "ex-（出）+ empt（拿）→ 拿出去 → 免除"
+ },
+ "expedition": {
+  "exs": [
+   {
+    "en": "The expedition crossed the desert with limited supplies.",
+    "cn": "探险队携带有限物资穿越沙漠。"
+   },
+   {
+    "en": "Scientists preparing for the expedition checked their equipment carefully.",
+    "cn": "为探险队做准备的科学家仔细检查了设备。"
+   }
+  ],
+  "root": "ex-（向外）+ ped（脚）→ 走出去 → 远征"
+ },
+ "expertise": {
+  "exs": [
+   {
+    "en": "Her expertise in statistics impressed the hiring committee.",
+    "cn": "她在统计方面的专长给招聘委员会留下深刻印象。"
+   },
+   {
+    "en": "Companies seeking expertise in cybersecurity often hire outside consultants.",
+    "cn": "寻求网络安全专长的公司常聘请外部顾问。"
+   }
+  ],
+  "root": "expert（专家）+ -ise → 专家技能"
+ },
+ "exploitation": {
+  "exs": [
+   {
+    "en": "The government approved the exploitation of offshore oil resources.",
+    "cn": "政府批准了近海石油资源的开发。"
+   },
+   {
+    "en": "Employees reported cases of exploitation after discovering that managers withheld overtime pay.",
+    "cn": "员工在发现经理拖欠加班费后举报了剥削行为。"
+   }
+  ],
+  "root": "exploit（利用）+ -ation→开发/剥削"
+ },
+ "exquisite": {
+  "exs": [
+   {
+    "en": "The exquisite porcelain vase impressed every guest at the museum opening.",
+    "cn": "博物馆开幕式上，那只精致的瓷瓶令每位来宾赞叹。"
+   },
+   {
+    "en": "Exquisite as the lace was, it required hours of patient work.",
+    "cn": "尽管蕾丝精致，它仍需要数小时的耐心制作。"
+   }
+  ],
+  "root": "ex-出+quis寻求→精心寻求→精致"
+ },
+ "extract": {
+  "exs": [
+   {
+    "en": "The chemist extracted a bitter compound from the dried herb.",
+    "cn": "化学家从干草药中提取出一种苦味化合物。"
+   },
+   {
+    "en": "Extracting key data from the report, the analyst saved considerable time.",
+    "cn": "从报告中提取关键数据，分析师节省了大量时间。"
+   }
+  ],
+  "root": "ex-出+tract拉→拉出来→提取"
+ },
+ "extraordinarily": {
+  "exs": [
+   {
+    "en": "The extraordinarily clear night sky revealed hundreds of distant stars.",
+    "cn": "格外晴朗的夜空显现出数百颗遥远的星星。"
+   },
+   {
+    "en": "Extraordinarily talented, the young pianist amazed the audience with her improvisation.",
+    "cn": "这位年轻钢琴家才华非凡，她的即兴演奏令观众惊叹。"
+   }
+  ],
+  "root": "extra超出+ordinary普通→非凡"
+ },
+ "fabricate": {
+  "exs": [
+   {
+    "en": "The factory fabricates lightweight frames for racing bicycles.",
+    "cn": "这家工厂制造轻量级赛车自行车车架。"
+   },
+   {
+    "en": "Fabricated evidence misled the jury until a witness admitted the deception.",
+    "cn": "伪造的证据误导了陪审团，直到一名证人承认了欺骗。"
+   }
+  ],
+  "root": "fabric制作+ate→制造；也可伪造"
+ },
+ "facilitate": {
+  "exs": [
+   {
+    "en": "The new app facilitates daily expense tracking for small businesses.",
+    "cn": "这款新应用帮助小企业进行日常开支追踪。"
+   },
+   {
+    "en": "Facilitated by bilingual guides, the tourists understood the historic site deeply.",
+    "cn": "在双语导游的协助下，游客们深入理解了这处历史遗迹。"
+   }
+  ],
+  "root": "fac做+ate→使易做→促进"
+ },
+ "fascinate": {
+  "exs": [
+   {
+    "en": "The antique music box fascinated the children for a long afternoon.",
+    "cn": "那只古董音乐盒让孩子们着迷了一个漫长的下午。"
+   },
+   {
+    "en": "Fascinated by ancient astronomy, she spent nights reading star charts.",
+    "cn": "她对古代天文学着迷，整夜阅读星图。"
+   }
+  ],
+  "root": "fasc魔咒+inate→施魔咒→入迷"
+ },
+ "faultless": {
+  "exs": [
+   {
+    "en": "The faultless performance impressed every judge at the regional music competition yesterday.",
+    "cn": "这场无懈可击的表演在昨天的地区音乐比赛中给每位评委留下深刻印象。"
+   },
+   {
+    "en": "Although the software update was faultless, users still reported occasional connection problems.",
+    "cn": "尽管软件更新毫无故障，用户仍报告偶发连接问题。"
+   }
+  ],
+  "root": "fault（缺点）+ -less（无）→ 无缺点/无故障"
+ },
+ "fellowship": {
+  "exs": [
+   {
+    "en": "The fellowship gave the young scientist two years of stable research funding.",
+    "cn": "这项奖学金为这位年轻科学家提供了两年稳定的研究经费。"
+   },
+   {
+    "en": "During the fellowship, she found that collaboration improved her academic writing.",
+    "cn": "在研究员资助期间，她发现合作改善了她的学术写作。"
+   }
+  ],
+  "root": "fellow（同伴）+ -ship（身份）→ 伙伴关系/奖学金"
+ },
+ "ferry": {
+  "exs": [
+   {
+    "en": "The ferry crosses the harbor every twenty minutes during the summer season.",
+    "cn": "夏季期间，渡轮每二十分钟横渡一次港口。"
+   },
+   {
+    "en": "Waiting at the ferry terminal, tourists watched boats unload cars and passengers.",
+    "cn": "游客在渡轮码头等候时，观看船只卸下汽车和乘客。"
+   }
+  ],
+  "root": "联想：渡船来回运送乘客过海"
+ },
+ "filament": {
+  "exs": [
+   {
+    "en": "The filament glowed brightly inside the antique glass bulb.",
+    "cn": "灯丝在古董玻璃灯泡内明亮发光。"
+   },
+   {
+    "en": "When the filament heats up, it emits a warm yellow light.",
+    "cn": "灯丝受热时，会发出温暖的黄光。"
+   }
+  ],
+  "root": "fil（线）→ filament 细丝/灯丝"
+ },
+ "finite": {
+  "exs": [
+   {
+    "en": "Finite resources force governments to prioritize clean energy and public transport.",
+    "cn": "有限的资源迫使政府优先发展清洁能源和公共交通。"
+   },
+   {
+    "en": "Scientists know that Earth's freshwater supply is finite and fragile.",
+    "cn": "科学家知道地球的淡水供应有限且脆弱。"
+   }
+  ],
+  "root": "fin（边界）+ -ite → 有限的"
+ },
+ "firmness": {
+  "exs": [
+   {
+    "en": "The firmness of the wooden table impressed the furniture inspectors.",
+    "cn": "木桌的坚固给家具检查员留下深刻印象。"
+   },
+   {
+    "en": "Despite public pressure, the minister showed firmness in rejecting the proposal.",
+    "cn": "尽管有公众压力，部长仍坚决拒绝该提案。"
+   }
+  ],
+  "root": "firm（坚固）+ -ness（状态）→ 坚固/坚定"
+ },
+ "fitting": {
+  "exs": [
+   {
+    "en": "The tailor checked the fitting of the jacket before the wedding.",
+    "cn": "裁缝在婚礼前检查了夹克的试穿效果。"
+   },
+   {
+    "en": "The engineer inspected the fitting, noting that the valve leaked under high pressure.",
+    "cn": "工程师检查了装置，注意到阀门在高压下泄漏。"
+   }
+  ],
+  "root": "fit（适合）+ -ing → 试穿、装配。"
+ },
+ "flank": {
+  "exs": [
+   {
+    "en": "The soldiers attacked the enemy's flank at dawn.",
+    "cn": "士兵们在黎明攻击了敌人的侧翼。"
+   },
+   {
+    "en": "The river flanks the eastern side of the town, providing a natural barrier.",
+    "cn": "河流位于城镇东侧，形成天然屏障。"
+   }
+  ],
+  "root": "flank谐音“法兰克”：战士守住侧翼。"
+ },
+ "flask": {
+  "exs": [
+   {
+    "en": "The chemist placed the flask on the hot plate.",
+    "cn": "化学家把烧瓶放在加热板上。"
+   },
+   {
+    "en": "The hiker filled his flask with water before climbing the steep trail.",
+    "cn": "徒步者在攀登陡峭山路前把小水瓶装满水。"
+   }
+  ],
+  "root": "flask谐音“弗拉斯克”：细颈小瓶。"
+ },
+ "flaw": {
+  "exs": [
+   {
+    "en": "A tiny flaw made the diamond less valuable.",
+    "cn": "一个小瑕疵使钻石价值降低。"
+   },
+   {
+    "en": "The inspector found a flaw that could weaken the bridge's structure.",
+    "cn": "检查员发现了一个可能削弱桥梁结构的裂缝。"
+   }
+  ],
+  "root": "flaw：玻璃上“浮拉”一道裂纹。"
+ },
+ "fluctuation": {
+  "exs": [
+   {
+    "en": "The stock market showed rapid fluctuation in prices yesterday.",
+    "cn": "股市昨日价格出现快速波动。"
+   },
+   {
+    "en": "The report analyzed fluctuation in demand as customers changed their habits.",
+    "cn": "报告分析了需求波动，因为顾客改变了习惯。"
+   }
+  ],
+  "root": "fluctu（波浪）+ -ation → 波动。"
+ },
+ "flux": {
+  "exs": [
+   {
+    "en": "The flux helped the two metal pieces join smoothly.",
+    "cn": "助焊剂帮助两块金属平滑连接。"
+   },
+   {
+    "en": "The river's flux increased after heavy rain, flooding the low fields.",
+    "cn": "大雨后河水流量增加，淹没了低洼田地。"
+   }
+  ],
+  "root": "flu（流）+ x → 流出、涨潮。"
+ },
+ "follower": {
+  "exs": [
+   {
+    "en": "The young follower carried her mentor's heavy books through the crowded campus every morning.",
+    "cn": "这位年轻的随从每天早晨都替导师搬运沉重的书本穿过拥挤的校园。"
+   },
+   {
+    "en": "Waiting patiently outside the studio, the devoted follower hoped to catch a glimpse of the famous singer.",
+    "cn": "在录音室外耐心等候，这位忠实的追随者希望能瞥见那位著名歌手。"
+   }
+  ],
+  "root": "follow（跟随）+ -er（人）→ 跟随者。"
+ },
+ "foresee": {
+  "exs": [
+   {
+    "en": "Economists foresee a gradual recovery despite rising unemployment.",
+    "cn": "尽管失业率上升，经济学家仍预见经济将逐步复苏。"
+   },
+   {
+    "en": "Foreseeing the danger, the pilot rerouted the flight around the storm.",
+    "cn": "预见到危险，飞行员将航班改道绕开风暴。"
+   }
+  ],
+  "root": "fore-（前）+ see（看见）→ 提前看见 → 预见。"
+ },
+ "formidable": {
+  "exs": [
+   {
+    "en": "The team faced a formidable opponent in the national robotics competition.",
+    "cn": "该团队在全国机器人竞赛中面对了一个强大的对手。"
+   },
+   {
+    "en": "Although the mountain path was formidable, the experienced climbers reached the summit before dusk.",
+    "cn": "尽管山路艰难，有经验的登山者仍在天黑前到达山顶。"
+   }
+  ],
+  "root": "联想：强敌“形”势逼人，令人畏惧。"
+ },
+ "forsake": {
+  "exs": [
+   {
+    "en": "The retired soldier refused to forsake his old comrades during the crisis.",
+    "cn": "这位退役军人在危机中拒绝抛弃他的老战友。"
+   },
+   {
+    "en": "Forsaking the noisy city, the couple moved to a quiet village to grow vegetables.",
+    "cn": "夫妇俩舍弃喧闹的城市，搬到一个安静的村庄种菜。"
+   }
+  ],
+  "root": "for-（离开）+ sake（旧事）→ 离开旧事 → 放弃。"
+ },
+ "fortress": {
+  "exs": [
+   {
+    "en": "The medieval fortress protected the valley from frequent enemy raids.",
+    "cn": "这座中世纪要塞保护山谷免受频繁敌军袭击。"
+   },
+   {
+    "en": "Built on a rocky hill, the fortress overlooked the trade route for centuries.",
+    "cn": "建在岩石山丘上，这座要塞几个世纪俯瞰着贸易路线。"
+   }
+  ],
+  "root": "fort（强/堡垒）+ 名词后缀 → 坚固要塞。"
+ },
+ "foul": {
+  "exs": [
+   {
+    "en": "The referee called a clear foul near the basketball goal.",
+    "cn": "裁判在篮球篮筐附近判了一次明显犯规。"
+   },
+   {
+    "en": "After the foul smell spread through the kitchen, the guests left early.",
+    "cn": "恶臭在厨房扩散后，客人们提前离开了。"
+   }
+  ],
+  "root": "联想：foul 像 fowl（家禽）脏臭 → 污秽；犯规。"
+ },
+ "fragile": {
+  "exs": [
+   {
+    "en": "The antique vase is fragile and needs careful handling.",
+    "cn": "这只古董花瓶易碎，需要小心处理。"
+   },
+   {
+    "en": "Fragile ecosystems collapse if tourism increases without proper regulation.",
+    "cn": "脆弱的生态系统如果旅游增长缺乏适当监管就会崩溃。"
+   }
+  ],
+  "root": "frag（打碎）+ ile（易…的）→ 易碎的"
+ },
+ "fraud": {
+  "exs": [
+   {
+    "en": "The manager committed fraud by inflating sales figures.",
+    "cn": "经理通过虚增销售额实施欺诈。"
+   },
+   {
+    "en": "Investors lost money because the fraud concealed huge debts.",
+    "cn": "投资者亏钱，因为骗局隐瞒了巨额债务。"
+   }
+  ],
+  "root": "源自拉丁fraus“欺骗”→ 欺诈"
+ },
+ "fright": {
+  "exs": [
+   {
+    "en": "The sudden thunder gave the child a terrible fright.",
+    "cn": "突然的雷声把孩子吓了一大跳。"
+   },
+   {
+    "en": "Hearing a noise downstairs, she felt a sudden fright.",
+    "cn": "听到楼下的响声，她突然感到一阵惊吓。"
+   }
+  ],
+  "root": "fright/frighten同源→ 惊吓"
+ },
+ "fro": {
+  "exs": [
+   {
+    "en": "The branches swayed to and fro in the wind.",
+    "cn": "树枝在风中来回摇摆。"
+   },
+   {
+    "en": "To and fro, the ferry moved across the river as passengers waited.",
+    "cn": "渡船在河上来回移动，乘客们等待着。"
+   }
+  ],
+  "root": "to and fro=来回→ fro向后/那边"
+ },
+ "funding": {
+  "exs": [
+   {
+    "en": "The ministry approved funding to refinance the municipal debt.",
+    "cn": "该部委批准资金用于再融资市政债务。"
+   },
+   {
+    "en": "Funding delays may raise borrowing costs if interest rates increase.",
+    "cn": "如果利率上升，融资延迟可能会推高借贷成本。"
+   }
+  ],
+  "root": "fund（资金/债务）+ ing→ 资金/债务转期"
+ },
+ "fuss": {
+  "exs": [
+   {
+    "en": "Don't make a fuss over such a small mistake.",
+    "cn": "不要为这么小的错误大惊小怪。"
+   },
+   {
+    "en": "The customer complained loudly, making a fuss about the delay.",
+    "cn": "顾客大声抱怨，因延误而小题大做。"
+   }
+  ],
+  "root": "联想fo=fool, us=我们→ 瞎忙"
+ },
+ "gangster": {
+  "exs": [
+   {
+    "en": "The gangster threatened the shop owner with a rusty knife outside the alley.",
+    "cn": "那个流氓在巷子外用一把生锈的刀威胁店主。"
+   },
+   {
+    "en": "Arrested after a long chase, the gangster admitted he had extorted local merchants for years.",
+    "cn": "经过长时间追捕被捕后，该恶棍承认多年来勒索当地商户。"
+   }
+  ],
+  "root": "gang（团伙）+-ster（人）→黑帮分子。"
+ },
+ "garment": {
+  "exs": [
+   {
+    "en": "The museum displayed a silk garment worn by a Qing court lady.",
+    "cn": "博物馆展出一件清代宫廷女子穿过的丝绸服装。"
+   },
+   {
+    "en": "When the tailor measured her shoulders, he noticed the garment had been altered twice.",
+    "cn": "裁缝量她肩膀时，他注意到这件衣服已被改过两次。"
+   }
+  ],
+  "root": "画面：衣服像盖住身体的门帘。"
+ },
+ "generalize": {
+  "exs": [
+   {
+    "en": "Teachers should not generalize a student's failure to one exam.",
+    "cn": "教师不应把学生一次考试失败泛化成普遍问题。"
+   },
+   {
+    "en": "Having collected data from many regions, researchers can generalize the findings more cautiously.",
+    "cn": "收集了多个地区的数据后，研究者能更谨慎地推广结论。"
+   }
+  ],
+  "root": "general（一般的）+-ize（使）→概括化。"
+ },
+ "geographical": {
+  "exs": [
+   {
+    "en": "The report lists geographical risks such as floods and landslides.",
+    "cn": "报告列出洪水、山体滑坡等地理风险。"
+   },
+   {
+    "en": "Because the city is geographically isolated, its economic development faces geographical constraints.",
+    "cn": "由于城市地理位置孤立，其经济发展面临地理限制。"
+   }
+  ],
+  "root": "geo（地球）+graph（图）+-ical→地理的。"
+ },
+ "ginger": {
+  "exs": [
+   {
+    "en": "She added sliced ginger to the soup to reduce its fishy smell.",
+    "cn": "她往汤里加姜片以去除腥味。"
+   },
+   {
+    "en": "The ginger cat, sitting by the warm stove, watched the snow fall outside.",
+    "cn": "那只姜黄色的猫坐在暖炉旁，看着雪落在外面。"
+   }
+  ],
+  "root": "音近“劲汁”，姜汁提味又提神。"
+ },
+ "glider": {
+  "exs": [
+   {
+    "en": "A small glider circled above the valley without an engine.",
+    "cn": "一架小型滑翔机无发动机在谷地上空盘旋。"
+   },
+   {
+    "en": "Riding the warm air, the glider stayed aloft until the storm arrived.",
+    "cn": "借着暖空气，滑翔机一直停留在空中直到暴风雨到来。"
+   }
+  ],
+  "root": "glide（滑行）+-er（物/人）→滑翔机。"
+ },
+ "gnaw": {
+  "exs": [
+   {
+    "en": "The hungry mice gnawed the wooden door overnight.",
+    "cn": "饥饿的老鼠整夜啃咬木门。"
+   },
+   {
+    "en": "Seeing the cable gnawed by rats, the engineer immediately shut down the power supply.",
+    "cn": "看到电缆被老鼠啃坏，工程师立刻切断了电源。"
+   }
+  ],
+  "root": "拟声联想：嘎吱嘎吱，不断啃咬。"
+ },
+ "gorilla": {
+  "exs": [
+   {
+    "en": "A silverback gorilla guarded its young near the bamboo forest.",
+    "cn": "一只银背大猩猩在竹林附近守护幼崽。"
+   },
+   {
+    "en": "The frightened tourists ran back, because a huge gorilla blocked the narrow path.",
+    "cn": "因为一只巨大的大猩猩挡住了狭窄小路，受惊的游客跑了回去。"
+   }
+  ],
+  "root": "希腊部落名Gorillai→大猩猩。"
+ },
+ "gradient": {
+  "exs": [
+   {
+    "en": "The steep gradient made cyclists slow down on the hill.",
+    "cn": "陡峭的坡度让骑行者在山上放慢速度。"
+   },
+   {
+    "en": "As the sun sets, the sky gradient changes from orange to deep blue.",
+    "cn": "日落时，天空的渐变色从橙色变为深蓝。"
+   }
+  ],
+  "root": "grad=步/级→逐级变化→梯度。"
+ },
+ "grants": {
+  "exs": [
+   {
+    "en": "The university grants help talented students finish their research.",
+    "cn": "大学拨款帮助有才华的学生完成研究。"
+   },
+   {
+    "en": "Researchers who receive government grants must publish their annual progress reports.",
+    "cn": "获得政府拨款的研究人员必须发布年度进展报告。"
+   }
+  ],
+  "root": "谐音“格兰特”给钱→补助金。"
+ },
+ "grassy": {
+  "exs": [
+   {
+    "en": "The grassy field smelled fresh after the morning rain.",
+    "cn": "早晨雨后草地闻起来很清新。"
+   },
+   {
+    "en": "Children rolled down the grassy slope, laughing until their parents called them.",
+    "cn": "孩子们从草坡上滚下来，笑着直到父母叫他们。"
+   }
+  ],
+  "root": "grass（草）+y→多草的。"
+ },
+ "grease": {
+  "exs": [
+   {
+    "en": "The mechanic wiped the grease from his dirty hands.",
+    "cn": "机械师擦去脏手上的油脂。"
+   },
+   {
+    "en": "Greasing the old hinges, she quietly fixed the squeaky bedroom door.",
+    "cn": "给旧铰链上油后，她悄悄修好了吱呀作响的卧室门。"
+   }
+  ],
+  "root": "画面：油脂涂齿轮上，机器顺滑。"
+ },
+ "grim": {
+  "exs": [
+   {
+    "en": "The grim weather forced the hikers to abandon their planned summit.",
+    "cn": "恶劣天气迫使徒步者放弃原定登顶计划。"
+   },
+   {
+    "en": "Grim-faced guards watched the prisoners, knowing any escape attempt would fail.",
+    "cn": "面容冷酷的看守监视着囚犯，知道任何越狱企图都会失败。"
+   }
+  ],
+  "root": "古英语grim（凶恶）；鬼脸逼近→冷酷可怕"
+ },
+ "grope": {
+  "exs": [
+   {
+    "en": "He groped for his keys in the dark hallway.",
+    "cn": "他在黑暗的走廊里摸索钥匙。"
+   },
+   {
+    "en": "Groping along the wall, she found the switch before the smoke reached her.",
+    "cn": "她沿着墙摸索，在烟雾蔓延到她之前找到了开关。"
+   }
+  ],
+  "root": "与grip同源；黑暗中抓rope→摸索"
+ },
+ "grumble": {
+  "exs": [
+   {
+    "en": "The old man grumbled about the noisy construction outside.",
+    "cn": "老人抱怨外面嘈杂的施工。"
+   },
+   {
+    "en": "Grumbling under his breath, the driver complained that the road had narrowed again.",
+    "cn": "司机低声抱怨，说这条路又变窄了。"
+   }
+  ],
+  "root": "拟声：喉咙“咕噜”低吼→抱怨"
+ },
+ "gust": {
+  "exs": [
+   {
+    "en": "A sudden gust blew the papers across the courtyard.",
+    "cn": "一阵突然的风吹得纸片穿过庭院。"
+   },
+   {
+    "en": "Gusts of wind made the cyclists struggle as they climbed the hill.",
+    "cn": "一阵阵狂风使骑车者在爬坡时十分吃力。"
+   }
+  ],
+  "root": "联想：g像风卷，ust像“突然”→一阵风"
+ },
+ "halve": {
+  "exs": [
+   {
+    "en": "She halved the sandwich and gave one piece to her son.",
+    "cn": "她把三明治分成两半，给儿子一块。"
+   },
+   {
+    "en": "Halving the budget forced the department to postpone several planned projects.",
+    "cn": "将预算减半迫使该部门推迟了若干计划项目。"
+   }
+  ],
+  "root": "half（一半）→动词加-e：分成两半"
+ },
+ "handbook": {
+  "exs": [
+   {
+    "en": "The engineer kept a handbook inside his tool bag.",
+    "cn": "工程师把手册放在工具包里。"
+   },
+   {
+    "en": "Handbooks provide quick answers when workers forget detailed safety procedures.",
+    "cn": "当工人忘记详细安全规程时，手册提供快速答案。"
+   }
+  ],
+  "root": "hand（手）+book（书）→手中书→手册"
+ },
+ "harbor": {
+  "exs": [
+   {
+    "en": "The small harbor sheltered fishing boats during the storm.",
+    "cn": "小港在暴风雨中庇护渔船。"
+   },
+   {
+    "en": "The coast guard suspected that smugglers had harbored the stolen cargo in a cave.",
+    "cn": "海岸警卫队怀疑走私者把赃物藏匿在一个洞穴里。"
+   }
+  ],
+  "root": "here(军)+borg(庇护)→港口"
+ },
+ "harp": {
+  "exs": [
+   {
+    "en": "The harp produced a soft, dreamy melody in the candlelit hall.",
+    "cn": "竖琴在烛光大厅里奏出柔和梦幻的旋律。"
+   },
+   {
+    "en": "He kept harping on his failed investment, annoying everyone at dinner.",
+    "cn": "他不停唠叨投资失败，让晚餐上的每个人厌烦。"
+   }
+  ],
+  "root": "竖琴反复拨一弦→唠叨"
+ },
+ "haul": {
+  "exs": [
+   {
+    "en": "The truck hauled heavy timber across the muddy mountain road.",
+    "cn": "卡车拖运沉重木材穿过泥泞山路。"
+   },
+   {
+    "en": "After hauling the boat ashore, the fishermen counted today's haul carefully.",
+    "cn": "把船拖上岸后，渔民仔细清点今天的捕获量。"
+   }
+  ],
+  "root": "ho(吼)+all(全部)→拖走"
+ },
+ "headlong": {
+  "exs": [
+   {
+    "en": "The runner fell headlong onto the wet grass yesterday.",
+    "cn": "赛跑者昨天头朝前扑倒在湿草地上。"
+   },
+   {
+    "en": "Investors rushed headlong into the stock market without reading the prospectus.",
+    "cn": "投资者未读招股书就轻率涌入股市。"
+   }
+  ],
+  "root": "head(头)+long(长)→头向前冲"
+ },
+ "heater": {
+  "exs": [
+   {
+    "en": "The electric heater quickly warmed the damp bedroom during winter.",
+    "cn": "电加热器在冬天迅速温暖潮湿卧室。"
+   },
+   {
+    "en": "When the heater failed, technicians replaced the broken filament immediately.",
+    "cn": "加热器故障时，技术人员立即更换了断掉的灯丝。"
+   }
+  ],
+  "root": "heat(热)+-er(物)→加热器"
+ },
+ "hemisphere": {
+  "exs": [
+   {
+    "en": "The Western Hemisphere contains many culturally diverse nations.",
+    "cn": "西半球包含许多文化多样的国家。"
+   },
+   {
+    "en": "Looking at the map, students identified each hemisphere by the equator.",
+    "cn": "看地图时，学生通过赤道识别每个半球。"
+   }
+  ],
+  "root": "hemi(半)+sphere(球)→半球"
+ },
+ "herb": {
+  "exs": [
+   {
+    "en": "The chef added a fresh herb to the roasted lamb.",
+    "cn": "厨师在烤羊肉中加入了一种新鲜香草。"
+   },
+   {
+    "en": "This herb is often used in traditional medicine to relieve coughs and colds.",
+    "cn": "这种草药常用于传统医学以缓解咳嗽和感冒。"
+   }
+  ],
+  "root": "herba（草）→ 药草、香草"
+ },
+ "hike": {
+  "exs": [
+   {
+    "en": "Many students went for a hike in the mountains last weekend.",
+    "cn": "许多学生上周末去山里徒步旅行。"
+   },
+   {
+    "en": "The price hike, which surprised consumers, forced families to cut spending on daily necessities.",
+    "cn": "令消费者惊讶的价格上涨迫使家庭削减日常必需品开支。"
+   }
+  ],
+  "root": "背包装远足，价格拉高"
+ },
+ "hinge": {
+  "exs": [
+   {
+    "en": "The old door hinge creaked loudly in the wind.",
+    "cn": "旧门铰链在风中发出响亮吱呀声。"
+   },
+   {
+    "en": "The success of the plan hinges on whether the investors agree.",
+    "cn": "计划的成功取决于投资者是否同意。"
+   }
+  ],
+  "root": "铰链转门，关键 hinges on"
+ },
+ "historic": {
+  "exs": [
+   {
+    "en": "This city has many historic buildings near the old harbor.",
+    "cn": "这座城市在旧港附近有许多有历史意义的建筑。"
+   },
+   {
+    "en": "The historic treaty, which ended the war, was signed in Paris.",
+    "cn": "结束战争的有历史意义的条约在巴黎签署。"
+   }
+  ],
+  "root": "histor（历史）+ -ic → 有历史意义的"
+ },
+ "hoe": {
+  "exs": [
+   {
+    "en": "The farmer kept a sharp hoe beside the garden shed.",
+    "cn": "农夫在花园棚旁放着一把锋利的锄头。"
+   },
+   {
+    "en": "The old farmer, who hoeed the field daily, grew healthy vegetables.",
+    "cn": "每天锄地的老农种出了健康的蔬菜。"
+   }
+  ],
+  "root": "hoe 发音“吼”，挥锄吼一声"
+ },
+ "homogeneous": {
+  "exs": [
+   {
+    "en": "The sugar mixture remained homogeneous throughout the experiment.",
+    "cn": "糖混合物在整个实验过程中保持均匀。"
+   },
+   {
+    "en": "A homogeneous population shares similar traits, which simplifies the research.",
+    "cn": "同质人群具有相似特征，这简化了研究。"
+   }
+  ],
+  "root": "homo-（同）+ gen（种）→ 同种的"
+ },
+ "hospitality": {
+  "exs": [
+   {
+    "en": "The hotel staff offered warm hospitality to the exhausted travelers after the storm.",
+    "cn": "酒店员工在暴风雨后向疲惫的旅客提供了热情款待。"
+   },
+   {
+    "en": "Seeing the guests arrive late, the host showed genuine hospitality by serving hot soup.",
+    "cn": "看到客人迟到，主人通过端上热汤展现了真诚款待。"
+   }
+  ],
+  "root": "hospes（客人）+ -ity→待客状态。"
+ },
+ "hover": {
+  "exs": [
+   {
+    "en": "A red kite hovered above the wheat field for several minutes.",
+    "cn": "一只红鸢在麦田上空盘旋了几分钟。"
+   },
+   {
+    "en": "Hovering near the window, the moth disturbed the woman who was reading.",
+    "cn": "飞蛾在窗边盘旋，打扰了正在读书的女人。"
+   }
+  ],
+  "root": "h（悬）+over（上方）→悬停。"
+ },
+ "hug": {
+  "exs": [
+   {
+    "en": "The child gave her mother a tight hug before school.",
+    "cn": "孩子上学前给了妈妈一个紧紧的拥抱。"
+   },
+   {
+    "en": "Hugging the old photograph, the soldier remembered his hometown warmly.",
+    "cn": "抱着旧照片，士兵温暖地回忆起家乡。"
+   }
+  ],
+  "root": "双手合拢成圈→紧抱。"
+ },
+ "humanitarian": {
+  "exs": [
+   {
+    "en": "The humanitarian provided clean water to families in the flooded village.",
+    "cn": "人道主义者向洪水村庄的家庭提供清洁水。"
+   },
+   {
+    "en": "A humanitarian organization sent doctors after the earthquake struck the coastal town.",
+    "cn": "地震袭击沿海城镇后，一个救援组织派出了医生。"
+   }
+  ],
+  "root": "human（人）+ -itarian→人道主义者。"
+ },
+ "hurl": {
+  "exs": [
+   {
+    "en": "The pitcher hurled the ball toward the waiting catcher.",
+    "cn": "投手用力把球掷向等待的捕手。"
+   },
+   {
+    "en": "Hurled by the angry crowd, the stone smashed the campaign poster.",
+    "cn": "石头被愤怒人群投掷，砸碎了竞选海报。"
+   }
+  ],
+  "root": "h（呼）+roll（滚动）→猛掷。"
+ },
+ "hush": {
+  "exs": [
+   {
+    "en": "The librarian raised a finger to hush the noisy students.",
+    "cn": "图书管理员举起手指让吵闹学生安静。"
+   },
+   {
+    "en": "Hushing the crowd, the conductor waited until the hall became silent.",
+    "cn": "指挥让人群安静，直到大厅变得寂静。"
+   }
+  ],
+  "root": "拟声“嘘”→安静。"
+ },
+ "hymn": {
+  "exs": [
+   {
+    "en": "The congregation sang a hymn before the sermon.",
+    "cn": "会众在布道前唱了一首赞美诗。"
+   },
+   {
+    "en": "The choir led the worshippers into a solemn mood, hymns echoing through the cathedral.",
+    "cn": "唱诗班带领会众进入庄严氛围，赞美诗在大教堂中回荡。"
+   }
+  ],
+  "root": "源自希腊hymnos颂歌→圣歌。"
+ },
+ "hysteria": {
+  "exs": [
+   {
+    "en": "The crowd's hysteria spread quickly after the false alarm.",
+    "cn": "误报之后，人群的歇斯底里迅速蔓延。"
+   },
+   {
+    "en": "Hysteria seized the passengers when the train suddenly stopped underground.",
+    "cn": "当列车突然停在地下时，乘客们陷入歇斯底里。"
+   }
+  ],
+  "root": "希腊hystera子宫→古代误认妇女癔病。"
+ },
+ "idealism": {
+  "exs": [
+   {
+    "en": "His idealism inspired many volunteers during the disaster relief effort.",
+    "cn": "他的理想主义在救灾行动中激励了许多志愿者。"
+   },
+   {
+    "en": "Idealism often persuades young readers that society can improve through moral action.",
+    "cn": "理想主义常使年轻读者相信社会可以通过道德行动改善。"
+   }
+  ],
+  "root": "ideal理想+ism主义→理想主义/唯心主义。"
+ },
+ "idiot": {
+  "exs": [
+   {
+    "en": "The idiot ignored the warning signs and drove into the storm.",
+    "cn": "那个蠢人无视警告标志，把车开进了暴风雨。"
+   },
+   {
+    "en": "Calling himself an idiot, he admitted forgetting the passport at home.",
+    "cn": "他骂自己是个蠢货，承认把护照忘在家里了。"
+   }
+  ],
+  "root": "希腊idiotes私民→无知者→白痴。"
+ },
+ "ignorance": {
+  "exs": [
+   {
+    "en": "Ignorance of the new regulation damaged several small businesses.",
+    "cn": "对新法规的无知损害了几家小企业。"
+   },
+   {
+    "en": "Many students discover that ignorance about grammar rules slows their writing progress.",
+    "cn": "许多学生发现，对语法规则的无知会拖慢写作进度。"
+   }
+  ],
+  "root": "in-不+gnor知道+ance→无知。"
+ },
+ "imaginative": {
+  "exs": [
+   {
+    "en": "The imaginative child designed a dragon for the school play.",
+    "cn": "富有想象力的孩子为学校演出设计了一条龙。"
+   },
+   {
+    "en": "Her imaginative essay, which described a future city, won the writing contest.",
+    "cn": "她描述未来城市的富有想象力的文章赢得了写作比赛。"
+   }
+  ],
+  "root": "imagine想象+ative→富有想象力的。"
+ },
+ "immigration": {
+  "exs": [
+   {
+    "en": "Strict immigration policies often shape local labor markets and community demographics.",
+    "cn": "严格的移民政策常常影响当地劳动力市场和社区人口结构。"
+   },
+   {
+    "en": "Many families delay immigration until their children finish school, fearing disruption to education.",
+    "cn": "许多家庭推迟移民直到孩子完成学业，担心教育中断。"
+   }
+  ],
+  "root": "im-（进入）+ migr（迁移）→ 迁入 → 移民"
+ },
+ "impair": {
+  "exs": [
+   {
+    "en": "Chronic sleep deprivation can impair memory, judgment, and workplace productivity.",
+    "cn": "长期睡眠不足会损害记忆力、判断力和工作效率。"
+   },
+   {
+    "en": "Repeated exposure to loud noise impairs hearing, leaving workers vulnerable to permanent damage.",
+    "cn": "反复暴露于强噪声会损害听力，使工人容易受到永久伤害。"
+   }
+  ],
+  "root": "im-（使）+ pair（配对）→ 配对失衡 → 损害"
+ },
+ "imperative": {
+  "exs": [
+   {
+    "en": "Reducing carbon emissions has become an urgent imperative for coastal cities.",
+    "cn": "减少碳排放已成为沿海城市迫切的必要事项。"
+   },
+   {
+    "en": "Given rising sea levels, governments treat flood prevention as an imperative requiring immediate action.",
+    "cn": "鉴于海平面上升，政府将防洪视为需要立即行动的必要事项。"
+   }
+  ],
+  "root": "imper-（命令）+ -ative → 命令的 → 迫切的"
+ },
+ "implicit": {
+  "exs": [
+   {
+    "en": "Her silence carried an implicit criticism of the company's new policy.",
+    "cn": "她的沉默含蓄地批评了公司的新政策。"
+   },
+   {
+    "en": "Trust is often implicit in long-term partnerships, although contracts rarely spell it out.",
+    "cn": "信任常常含蓄地存在于长期合作关系中，尽管合同很少明确写出。"
+   }
+  ],
+  "root": "im-（向内）+ plic（折叠）→ 折入其中 → 含蓄"
+ },
+ "improper": {
+  "exs": [
+   {
+    "en": "The report was rejected for improper data handling and missing consent forms.",
+    "cn": "报告因不当的数据处理和缺失知情同意书而被驳回。"
+   },
+   {
+    "en": "Employees who send improper jokes to colleagues may face disciplinary action at work.",
+    "cn": "向同事发送不当笑话的员工可能在工作中受到纪律处分。"
+   }
+  ],
+  "root": "im-（不）+ proper（合适）→ 不合适的"
+ },
+ "inaccurate": {
+  "exs": [
+   {
+    "en": "The inaccurate forecast caused farmers to harvest crops one week too early.",
+    "cn": "不准确的预报导致农民提前一周收割庄稼。"
+   },
+   {
+    "en": "Because the measurements were inaccurate, the bridge design had to be revised.",
+    "cn": "由于测量不准确，桥梁设计不得不修改。"
+   }
+  ],
+  "root": "in-（不）+ accurate（精确）→ 不精确"
+ },
+ "inaugurate": {
+  "exs": [
+   {
+    "en": "The mayor will inaugurate the new subway line next month.",
+    "cn": "市长下个月将启用新地铁线路。"
+   },
+   {
+    "en": "Inaugurating the new administration, the president reminded citizens that progress requires sacrifice.",
+    "cn": "在开启新政府之际，总统提醒市民进步需要牺牲。"
+   }
+  ],
+  "root": "in-（向内）+ augur（占卜）→ 开创"
+ },
+ "incense": {
+  "exs": [
+   {
+    "en": "The incense filled the temple with a calming scent.",
+    "cn": "寺庙里弥漫着令人平静的香气。"
+   },
+   {
+    "en": "The manager's sarcastic remarks incensed employees who felt their efforts were ignored.",
+    "cn": "经理的讽刺言论激怒了觉得自己的努力被忽视的员工。"
+   }
+  ],
+  "root": "in-（向内）+ cand（燃烧）→ 焚香/发怒"
+ },
+ "inclination": {
+  "exs": [
+   {
+    "en": "She has a strong inclination to study abroad after graduation.",
+    "cn": "她毕业后有强烈的出国留学倾向。"
+   },
+   {
+    "en": "The board's inclination to delay the project surprised investors who expected quick action.",
+    "cn": "董事会推迟项目的倾向令期待快速行动的投资者感到意外。"
+   }
+  ],
+  "root": "in-（向内）+ clin（倾斜）→ 倾向"
+ },
+ "incomplete": {
+  "exs": [
+   {
+    "en": "The submitted form was incomplete and delayed processing.",
+    "cn": "提交的表格不完整，延误了处理。"
+   },
+   {
+    "en": "Incomplete data forced researchers to revise conclusions that had been published earlier.",
+    "cn": "不完整数据迫使研究人员修改早前发表的结论。"
+   }
+  ],
+  "root": "in-（不）+ complete（完成）→ 不完全"
+ },
+ "incur": {
+  "exs": [
+   {
+    "en": "The company incurred heavy losses after the lawsuit.",
+    "cn": "公司在诉讼后蒙受重大损失。"
+   },
+   {
+    "en": "By ignoring safety rules, the factory incurred fines that shocked local residents.",
+    "cn": "由于忽视安全规则，工厂招致令当地居民震惊的罚款。"
+   }
+  ],
+  "root": "in-（向内）+ cur（跑）→ 招致"
+ },
+ "indignation": {
+  "exs": [
+   {
+    "en": "The crowd expressed indignation at the unfair ruling.",
+    "cn": "人群对不公平裁决表示愤慨。"
+   },
+   {
+    "en": "Feeling indignation, the students demanded that the school revise its policy.",
+    "cn": "感到愤慨的学生要求学校修改政策。"
+   }
+  ],
+  "root": "in-（不）+ dign（价值）→ 义愤"
+ },
+ "induction": {
+  "exs": [
+   {
+    "en": "The induction of new nurses lasted two hours in the hospital conference room.",
+    "cn": "新护士的入职培训在医院会议室持续了两个小时。"
+   },
+   {
+    "en": "After watching the experiment, students understood induction by drawing general conclusions from specific cases.",
+    "cn": "观察实验后，学生通过从具体案例中得出一般结论理解了归纳法。"
+   }
+  ],
+  "root": "in-（进入）+duct（引导）→引入→入门/归纳"
+ },
+ "inertia": {
+  "exs": [
+   {
+    "en": "The sudden braking revealed the dangerous inertia of standing passengers.",
+    "cn": "急刹车暴露出站立乘客危险的惯性。"
+   },
+   {
+    "en": "Despite repeated warnings, the company's inertia prevented managers from adopting new software.",
+    "cn": "尽管反复警告，公司的惰性仍使管理者未能采用新软件。"
+   }
+  ],
+  "root": "in-（不）+ars（技艺）→不擅→惰性"
+ },
+ "infectious": {
+  "exs": [
+   {
+    "en": "The infectious virus spread quickly through the crowded school cafeteria.",
+    "cn": "这种传染性病毒在拥挤的学校食堂迅速传播。"
+   },
+   {
+    "en": "Feeling the fever rise, she noticed the infectious illness spreading among classmates.",
+    "cn": "感到发烧上升，她注意到这种传染性疾病正在同学间蔓延。"
+   }
+  ],
+  "root": "in-（进入）+fect（做）→侵入→传染"
+ },
+ "infinitely": {
+  "exs": [
+   {
+    "en": "The night sky looked infinitely deep above the quiet mountain village.",
+    "cn": "夜空在宁静山村上方显得无限深邃。"
+   },
+   {
+    "en": "Compared with the universe, human knowledge remains infinitely small, which humbles scientists.",
+    "cn": "与宇宙相比，人类知识仍然无限渺小，这使科学家保持谦卑。"
+   }
+  ],
+  "root": "in-（不）+finite（有限）→无限地"
+ },
+ "inflict": {
+  "exs": [
+   {
+    "en": "The heavy storm inflicted serious damage on coastal farms overnight.",
+    "cn": "暴风雨一夜之间给沿海农场造成严重损害。"
+   },
+   {
+    "en": "By ignoring safety rules, the manager inflicted unnecessary pain on injured workers.",
+    "cn": "由于忽视安全规定，经理给受伤工人造成了不必要的痛苦。"
+   }
+  ],
+  "root": "in-（进入）+flict（打击）→施加打击"
+ },
+ "ingenuity": {
+  "exs": [
+   {
+    "en": "The engineer's ingenuity turned a broken pump into a working water filter.",
+    "cn": "工程师的巧思把坏水泵变成可工作的净水器。"
+   },
+   {
+    "en": "Solving the puzzle without tools, students admired the design's remarkable ingenuity.",
+    "cn": "不用工具解题，学生们赞叹这个设计非凡的巧思。"
+   }
+  ],
+  "root": "in-（内）+gen（生）→内在天赋→巧思"
+ },
+ "initiate": {
+  "exs": [
+   {
+    "en": "The club initiated three new members after a brief ceremony.",
+    "cn": "俱乐部在简短仪式后吸收了三位新会员。"
+   },
+   {
+    "en": "Having completed the training, she initiated the project by assigning clear tasks.",
+    "cn": "完成培训后，她通过分配明确任务启动了项目。"
+   }
+  ],
+  "root": "in-（进入）+ it（走）→ 开始、入门"
+ },
+ "inlet": {
+  "exs": [
+   {
+    "en": "The engineer inspected the inlet during the morning check.",
+    "cn": "工程师在晨检中检查了入口。"
+   },
+   {
+    "en": "Installed beside the pump, the inlet prevents pressure loss during operation.",
+    "cn": "安装在泵旁，该入口在运行中防止压力损失。"
+   }
+  ],
+  "root": "in（进入）+ let（放）→ 放进来的口"
+ },
+ "inorganic": {
+  "exs": [
+   {
+    "en": "The report listed inorganic chemicals from the river sample.",
+    "cn": "报告列出了来自河水样本的无机化学物质。"
+   },
+   {
+    "en": "Plants cannot grow well in soil that is purely inorganic.",
+    "cn": "植物无法在纯无机的土壤中良好生长。"
+   }
+  ],
+  "root": "in-（不）+ organic（有机的）→ 无机的"
+ },
+ "insidious": {
+  "exs": [
+   {
+    "en": "Early symptoms of the insidious disease are barely noticeable.",
+    "cn": "这种隐伏疾病的早期症状几乎不易察觉。"
+   },
+   {
+    "en": "An insidious rumor spread quietly, damaging her reputation over months.",
+    "cn": "一个阴险的谣言悄悄传播，数月间损害了她的声誉。"
+   }
+  ],
+  "root": "in-（内）+ sed（坐）→ 潜伏 → 阴险"
+ },
+ "inspiration": {
+  "exs": [
+   {
+    "en": "The sunset gave the painter sudden inspiration for her canvas.",
+    "cn": "日落给了这位画家创作画布时的突然灵感。"
+   },
+   {
+    "en": "His teacher became an inspiration who encouraged him to study abroad.",
+    "cn": "他的老师成了鼓舞他的人，鼓励他出国留学。"
+   }
+  ],
+  "root": "in（进入）+ spir（呼吸）→ 吸入灵气 → 灵感"
+ },
+ "instantaneous": {
+  "exs": [
+   {
+    "en": "The app provides instantaneous feedback after each user click.",
+    "cn": "该应用在每次用户点击后提供即时反馈。"
+   },
+   {
+    "en": "Seen from the control room, the explosion was almost instantaneous.",
+    "cn": "从控制室看，爆炸几乎是瞬间发生的。"
+   }
+  ],
+  "root": "instant（瞬间）+ -aneous（形容词）→ 瞬间的"
+ },
+ "instrumental": {
+  "exs": [
+   {
+    "en": "Her advice was instrumental in resolving the dispute.",
+    "cn": "她的建议对解决争端起了关键作用。"
+   },
+   {
+    "en": "The coordinator, instrumental in securing funding, organized a successful charity event.",
+    "cn": "协调员因在争取资金方面发挥了关键作用，组织了一场成功的慈善活动。"
+   }
+  ],
+  "root": "instrument（工具）+ -al → 起作用的"
+ },
+ "intact": {
+  "exs": [
+   {
+    "en": "The ancient vase arrived intact despite the long journey.",
+    "cn": "尽管长途运输，这只古瓶仍完好无损地到达。"
+   },
+   {
+    "en": "Although the package was dropped, its contents remained intact.",
+    "cn": "尽管包裹被摔落，里面的物品仍完好无损。"
+   }
+  ],
+  "root": "in-（不）+ tact（接触）→ 未受损"
+ },
+ "integrity": {
+  "exs": [
+   {
+    "en": "The auditor praised the company's financial integrity during the audit.",
+    "cn": "审计员在审计期间称赞了公司的财务诚信。"
+   },
+   {
+    "en": "A leader with integrity earns trust by admitting mistakes openly.",
+    "cn": "正直的领导者通过公开承认错误来赢得信任。"
+   }
+  ],
+  "root": "integer（完整）+ -ity → 完整/正直"
+ },
+ "intelligible": {
+  "exs": [
+   {
+    "en": "The professor's explanation was intelligible to all beginners.",
+    "cn": "教授的解释对所有初学者都易懂。"
+   },
+   {
+    "en": "Although the diagram was complex, the teacher made it intelligible.",
+    "cn": "虽然图表复杂，老师仍使其变得易懂。"
+   }
+  ],
+  "root": "intellig（理解）+ -ible → 易懂"
+ },
+ "interconnect": {
+  "exs": [
+   {
+    "en": "These systems interconnect through a secure network every day.",
+    "cn": "这些系统每天通过安全网络相互连接。"
+   },
+   {
+    "en": "To interconnect the devices, engineers installed a central hub.",
+    "cn": "为了连接设备，工程师安装了一个中央集线器。"
+   }
+  ],
+  "root": "inter-（相互）+ connect（连接）→ 互连"
+ },
+ "interim": {
+  "exs": [
+   {
+    "en": "An interim manager handled operations during the transition.",
+    "cn": "临时经理在过渡期间负责运营。"
+   },
+   {
+    "en": "The board appointed an interim CEO because the resignation was sudden.",
+    "cn": "董事会任命了一位临时首席执行官，因为辞职很突然。"
+   }
+  ],
+  "root": "inter-（在...之间）→ 过渡期"
+ },
+ "intervene": {
+  "exs": [
+   {
+    "en": "The experienced diplomat intervened calmly during the tense negotiations.",
+    "cn": "经验丰富的外交官在紧张的谈判期间冷静地进行了干预。"
+   },
+   {
+    "en": "Seeing the situation deteriorate, the senior official intervened immediately to prevent further violence.",
+    "cn": "眼看局势恶化，高级官员立即干预，以防止进一步暴力。"
+   }
+  ],
+  "root": "inter-（中间）+ ven（来）→ 来到中间→干预"
+ },
+ "intricacy": {
+  "exs": [
+   {
+    "en": "The intricacy of the ancient map surprised the young historian.",
+    "cn": "古地图的复杂精妙令年轻的历史学家惊讶。"
+   },
+   {
+    "en": "Although the detective studied the blueprint, the intricacy of its hidden passages confused him.",
+    "cn": "尽管侦探研究了蓝图，隐藏通道的错综复杂仍让他困惑。"
+   }
+  ],
+  "root": "intricate（复杂）+ -cy（状态）→ 复杂状态"
+ },
+ "intriguing": {
+  "exs": [
+   {
+    "en": "The professor presented an intriguing theory about memory formation.",
+    "cn": "教授提出了一种关于记忆形成的有趣理论。"
+   },
+   {
+    "en": "The archaeologist found the engraved stone tablet intriguing after cleaning its surface.",
+    "cn": "考古学家清理石碑表面后，觉得这块刻有纹样的石板很有意思。"
+   }
+  ],
+  "root": "intrigue（激起兴趣）+ -ing → 吸引人的"
+ },
+ "invalid": {
+  "exs": [
+   {
+    "en": "The hospital transferred the invalid to a specialized rehabilitation center.",
+    "cn": "医院把那位病弱者转到专门的康复中心。"
+   },
+   {
+    "en": "The contract was declared invalid because one party had forged the signature.",
+    "cn": "因一方伪造签名，该合同被宣布无效。"
+   }
+  ],
+  "root": "in-（不）+ valid（有效）→ 无效；虚弱者"
+ },
+ "inventory": {
+  "exs": [
+   {
+    "en": "The manager checked the inventory carefully every Friday afternoon.",
+    "cn": "经理每周五下午都会仔细核查存货清单。"
+   },
+   {
+    "en": "After the shipment arrived, the accountant inventoried every box in the warehouse.",
+    "cn": "货物到达后，会计对仓库里的每个箱子都进行了清点。"
+   }
+  ],
+  "root": "invent（查出）+ -ory（记录）→ 存货清单"
+ },
+ "invoice": {
+  "exs": [
+   {
+    "en": "The supplier sent the invoice by email before noon.",
+    "cn": "供应商在中午前通过电子邮件发送了发票。"
+   },
+   {
+    "en": "Having reviewed the invoice, the accountant noticed an incorrect delivery charge.",
+    "cn": "审核发票后，会计注意到一项不正确的运费。"
+   }
+  ],
+  "root": "in+voice：把明细“说”进账单→发票"
+ },
+ "irony": {
+  "exs": [
+   {
+    "en": "The irony of his plan was obvious to everyone in the crowded room.",
+    "cn": "他计划中的讽刺意味很明显，房间里每个人都看得出来。"
+   },
+   {
+    "en": "The irony was that the traffic officer got a ticket while directing cars.",
+    "cn": "讽刺的是，那位交警在指挥交通时自己却被开了罚单。"
+   }
+  ],
+  "root": "希腊 eironeia（佯装）→反语讽刺"
+ },
+ "irrigation": {
+  "exs": [
+   {
+    "en": "This irrigation method saves water for rice fields in arid regions.",
+    "cn": "这种灌溉方法可为干旱地区的稻田节约用水。"
+   },
+   {
+    "en": "The canal, built by local workers, supplies irrigation water to villages each summer.",
+    "cn": "这条由当地工人修建的水渠，每年夏天为村庄提供灌溉用水。"
+   }
+  ],
+  "root": "ir-（进入）+rigare（浇水）→灌溉"
+ },
+ "ivory": {
+  "exs": [
+   {
+    "en": "The ivory tower stood far above the noisy city streets.",
+    "cn": "那座象牙塔高高矗立在嘈杂的市区街道上方。"
+   },
+   {
+    "en": "She kept an ivory figurine that had been carved by a local artisan.",
+    "cn": "她收藏着一件由当地工匠雕刻的象牙小雕像。"
+   }
+  ],
+  "root": "拉丁 ebur（象牙）→象牙/乳白色"
+ },
+ "jean": {
+  "exs": [
+   {
+    "en": "He wore a jean jacket to the music festival.",
+    "cn": "他穿了一件牛仔夹克去参加音乐节。"
+   },
+   {
+    "en": "The jean jacket, worn by many students, is both cheap and durable.",
+    "cn": "这件许多学生穿着的牛仔夹克既便宜又耐用。"
+   }
+  ],
+  "root": "源自热那亚（Genoa）布→牛仔布"
+ },
+ "jerk": {
+  "exs": [
+   {
+    "en": "He gave a sudden jerk to open the stuck window.",
+    "cn": "他猛地一拉，打开了卡住的窗户。"
+   },
+   {
+    "en": "The dog jerked its leash, dragging the child toward the busy street.",
+    "cn": "狗猛地一拽皮带，把孩子拖向繁忙的街道。"
+   }
+  ],
+  "root": "拟声画面：猛地一拽，肌肉抽搐"
+ },
+ "jingle": {
+  "exs": [
+   {
+    "en": "The jingle of keys announced her arrival in the empty hallway.",
+    "cn": "钥匙的叮当声在空荡的走廊里宣告她的到来。"
+   },
+   {
+    "en": "The little bell jingled when the door opened, announcing the customer.",
+    "cn": "小铃铛在门打开时叮当作响，宣告顾客来了。"
+   }
+  ],
+  "root": "拟声：jingle 像铃声轻响→叮当声"
+ },
+ "junction": {
+  "exs": [
+   {
+    "en": "The railway junction connects three busy lines across the industrial district.",
+    "cn": "这个铁路枢纽连接工业区内的三条繁忙线路。"
+   },
+   {
+    "en": "Drivers must slow down when they approach a junction marked by faded road signs.",
+    "cn": "司机驶近被褪色路标标记的交叉口时必须减速。"
+   }
+  ],
+  "root": "jun-（连接）+ ction（名词）→ 接合处"
+ },
+ "justification": {
+  "exs": [
+   {
+    "en": "The manager offered a clear justification for cutting the department budget.",
+    "cn": "经理为削减部门预算给出了明确辩护。"
+   },
+   {
+    "en": "The company provided justification for layoffs because sales had fallen sharply.",
+    "cn": "公司提供了裁员理由，因为销售额大幅下滑。"
+   }
+  ],
+  "root": "just（公正）+ -ification（名词）→ 证明正当"
+ },
+ "kidney": {
+  "exs": [
+   {
+    "en": "The patient damaged one kidney after years of high blood pressure.",
+    "cn": "患者多年高血压后损伤了一个肾。"
+   },
+   {
+    "en": "Doctors removed the kidney that contained a large stone.",
+    "cn": "医生切除了含有一块大结石的肾。"
+   }
+  ],
+  "root": "肾形如豆，左右各一，位于腰部"
+ },
+ "kindle": {
+  "exs": [
+   {
+    "en": "A single spark can kindle a dry forest in summer.",
+    "cn": "一点火星在夏季就能点燃干燥森林。"
+   },
+   {
+    "en": "Seeing the documentary kindled public interest in river pollution.",
+    "cn": "观看纪录片激发了公众对河流污染的兴趣。"
+   }
+  ],
+  "root": "谐音肯点，一肯点就着火"
+ },
+ "knight": {
+  "exs": [
+   {
+    "en": "The brave knight protected the village from a sudden raid.",
+    "cn": "勇敢的骑士保护村庄免受突袭。"
+   },
+   {
+    "en": "The king made him a knight after he saved the castle.",
+    "cn": "国王在他拯救城堡后封他为爵士。"
+   }
+  ],
+  "root": "k不发音，原义侍从，谐音夜骑"
+ },
+ "lathe": {
+  "exs": [
+   {
+    "en": "The worker shaped the metal shaft on a precise lathe.",
+    "cn": "工人在精密车床上加工金属轴。"
+   },
+   {
+    "en": "The engineer repaired the part that had worn out inside the lathe.",
+    "cn": "工程师修理了曾在车床内磨损的零件。"
+   }
+  ],
+  "root": "l像车轴，th像旋转，车床加工"
+ },
+ "lawsuit": {
+  "exs": [
+   {
+    "en": "The injured worker filed a lawsuit against the negligent construction company.",
+    "cn": "受伤的工人对疏忽大意的建筑公司提起了诉讼。"
+   },
+   {
+    "en": "Hiring an experienced lawyer helped the small business survive the costly lawsuit.",
+    "cn": "聘请一位经验丰富的律师帮助这家小企业挺过了昂贵的诉讼。"
+   }
+  ],
+  "root": "law法律+suit诉讼→法律诉求→诉讼"
+ },
+ "leaflet": {
+  "exs": [
+   {
+    "en": "The nurse gave every patient a leaflet about diabetes management.",
+    "cn": "护士给每位患者一张关于糖尿病管理的传单。"
+   },
+   {
+    "en": "The leaflet, printed on cheap paper, explained how to recycle batteries.",
+    "cn": "这张印在廉价纸上的传单解释了如何回收电池。"
+   }
+  ],
+  "root": "leaf叶+let小→小片→传单/小叶"
+ },
+ "legacy": {
+  "exs": [
+   {
+    "en": "The founder left a legacy of ethical business practices.",
+    "cn": "这位创始人留下了合乎道德的商业传统。"
+   },
+   {
+    "en": "The legacy that the scientist left inspired many young researchers.",
+    "cn": "这位科学家留下的遗产激励了许多年轻研究者。"
+   }
+  ],
+  "root": "联想：leave留下→留下的财产→遗产"
+ },
+ "liability": {
+  "exs": [
+   {
+    "en": "The company accepted liability for the defective product recall.",
+    "cn": "公司承认了对缺陷产品召回的责任。"
+   },
+   {
+    "en": "Failing to disclose the liability can make the contract voidable.",
+    "cn": "未披露该责任可能使合同可撤销。"
+   }
+  ],
+  "root": "lig绑+able可→被绑住→责任/债务"
+ },
+ "lily": {
+  "exs": [
+   {
+    "en": "The white lily stood out among the colorful spring flowers.",
+    "cn": "那朵白色百合在五彩缤纷的春花中格外显眼。"
+   },
+   {
+    "en": "Placing a lily on the grave, she remembered her grandmother's kindness.",
+    "cn": "把一朵百合放在墓前，她想起了祖母的慈爱。"
+   }
+  ],
+  "root": "lil（百合）+y→百合花/洁白"
+ },
+ "linear": {
+  "exs": [
+   {
+    "en": "The graph shows a linear increase in sales over four quarters.",
+    "cn": "图表显示销售额在四个季度内线性增长。"
+   },
+   {
+    "en": "Using a linear model, engineers predicted how the bridge would vibrate.",
+    "cn": "利用线性模型，工程师预测了桥梁会如何振动。"
+   }
+  ],
+  "root": "line线+ar→线的→线性的"
+ },
+ "lining": {
+  "exs": [
+   {
+    "en": "The winter jacket has a soft fleece lining for extra warmth.",
+    "cn": "这件冬季夹克有柔软抓绒衬里以增加保暖性。"
+   },
+   {
+    "en": "The pot was discarded after its inner lining began peeling off into the soup.",
+    "cn": "这只锅被丢弃了，因为其内层衬里开始剥落掉进汤里。"
+   }
+  ],
+  "root": "line（铺衬）+ -ing → 衬里"
+ },
+ "literal": {
+  "exs": [
+   {
+    "en": "A literal translation can distort the original humor.",
+    "cn": "字面翻译可能会扭曲原文的幽默。"
+   },
+   {
+    "en": "The judge insisted on a literal reading of the contract, rejecting any implied meaning.",
+    "cn": "法官坚持合同的字面解释，拒绝任何隐含含义。"
+   }
+  ],
+  "root": "littera（字母）+ -al → 文字的→逐字的"
+ },
+ "locality": {
+  "exs": [
+   {
+    "en": "The locality of the crime was a crowded market near the station.",
+    "cn": "犯罪发生地是车站附近一个拥挤的市场。"
+   },
+   {
+    "en": "Police searched every locality that might hide the escaped prisoner.",
+    "cn": "警方搜查了每一个可能藏匿逃犯的地点。"
+   }
+  ],
+  "root": "loc（地方）+ -ality → 所在地"
+ },
+ "lofty": {
+  "exs": [
+   {
+    "en": "The cathedral’s lofty dome dominated the old town.",
+    "cn": "大教堂高耸的圆顶俯瞰着老城。"
+   },
+   {
+    "en": "She gave a lofty speech, inspiring students to pursue noble ideals.",
+    "cn": "她发表了一场崇高的演讲，激励学生追求高尚理想。"
+   }
+  ],
+  "root": "loft（高处）+ -y → 高耸→傲慢"
+ },
+ "longing": {
+  "exs": [
+   {
+    "en": "The sailor felt a strong longing for his hometown.",
+    "cn": "水手对家乡怀有强烈的渴望。"
+   },
+   {
+    "en": "Longing to return, the exchange student watched the plane take off.",
+    "cn": "渴望回去，交换生看着飞机起飞。"
+   }
+  ],
+  "root": "long（渴望）+ -ing → 热望"
+ },
+ "lounge": {
+  "exs": [
+   {
+    "en": "The airport lounge offered quiet seats and free coffee.",
+    "cn": "机场休息室提供安静座位和免费咖啡。"
+   },
+   {
+    "en": "He lounged on the sofa, scrolling through his phone until midnight.",
+    "cn": "他躺在沙发上刷手机直到午夜。"
+   }
+  ],
+  "root": "画面：长椅上懒躺闲逛→休息室/闲混"
+ },
+ "luxurious": {
+  "exs": [
+   {
+    "en": "The luxurious hotel offered guests a private beach and spa.",
+    "cn": "豪华酒店为客人提供私人海滩和水疗。"
+   },
+   {
+    "en": "Seeing the luxurious suite, she felt both excited and uneasy.",
+    "cn": "看到豪华套房，她既兴奋又不安。"
+   }
+  ],
+  "root": "lux（光）→ 光彩夺目 → 豪华"
+ },
+ "magnetism": {
+  "exs": [
+   {
+    "en": "The magnetism of the ancient compass fascinated the young students.",
+    "cn": "古代指南针的磁性让年轻学生着迷。"
+   },
+   {
+    "en": "The speaker's magnetism kept the audience attentive, though they were tired.",
+    "cn": "演讲者的吸引力使观众保持专注，尽管他们很疲惫。"
+   }
+  ],
+  "root": "magnet（磁石）+ ism → 磁性/吸引力"
+ },
+ "maiden": {
+  "exs": [
+   {
+    "en": "The maiden voyage of the ship ended without any accidents.",
+    "cn": "该船的首航未发生任何事故。"
+   },
+   {
+    "en": "Reading the old letter, she learned that the maiden had escaped.",
+    "cn": "读着那封旧信，她得知少女曾逃走了。"
+   }
+  ],
+  "root": "maid（少女）+ en → 少女/首次"
+ },
+ "malice": {
+  "exs": [
+   {
+    "en": "The neighbor's malice showed in his cruel, repeated remarks.",
+    "cn": "邻居的恶意体现在他残忍重复的言论中。"
+   },
+   {
+    "en": "Knowing it was malice, the judge rejected the false accusation.",
+    "cn": "意识到那是恶意，法官驳回了虚假指控。"
+   }
+  ],
+  "root": "mal（坏）+ ice → 坏心 → 恶意"
+ }
+}
