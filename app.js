@@ -28,7 +28,93 @@ let META = null;          // 轻量索引（单元名+词数），首屏秒开�
 let DATA_PROMISE = null;  // 全量词库加载 Promise（后台并行）
 const loadedUnits = new Set(); // 已加载完整数据的单元 id
 const unitPromises = new Map(); // 进行中的单元加载 Promise
+let WORD_INDEX = null;    // 全库词头索引 { byWord: Map(词头小写->[unitId,...]), headsByUnit: Map(unitId->[词头小写,...]) }
+let INDEX_PROMISE = null; // index.json 加载 Promise
 let state = loadState();
+
+/** 单元真实词数：words.json 桩每单元只带 3 个预览词，词数以桩 count / meta.json 为准 */
+function unitSize(u) {
+  if (!u) return 0;
+  if (loadedUnits.has(u.id) && u.words && u.words.length) return u.words.length;
+  if (u.count) return u.count;
+  if (META && Array.isArray(META.units)) {
+    const m = META.units.find((x) => x.id === u.id);
+    if (m && m.count) return m.count;
+  }
+  return (u.words && u.words.length) || 0;
+}
+
+/** 全库词头索引：查词/搜索/AI 定位/mig46 迁移用（150KB，不阻塞首屏） */
+function ensureIndex() {
+  if (WORD_INDEX) return Promise.resolve(true);
+  if (!INDEX_PROMISE) {
+    INDEX_PROMISE = fetch('data/index.json', { cache: 'no-cache' })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j && Array.isArray(j.units) && j.units.length) {
+          const byWord = new Map(), headsByUnit = new Map();
+          j.units.forEach((u) => {
+            const heads = [];
+            (u.w || []).forEach((head) => {
+              const k = wordKey(head);
+              if (!k) return;
+              heads.push(k);
+              if (!byWord.has(k)) byWord.set(k, []);
+              const arr = byWord.get(k);
+              if (arr.indexOf(u.id) < 0) arr.push(u.id);
+            });
+            headsByUnit.set(u.id, heads);
+          });
+          WORD_INDEX = { byWord, headsByUnit };
+          onIndexReady();
+          return true;
+        }
+        INDEX_PROMISE = null;
+        return false;
+      })
+      .catch(() => { INDEX_PROMISE = null; return false; });
+  }
+  return INDEX_PROMISE;
+}
+
+/** 索引就绪后：补跑迁移（mig46 v2），继承可能增加已学数 → 刷新相关视图 */
+function onIndexReady() {
+  const run = () => {
+    let changed = false;
+    try { changed = migrateProgress() === true; } catch (e) { }
+    if (changed) { renderUnits(); renderContinue(); renderWrongList(); }
+  };
+  if (DATA.units.length) run(); else ensureData().then(run); // 词表没到就等它（迁移要按单元匹配）
+}
+
+/** 收集 store（learned/wrong/favorites）里有标记的单元 id */
+function unitIdsWithKeys(store) {
+  const ids = [];
+  for (const k in store) {
+    const v = store[k];
+    if (v && (Array.isArray(v) ? v.length : Object.keys(v).length)) ids.push(Number(k));
+  }
+  return ids;
+}
+
+/** SRS 排期涉及的单元 id（srsMap 键为 "unitId:词头"） */
+function srsUnitIds() {
+  const ids = [];
+  const m = srsMap();
+  for (const k in m) {
+    const u = Number(String(k).split(':')[0]);
+    if (u && ids.indexOf(u) < 0) ids.push(u);
+  }
+  return ids;
+}
+
+/** 批量确保单元分片已加载（幂等，只拉缺失的） */
+function ensureUnits(ids) {
+  const need = [];
+  (ids || []).forEach((id) => { if (id && !loadedUnits.has(id) && need.indexOf(id) < 0) need.push(id); });
+  if (!need.length) return Promise.resolve(true);
+  return Promise.all(need.map((id) => ensureUnitData(id))).then(() => true);
+}
 
 /** 懒加载：按单元获取完整词数据（第一次打开某单元时调用） */
 function ensureUnitData(unitId) {
@@ -39,10 +125,12 @@ function ensureUnitData(unitId) {
     .then((j) => {
       if (j && j.id && j.words && j.words.length) {
         const idx = DATA.units.findIndex((u) => u.id === Number(j.id));
-        if (idx >= 0) { DATA.units[idx].words = j.words; }
-        loadedUnits.add(unitId);
+        if (idx >= 0) {
+          DATA.units[idx].words = j.words;
+          loadedUnits.add(unitId); // 词表没就位时不标记（否则 unitSize 会误信桩的 3 个预览词）
+        }
         unitPromises.delete(unitId);
-        return true;
+        return idx >= 0;
       }
       unitPromises.delete(unitId);
       return false;
@@ -163,9 +251,9 @@ function esc(s) {
 /* ---- 进度存储：以词头（小写）为键，词库重排不会错位 ---- */
 function wordKey(w) { return String(w).toLowerCase(); }
 
-/** 词库总词数（数据驱动：新词库追加后自动跟随） */
+/** 词库总词数（数据驱动：桩带 count / meta 兜底，分片加载后跟随真实词表） */
 function totalWords() {
-  try { return DATA.units.reduce((sum, u) => sum + u.words.length, 0); } catch (e) { return 2007; }
+  try { return DATA.units.reduce((sum, u) => sum + unitSize(u), 0); } catch (e) { return 15315; }
 }
 function learnedMap(id) { return state.learned[String(id)] || (state.learned[String(id)] = {}); }
 function wrongMap(id) { return state.wrong[String(id)] || (state.wrong[String(id)] = {}); }
@@ -997,6 +1085,7 @@ function migrateProgress() {
   let changed = false;
   for (const u of DATA.units) {
     const uid = String(u.id);
+    if (!loadedUnits.has(u.id)) continue; // 数组下标必须有完整词表才能还原，桩（3 预览词）不迁移
     for (const store of [state.learned, state.wrong, state.favorites]) {
       const v = store[uid];
       if (Array.isArray(v)) {
@@ -1009,7 +1098,8 @@ function migrateProgress() {
   }
   // 四六级全量扩展（id>=27 为新单元）：旧单元(1-26)已掌握的词 → 新单元按词头继承「已掌握」。
   // 收藏/错词/星级不迁移（留在原单元，避免收藏夹跨书重复）。幂等：mig46 版本号只跑一次。
-  if (!state.mig46 && DATA.units.some((u) => u.id >= 27)) {
+  // v2（2026-10-11）：词库改分片懒加载后 v1 在桩数据上跑过、继承几乎没成功 → 按全库词头索引重跑一次。
+  if (state.mig46 < 2 && DATA.units.some((u) => u.id >= 27) && WORD_INDEX) {
     const legacyLearned = {};
     for (const u of DATA.units) {
       if (u.id <= 26) {
@@ -1022,17 +1112,18 @@ function migrateProgress() {
         if (u.id >= 27) {
           const uid = String(u.id);
           const m = state.learned[uid] || (state.learned[uid] = {});
-          for (const w of u.words) {
-            const k = wordKey(w.w);
+          const heads = WORD_INDEX.headsByUnit.get(u.id) || [];
+          for (const k of heads) {
             if (legacyLearned[k] && !m[k]) { m[k] = true; changed = true; }
           }
         }
       }
     }
-    state.mig46 = 1;
+    state.mig46 = 2;
     changed = true;
   }
   if (changed) saveState();
+  return changed;
 }
 
 /* 旧"自定义事项"（reminder.custom）迁移为待办清单；不依赖词库，启动即可跑 */
@@ -1315,9 +1406,9 @@ function renderUnits() {
   box.innerHTML = '';
   let totalWords = 0, totalLearned = 0, totalWrong = 0;
 
-  // 有全量用全量；否则用轻量索引先渲染（首屏秒开）
+  // 有全量用全量；否则用轻量索引先渲染（首屏秒开）。词数一律走 unitSize（桩只有 3 个预览词）
   const info = DATA.units.length
-    ? DATA.units.map((u) => ({ id: u.id, name: u.name, count: u.words.length }))
+    ? DATA.units.map((u) => ({ id: u.id, name: u.name, count: unitSize(u) }))
     : (META ? META.units : []);
 
   var lastGroup = '';
@@ -1371,7 +1462,8 @@ function renderUnits() {
 let studyUnitId = null;
 
 function ensureData() {
-  if (DATA.units.length && DATA.units[0].words && DATA.units[0].words.length > 3) return Promise.resolve(true);
+  // 词库已改为「桩索引 + 按单元分片懒加载」：桩本身即基线数据，有单元即视为就绪
+  if (DATA.units.length) return Promise.resolve(true);
   if (!DATA_PROMISE) {
     DATA_PROMISE = fetch('data/words.json', { cache: 'no-cache' })
       .then((r) => r.json())
@@ -2127,7 +2219,9 @@ $('#btn-test-unit').addEventListener('click', () => {
 });
 
 $('#btn-test-wrong').addEventListener('click', () => {
-  startTest(buildQueueWrong(), '检验错词本', 'wrong');
+  ensureUnits(unitIdsWithKeys(state.wrong)).then(() => { // 分片没到齐会漏词
+    startTest(buildQueueWrong(), '检验错词本', 'wrong');
+  });
 });
 
 /* ================= 收藏夹 ================= */
@@ -2189,6 +2283,11 @@ function renderFavorites() {
   const box = $('#fav-list');
   if (!box) return;
   const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
+  // 收藏词卡要拿词对象：涉及单元的分片未加载时先拉齐，再重渲一次
+  const needUnits = unitIdsWithKeys(state.favorites);
+  if (needUnits.some((id) => !loadedUnits.has(id))) {
+    ensureUnits(needUnits).then(() => renderFavorites());
+  }
   box.innerHTML = '';
   renderFavChips();
   const items = [];
@@ -2282,16 +2381,23 @@ function buildQueueFavorites() {
 }
 
 $('#btn-test-fav').addEventListener('click', () => {
-  const q = buildQueueFavorites();
-  if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
-  const title = favFilter === 'all' ? '检验收藏' : '检验收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
-  startTest(q, title, 'fav');
+  ensureUnits(unitIdsWithKeys(state.favorites)).then(() => { // 分片没到齐会漏词
+    const q = buildQueueFavorites();
+    if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
+    const title = favFilter === 'all' ? '检验收藏' : '检验收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
+    startTest(q, title, 'fav');
+  });
 });
 
 /* ================= 错词本 ================= */
 function renderWrongList() {
   const box = $('#wrong-list');
   const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
+  // 错词卡片要拿词对象：涉及单元的分片未加载时先拉齐，再重渲一次（首次先用已加载的渲染，不等网络）
+  const needUnits = unitIdsWithKeys(state.wrong);
+  if (needUnits.some((id) => !loadedUnits.has(id))) {
+    ensureUnits(needUnits).then(() => renderWrongList());
+  }
   box.innerHTML = '';
   // 顶部统计行：错词数 / 涉及单元 / 累计正确率
   let total = 0, units = 0;
@@ -3093,8 +3199,15 @@ const Reading = (() => {
       </div>`;
     // 原文渲染 + 逐段译文展开/盖住
     const cnSw = $('#rd-cn-sw');
+    const applyShowCn = (on) => { box.classList.toggle('show-cn', !!on); }; // 题干/选项中文跟随总开关
     const applyCn = () => {
       $('#rd-text').innerHTML = rdTextHtml(it);
+      if (rdCnOn()) { // 恢复上次偏好：译文全展开 + 题干/选项中文跟随
+        document.querySelectorAll('#rd-text .rd-para-cn').forEach((x) => x.classList.remove('hidden'));
+        applyShowCn(true);
+        cnSw.textContent = '隐藏译文';
+        cnSw.classList.add('on');
+      }
       $('#rd-text').addEventListener('click', (ev) => {
         const s2 = ev.target.closest('.rd-w');
         if (s2) {
@@ -3114,6 +3227,8 @@ const Reading = (() => {
       const allCn = document.querySelectorAll('#rd-text .rd-para-cn');
       const anyHidden = [...allCn].some((x) => x.classList.contains('hidden'));
       allCn.forEach((x) => x.classList.toggle('hidden', !anyHidden));
+      applyShowCn(anyHidden); // 总开关同时揭/盖题干与选项中文（v3 逐段改版时漏挂，2026-10-11 回归修复）
+      setCnOn(anyHidden); // 记住偏好，下次进篇自动恢复
       cnSw.textContent = anyHidden ? '隐藏译文' : '对照译文';
       cnSw.classList.toggle('on', anyHidden);
     });
@@ -3325,6 +3440,11 @@ const Reading = (() => {
     // 生词收藏路由：在词库→归入对应单元收藏；不在→留在阅读生词
     function findWordUnit(word) {
       var target = word.toLowerCase();
+      // 全库词头索引优先（分片未加载的单元也能定位；收藏是按键存储，不需要词对象）
+      if (WORD_INDEX) {
+        var ids = WORD_INDEX.byWord.get(target);
+        if (ids && ids.length) return ids[0];
+      }
       for (var ui = 0; ui < DATA.units.length; ui++) {
         for (var wi = 0; wi < DATA.units[ui].words.length; wi++) {
           if (DATA.units[ui].words[wi].w.toLowerCase() === target) return DATA.units[ui].id;
@@ -4396,9 +4516,14 @@ const WordCard = (() => {
     fav.classList.toggle('on', faved);
     fav.textContent = faved ? '★ 已收藏' : '☆ 收藏生词';
     box.classList.add('open');
-    // 例句：词库词条自带（六级词已补录 / 考研词原书）+ 词典
+    // 例句：词库词条自带（六级词已补录 / 考研词原书）+ 词典；分片未加载时先拉齐再取
     const exBox = box.querySelector('.wc-exs');
-    const hit = (typeof AI !== 'undefined' && AI.findWord) ? AI.findWord(w) : null;
+    let hit = (typeof AI !== 'undefined' && AI.findWord) ? AI.findWord(w) : null;
+    if (hit && !hit.entry) {
+      await ensureUnitData(hit.unitId);
+      if (box.dataset.w !== w) return; // 期间已切到别的词
+      hit = (typeof AI !== 'undefined' && AI.findWord) ? AI.findWord(w) : null;
+    }
     const exs = (hit && hit.entry && hit.entry.exs) || [];
     if (exs.length) {
       exBox.innerHTML = '<div class="wc-exs-head">例句</div>' + exs.map((x) => '<div class="wc-ex">' + esc(x) + '</div>').join('');
@@ -4426,36 +4551,58 @@ async function renderSearch(q) {
   const seq = ++searchSeq;
   q = q.trim().toLowerCase();
   if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  const hits = [];
+  const rows = [];
   for (const u of DATA.units) {
     for (let i = 0; i < u.words.length; i++) {
       const w = u.words[i];
       const cn = w.defs.map((x) => x.cn).join(' ');
       if (w.w.toLowerCase().includes(q) || cn.includes(q)) {
-        hits.push({ u, idx: i, w });
-        if (hits.length >= 40) break;
+        rows.push({ unitId: u.id, idx: i, head: w.w, name: u.name, cn: (w.defs[0] && w.defs[0].cn) || '' });
+        if (rows.length >= 40) break;
       }
     }
-    if (hits.length >= 40) break;
+    if (rows.length >= 40) break;
+  }
+  // 全库词头索引：把未加载分片单元的词头命中补进来（分片到位后自动重搜补全释义）
+  let needUnits = [];
+  if (WORD_INDEX && rows.length < 40) {
+    const seen = new Set(rows.map((r) => r.unitId + ':' + wordKey(r.head)));
+    for (const [k, ids] of WORD_INDEX.byWord) {
+      if (k.indexOf(q) < 0) continue;
+      for (const uid of ids) {
+        if (seen.has(uid + ':' + k)) continue;
+        seen.add(uid + ':' + k);
+        const mu = unitById(uid);
+        rows.push({ unitId: uid, idx: null, head: k, name: mu ? mu.name : ('单元 ' + uid), cn: '' });
+        if (!loadedUnits.has(uid) && needUnits.indexOf(uid) < 0) needUnits.push(uid);
+        if (rows.length >= 40) break;
+      }
+      if (rows.length >= 40) break;
+    }
   }
   let html = '';
-  if (hits.length) {
-    html += '<div class="sr-sec">应用词库 · 点击去学习</div>' + hits.map((h) => `
-    <div class="sr-item" data-unit="${h.u.id}" data-idx="${h.idx}">
-      <div><span class="sr-word">${h.w.w}</span><span class="sr-unit">${h.u.name}</span></div>
-      <div class="sr-cn">${(h.w.defs[0] && h.w.defs[0].cn) || ''}</div>
+  if (rows.length) {
+    html += '<div class="sr-sec">应用词库 · 点击去学习</div>' + rows.map((r) => `
+    <div class="sr-item" data-unit="${r.unitId}" ${r.idx != null ? `data-idx="${r.idx}"` : `data-head="${esc(r.head)}"`}>
+      <div><span class="sr-word">${esc(r.head)}</span><span class="sr-unit">${esc(r.name)}</span></div>
+      <div class="sr-cn">${esc(r.cn)}</div>
     </div>`).join('');
+    if (needUnits.length) {
+      ensureUnits(needUnits.slice(0, 8)).then(() => { // 释义补全后按当前输入重搜一遍
+        if (seq === searchSeq && $('#search-input').value.trim().toLowerCase() === q) renderSearch(q);
+      });
+    }
   }
   // 离线词典：任意英文词都能查（精确 + 前缀建议）
   if (/^[a-z][a-z'\-]*$/.test(q)) {
     const exact = await Dict.lookup(q);
     if (seq !== searchSeq) return;
     const dictRows = [];
-    if (exact && !hits.some((h) => h.w.w.toLowerCase() === exact.w)) dictRows.push(exact);
+    if (exact && !rows.some((r) => r.head.toLowerCase() === exact.w)) dictRows.push(exact);
     const sugs = await Dict.suggest(q, 8);
     if (seq !== searchSeq) return;
     for (const s of sugs) {
-      if (s.w !== q && !dictRows.some((d) => d.w === s.w) && !hits.some((h) => h.w.w.toLowerCase() === s.w)) dictRows.push(s);
+      if (s.w !== q && !dictRows.some((d) => d.w === s.w) && !rows.some((r) => r.head.toLowerCase() === s.w)) dictRows.push(s);
     }
     if (dictRows.length) {
       html += '<div class="sr-sec">词典 · 点击看释义</div>' + dictRows.map((d) => `
@@ -4485,8 +4632,26 @@ $('#search-results').addEventListener('click', (e) => {
   if (!item) return;
   $('#search-input').value = '';
   $('#search-results').classList.add('hidden');
-  gotoWord(Number(item.dataset.unit), Number(item.dataset.idx));
+  if (item.dataset.head) gotoWordHead(Number(item.dataset.unit), item.dataset.head); // 词头命中：先定位单元再找词
+  else gotoWord(Number(item.dataset.unit), Number(item.dataset.idx));
 });
+
+/** 按词头跳转：单元分片未加载时 openStudy 内部会先拉齐，再定位到该词 */
+function gotoWordHead(unitId, head) {
+  openStudy(unitId, () => {
+    const u = unitById(unitId);
+    if (!u) return;
+    const idx = u.words.findIndex((x) => wordKey(x.w) === wordKey(head));
+    if (idx < 0) return;
+    const card = document.querySelector(`#word-list .word-card[data-idx="${idx}"]`);
+    if (!card) return;
+    card.scrollIntoView({ block: 'center' });
+    const d = card.querySelector('.wc-detail');
+    if (d) d.classList.remove('collapsed');
+    card.classList.add('locate');
+    setTimeout(() => card.classList.remove('locate'), 2300);
+  });
+}
 
 function renderContinue() {
   const b = $('#btn-continue');
@@ -4496,11 +4661,13 @@ function renderContinue() {
     const l = countKeys(state.learned, u.id);
     const rec = state.scrolls && state.scrolls[String(u.id)];
     let pos = '';
-    if (rec && typeof rec === 'object' && rec.w) {
+    if (loadedUnits.has(Number(u.id)) && rec && typeof rec === 'object' && rec.w) {
       const idx = u.words.findIndex((x) => wordKey(x.w) === rec.w);
       if (idx > 0) pos = ` · 第 ${idx + 1} 词`;
+    } else if (rec && typeof rec === 'object' && rec.w) {
+      ensureUnitData(Number(u.id)).then(() => renderContinue()); // 书签定位需要完整词表
     }
-    b.textContent = `继续学习 · ${u.name}${pos}（已学 ${l}/${u.words.length}）`;
+    b.textContent = `继续学习 · ${u.name}${pos}（已学 ${l}/${unitSize(u)}）`;
     b.classList.remove('hidden');
     let learnedTotal = 0;
     for (const k in state.learned) learnedTotal += countKeys(state.learned, k);
@@ -4684,9 +4851,11 @@ $$('#view-units [data-homeback]').forEach((b) => b.addEventListener('click', () 
 // 今日任务卡：改为进面板（面板里有清单与「开始复习」）
 $('#today-card').addEventListener('click', () => showHomePanel('today'));
 $('#today-start-review').addEventListener('click', () => {
-  const q = srsDueCapped();
-  if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
-  startTest(q, `今日复习 ${q.length} 词`, 'srs');
+  ensureUnits(srsUnitIds()).then(() => { // 分片没到齐会漏到期词
+    const q = srsDueCapped();
+    if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
+    startTest(q, `今日复习 ${q.length} 词`, 'srs');
+  });
 });
 
 function heatLevel(total) {
@@ -4845,14 +5014,20 @@ const AI = (() => {
       const w = u.words.find((x) => wordKey(x.w) === k);
       if (w) return { unitId: u.id, w: w.w, entry: w };
     }
+    // 分片未加载的单元：按全库词头索引定位（entry 为空，需要词对象时先 ensureUnitData）
+    if (WORD_INDEX) {
+      const ids = WORD_INDEX.byWord.get(k);
+      if (ids && ids.length) return { unitId: ids[0], w: k, entry: null };
+    }
     return null;
   }
   /** 执行单条指令，返回回执文本；不合法抛 Error（消息给用户看） */
-  function execAction(a) {
+  async function execAction(a) {
     const op = String(a && a.op || '');
     const KNOWN = ['fav', 'unfav', 'star', 'learn', 'unlearn', 'master', 'review', 'quiz', 'nav'];
     if (KNOWN.indexOf(op) < 0) throw new Error('未知操作：' + op); // 白名单前置：删数据类操作永远到不了这里
     if (op === 'review') {
+      await ensureUnits(srsUnitIds()); // 分片没到齐会漏到期词
       const q = srsDueCapped();
       if (!q.length) return '今日没有到期的复习词';
       startTest(q, '今日复习 ' + q.length + ' 词', 'srs');
@@ -4861,6 +5036,7 @@ const AI = (() => {
     if (op === 'quiz') {
       const n = Number(a.unit);
       const u = (n >= 1 && n <= DATA.units.length) ? DATA.units[n - 1] : DATA.units[Math.floor(Math.random() * DATA.units.length)];
+      await ensureUnitData(u.id); // 桩单元只有 3 个预览词，出题前先拉全量
       startTest(buildQueueByUnit(u.id), u.name + ' 检验', 'unit:' + u.id);
       return '已开始「' + u.name + '」检验';
     }
@@ -4980,11 +5156,11 @@ const AI = (() => {
     bar.className = 'vf-action-bar';
     bar.innerHTML = '<div class="vf-action-head">⚡ 已执行应用操作</div>';
     let okN = 0;
-    acts.forEach((a) => {
+    acts.forEach(async (a) => {
       const row = document.createElement('div');
       row.className = 'vf-action-row';
       try {
-        const msg = execAction(a);
+        const msg = await execAction(a); // 可能内部拉分片（review/quiz），已改异步
         okN++;
         row.innerHTML = '<span class="ok">✓</span> ' + esc(msg);
       } catch (e) {
@@ -5386,6 +5562,16 @@ async function boot() {
   const ok = await ensureData();
   if (!ok && !META) {
     $('#unit-list').innerHTML = '<div class="empty-tip">词库加载失败，请联网后重开一次</div>';
+  } else {
+    // 分片懒加载补齐：SRS/错词/收藏涉及的单元 + 全库词头索引（不阻塞首屏；到位后刷新相关视图）
+    ensureUnits(srsUnitIds().concat(unitIdsWithKeys(state.wrong), unitIdsWithKeys(state.favorites)))
+      .then(() => {
+        renderContinue();
+        if (typeof renderToday === 'function') renderToday();
+        renderWrongList();
+        renderFavorites();
+      });
+    ensureIndex();
   }
 }
 /* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存 */
