@@ -1448,3 +1448,6 @@ html.dark #wr-topic, html.dark #wr-essay { background: #242631; border-color: #3
 
 /* ---------- 单元分组标题 ---------- */
 .unit-group-title { user-select: none; }
+
+/* ---------- 同根词行可读性 ---------- */
+.wc-detail .row .det-cn { word-break: break-all; }
