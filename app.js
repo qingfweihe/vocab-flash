@@ -1296,12 +1296,24 @@ function renderUnits() {
     ? DATA.units.map((u) => ({ id: u.id, name: u.name, count: u.words.length }))
     : (META ? META.units : []);
 
+  var lastGroup = '';
   info.forEach((u) => {
     const n = u.count;
     const l = countKeys(state.learned, u.id);
     const w = countKeys(state.wrong, u.id);
     totalWords += n; totalLearned += l; totalWrong += w;
     const pct = n ? Math.round((l / n) * 100) : 0;
+    var groupName = '';
+    if (u.id >= 1 && u.id <= 13) groupName = '📕 考研核心';
+    else if (u.id >= 14 && u.id <= 26) groupName = '📗 六级高频';
+    else if (u.id >= 27 && u.id <= 52) groupName = '📘 四级全量';
+    else groupName = '📙 六级全量';
+    if (groupName !== lastGroup) {
+      const gd = document.createElement('div');
+      gd.innerHTML = '<div class="unit-group-title" style="font-weight:700;font-size:13px;color:var(--brand);padding:12px 2px 4px;">' + groupName + '</div>';
+      box.appendChild(gd.firstChild);
+      lastGroup = groupName;
+    }
 
     const card = document.createElement('div');
     card.className = 'unit-card';
@@ -2955,15 +2967,15 @@ const Reading = (() => {
   function rdCnOn() { try { return localStorage.getItem('sgwd_rd_cn') === '1'; } catch (e) { return false; } }
   function setCnOn(v) { try { localStorage.setItem('sgwd_rd_cn', v ? '1' : '0'); } catch (e) { } }
 
-  /** 原文渲染：开对照且译文段落与原文段落数一致 → 逐段交错；否则译文整体块跟在文末 */
-  function rdTextHtml(it, showCn) {
+  /** 原文渲染：每段英文后跟中文翻译（默认盖住），点击段落独立展开/盖住该段译文 */
+  function rdTextHtml(it) {
     const en = it.text.split('\n').filter((p) => p.trim());
     const cn = (it.cn || '').split('\n').filter((p) => p.trim());
-    if (showCn && it.cn && cn.length === en.length) {
-      return en.map((p, i) => `<p class="rd-p">${wrapWords(p)}</p><p class="rd-p cn">${cn[i]}</p>`).join('');
+    if (it.cn && cn.length === en.length) {
+      return en.map((p, i) => `<div class="rd-para-wrap" data-para="${i}"><p class="rd-p">${wrapWords(p)}</p><p class="rd-p cn rd-para-cn hidden" data-pcn="${i}">${cn[i]}</p></div>`).join('');
     }
     let html = en.map((p) => `<p class="rd-p">${wrapWords(p)}</p>`).join('');
-    if (showCn && it.cn) html += `<p class="rd-p cn rd-cn-fall">${it.cn.replace(/\n/g, '<br>')}</p>`;
+    if (it.cn) html += `<p class="rd-p cn rd-cn-fall hidden">${it.cn.replace(/\n/g, '<br>')}</p>`;
     return html;
   }
 
@@ -3036,24 +3048,33 @@ const Reading = (() => {
         <div class="rd-dock-body" id="rd-dock-body"></div>
         <div class="rd-dock-foot" id="rd-dock-foot"></div>
       </div>`;
-    // 原文渲染 + 对照译文开关
+    // 原文渲染 + 逐段译文展开/盖住
     const cnSw = $('#rd-cn-sw');
     const applyCn = () => {
-      const on = rdCnOn();
-      $('#rd-text').innerHTML = rdTextHtml(it, on);
-      box.classList.toggle('show-cn', on);
-      cnSw.textContent = on ? '隐藏译文' : '对照译文';
-      cnSw.classList.toggle('on', on);
+      $('#rd-text').innerHTML = rdTextHtml(it);
+      $('#rd-text').addEventListener('click', (ev) => {
+        const s2 = ev.target.closest('.rd-w');
+        if (s2) {
+          const p = s2.closest('.rd-p');
+          const info = findSentence(p ? p.textContent : '', s2.textContent);
+          WordCard.show(s2.textContent, info.sent, info.ctx);
+          return;
+        }
+        const wrap = ev.target.closest('.rd-para-wrap');
+        if (wrap) {
+          const cnEl = wrap.querySelector('.rd-para-cn');
+          if (cnEl) cnEl.classList.toggle('hidden');
+        }
+      });
     };
-    $('#rd-text').addEventListener('click', (ev) => {
-      const s2 = ev.target.closest('.rd-w');
-      if (!s2) return;
-      const p = s2.closest('.rd-p');
-      const info = findSentence(p ? p.textContent : '', s2.textContent);
-      WordCard.show(s2.textContent, info.sent, info.ctx);
+    cnSw.addEventListener('click', () => {
+      const allCn = document.querySelectorAll('#rd-text .rd-para-cn');
+      const anyHidden = [...allCn].some((x) => x.classList.contains('hidden'));
+      allCn.forEach((x) => x.classList.toggle('hidden', !anyHidden));
+      cnSw.textContent = anyHidden ? '隐藏译文' : '对照译文';
+      cnSw.classList.toggle('on', anyHidden);
     });
     applyCn();
-    cnSw.addEventListener('click', () => { setCnOn(!rdCnOn()); applyCn(); });
     // 全文精讲
     const fa = $('#rd-fullai'), fab = $('#rd-fullai-box');
     fa.addEventListener('click', () => {
@@ -3249,7 +3270,7 @@ const Reading = (() => {
     res.querySelectorAll('.vw-main').forEach((b) => b.addEventListener('click', () => {
       const back = b.querySelector('.vw-back');
       back.classList.toggle('hidden');
-      if (!back.classList.contains('hidden')) speak(b.dataset.w);
+      speak(b.dataset.w);
     }));
     const reveal = $('#rd-vocab-reveal');
     if (reveal) reveal.addEventListener('click', () => {
@@ -3258,11 +3279,36 @@ const Reading = (() => {
       backs.forEach((x) => x.classList.toggle('hidden', !show));
       reveal.textContent = show ? '全部遮住' : '全部显示';
     });
+    // 生词收藏路由：在词库→归入对应单元收藏；不在→留在阅读生词
+    function findWordUnit(word) {
+      var target = word.toLowerCase();
+      for (var ui = 0; ui < DATA.units.length; ui++) {
+        for (var wi = 0; wi < DATA.units[ui].words.length; wi++) {
+          if (DATA.units[ui].words[wi].w.toLowerCase() === target) return DATA.units[ui].id;
+        }
+      }
+      return null;
+    }
     res.querySelectorAll('.vw-fav').forEach((b) => b.addEventListener('click', () => {
-      const w = b.dataset.w;
-      if (r.vocab[w]) { delete r.vocab[w]; if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w); b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
-      else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到收藏夹·阅读生词'); }
-      saveState();
+      var w = b.dataset.w;
+      var unitId = findWordUnit(w);
+      if (unitId != null) {
+        if (isFav(unitId, w)) {
+          setFav(unitId, w, false);
+          b.classList.remove('on'); b.textContent = '☆';
+          toast('已取消收藏');
+        } else {
+          setFav(unitId, w, true);
+          b.classList.add('on'); b.textContent = '★';
+          var un = unitById(unitId);
+          toast('★ 已收藏到「' + (un ? un.name : '') + '」');
+        }
+        saveState();
+      } else {
+        if (r.vocab[w]) { delete r.vocab[w]; if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w); b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
+        else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到收藏夹·阅读生词'); }
+        saveState();
+      }
     }));
     const cnT = $('#rd-cn-toggle');
     if (cnT) cnT.addEventListener('click', () => {
@@ -5289,6 +5335,7 @@ async function boot() {
   try {
     const qv = new URLSearchParams(location.search).get('view');
     if (qv && ['todo', 'favorites', 'wrong', 'units', 'settings', 'daily'].includes(qv)) nav(qv);
+    else if (!localStorage.getItem(LS_KEY)) nav('units'); // 首次安装落首页
     else applyNavRestore(pendingNav);
   } catch (e) { /* ignore */ }
 

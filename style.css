@@ -1439,3 +1439,12 @@ html.dark .rd-dock-body .rd-q5-explain { background: #1a1c24; color: var(--ink-2
 #wr-essay { min-height: 180px; resize: vertical; line-height: 1.6; }
 html.dark .wrt-card { background: #242631; border-color: #34363f; }
 html.dark #wr-topic, html.dark #wr-essay { background: #242631; border-color: #34363f; color: var(--ink); }
+
+/* ---------- 逐段独立译文 ---------- */
+.rd-para-wrap { cursor: pointer; }
+.rd-para-wrap .rd-p { margin: 0; }
+.rd-para-wrap .rd-para-cn { border-left: 3px solid var(--brand-soft); padding: 6px 10px; margin: 4px 0 8px; font-size: 13px; color: var(--ink-2); line-height: 1.7; background: var(--page-bg); border-radius: 0 8px 8px 0; cursor: pointer; }
+.rd-para-wrap .rd-para-cn.hidden { display: none; }
+
+/* ---------- 单元分组标题 ---------- */
+.unit-group-title { user-select: none; }
