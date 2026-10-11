@@ -26,7 +26,31 @@ const DEFAULT_STATE = {
 let DATA = { meta: {}, units: [] };
 let META = null;          // 轻量索引（单元名+词数），首屏秒开用
 let DATA_PROMISE = null;  // 全量词库加载 Promise（后台并行）
+const loadedUnits = new Set(); // 已加载完整数据的单元 id
+const unitPromises = new Map(); // 进行中的单元加载 Promise
 let state = loadState();
+
+/** 懒加载：按单元获取完整词数据（第一次打开某单元时调用） */
+function ensureUnitData(unitId) {
+  if (loadedUnits.has(unitId)) return Promise.resolve(true);
+  if (unitPromises.has(unitId)) return unitPromises.get(unitId);
+  const p = fetch('data/units/words_' + unitId + '.json', { cache: 'no-cache' })
+    .then((r) => r.json())
+    .then((j) => {
+      if (j && j.id && j.words && j.words.length) {
+        const idx = DATA.units.findIndex((u) => u.id === Number(j.id));
+        if (idx >= 0) { DATA.units[idx].words = j.words; }
+        loadedUnits.add(unitId);
+        unitPromises.delete(unitId);
+        return true;
+      }
+      unitPromises.delete(unitId);
+      return false;
+    })
+    .catch(() => { unitPromises.delete(unitId); return false; });
+  unitPromises.set(unitId, p);
+  return p;
+}
 
 /** 阅读状态规整（深防御：绝不与 DEFAULT_STATE 共享内层对象，否则重置后残留记录） */
 function normalizeReading(r) {
@@ -1347,34 +1371,53 @@ function renderUnits() {
 let studyUnitId = null;
 
 function ensureData() {
-  if (DATA.units.length) return Promise.resolve(true);
+  if (DATA.units.length && DATA.units[0].words && DATA.units[0].words.length > 3) return Promise.resolve(true);
   if (!DATA_PROMISE) {
     DATA_PROMISE = fetch('data/words.json', { cache: 'no-cache' })
       .then((r) => r.json())
       .then((j) => {
         if (j && j.units && j.units.length) {
+          // 合并：保留已加载的完整单元数据，只更新 stub
+          if (DATA.units.length) {
+            for (const newU of j.units) {
+              const oldU = DATA.units.find((u) => u.id === newU.id);
+              if (oldU && loadedUnits.has(newU.id)) { newU.words = oldU.words; }
+            }
+          }
           DATA = j;
-          migrateProgress(); // 旧下标键 -> 词头键（一次性）
+          migrateProgress();
           $('#topbar-sub').textContent = DATA.meta.subtitle || '';
           renderUnits();
           renderWrongList();
           return true;
         }
-        DATA_PROMISE = null; // 数据异常：允许下次重试
+        DATA_PROMISE = null;
         return false;
       })
-      .catch(() => { DATA_PROMISE = null; return false; }); // 失败清空缓存，网络恢复后可重试
+      .catch(() => { DATA_PROMISE = null; return false; });
   }
   return DATA_PROMISE;
 }
 
 function openStudy(id, then, skipRestore) {
+  const doOpen = () => {
+    const u = unitById(id);
+    if (!u || !loadedUnits.has(Number(id))) {
+      toast('单元加载中…');
+      ensureUnitData(Number(id)).then((ok) => {
+        if (ok) doOpen();
+        else toast('加载失败，请检查网络后重试');
+      });
+      return;
+    }
+    openStudyInner(id, then, skipRestore);
+  };
+  ensureData().then(() => doOpen());
+}
+
+function openStudyInner(id, then, skipRestore) {
   const u = unitById(id);
-  if (!u) {
-    toast('词库加载中，请稍候…');
-    ensureData().then((ok) => { if (ok) openStudy(id, then, skipRestore); else toast('词库加载失败，请联网后重试'); });
-    return;
-  }
+  if (!u) return; // openStudy 已确保加载，不应走到这里
   studyUnitId = id;
   state.lastUnit = id;
   inStudy = true;
