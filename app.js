@@ -4,6 +4,13 @@
  */
 'use strict';
 
+/* iOS（iPhone/iPad Safari 与主屏 PWA）：backdrop-filter 在滚动时每帧重采样毛玻璃，
+   是长列表滚动掉帧的已知来源——打标交由 CSS 降级为不透明背景（JS 仅打标，样式见 style.css） */
+if (/iP(hone|ad|od)/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) { // iPadOS 桌面 UA 伪装
+  try { document.documentElement.classList.add('ios'); } catch (e) { }
+}
+
 /* ================= 状态 ================= */
 const LS_KEY = 'sgwd_progress_v1';
 const DEFAULT_STATE = {
@@ -1297,6 +1304,7 @@ function speak(word) {
 let currentView = 'units';
 let inStudy = false; // 是否处于"学习态"：底部「单词」tab 会据此回到学习页而非列表
 const TAB_VIEWS = ['units', 'favorites', 'settings', 'ai'];
+let homeDirty = false; // 首页(单元列表/统计)数据已变但未重渲：操作时置脏，nav('units') 时统一刷
 
 let pendingFavSeg = null, pendingHomePanel = null; // 路由别名（wrong→收藏错词段 / todo→首页待办面板）
 function nav(view) {
@@ -1319,6 +1327,10 @@ function nav(view) {
     b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
+  if (view === 'units') {
+    // 高频操作（判分/勾已学/全标）不再即时重建首页 DOM（93 张单元卡），置脏回首页时统一刷
+    if (homeDirty) { homeDirty = false; renderUnits(); }
+  }
   if (view === 'units' && typeof renderContinue === 'function') renderContinue();
   if (view === 'units' && typeof renderToday === 'function') { renderToday(); renderHeat(); }
   if (view === 'units' && typeof showHomePanel === 'function') {
@@ -1386,8 +1398,18 @@ function applyNavRestore(nv) {
     }
   }
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveNavState(true); });
-window.addEventListener('pagehide', () => saveNavState(true));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    saveNavState(true);
+    if (currentView === 'study' && studyUnitId != null) saveStudyPos(); // 滚动位置只写内存，切后台必须落盘
+    saveTestSess(true); // 检验档案防抖中：切后台立即落盘
+  }
+});
+window.addEventListener('pagehide', () => {
+  saveNavState(true);
+  if (currentView === 'study' && studyUnitId != null) saveStudyPos();
+  saveTestSess(true);
+});
 
 document.addEventListener('click', (e) => {
   const navBtn = e.target.closest('[data-nav]');
@@ -1555,13 +1577,15 @@ function currentTopWordKey() {
   return '';
 }
 
-function saveStudyPos() {
+function saveStudyPos(memOnly) {
   if (studyUnitId == null) return;
   const u = unitById(studyUnitId);
   if (!u) return;
   state.scrolls = state.scrolls || {};
   state.scrolls[String(studyUnitId)] = { w: currentTopWordKey(), y: window.scrollY };
-  saveState();
+  // 高频路径（滚动 debounce / 3s 快照）只写内存；落盘交给离开学习页 / 切后台——
+  // 否则滚动途中反复全量序列化 state（几千词记录=几百 KB）同步写 localStorage，iOS 主线程被写盘卡住
+  if (!memOnly) saveState();
 }
 
 /** 恢复：优先按词精确滚动并高亮提示；兼容旧的纯像素记录 */
@@ -1622,7 +1646,7 @@ function restoreListPos(containerSel, storageKey) {
 window.addEventListener('scroll', () => {
   if (currentView === 'study' && studyUnitId != null) {
     clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(saveStudyPos, 250);
+    scrollTimer = setTimeout(() => saveStudyPos(true), 250);
   } else if (currentView === 'favorites') {
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => saveListPos('#fav-list', 'fav'), 250);
@@ -1761,8 +1785,7 @@ function renderWordList() {
       }
       saveState();
       card.classList.toggle('is-wrong', isWrong(studyUnitId, w.w)); // 红标即时跟随
-      renderUnits();
-      if (typeof renderToday === 'function') renderToday();
+      homeDirty = true; // 首页统计回首页时刷（原为即时 renderUnits+renderToday，连勾时连环重建 93 卡）
     });
     card.querySelector('[data-fav]').addEventListener('click', (ev) => {
       ev.stopPropagation();
@@ -1812,8 +1835,7 @@ $('#btn-mark-all').addEventListener('click', () => {
     if (newly > 0) logLearn('n', newly); // 今日任务的新词计数与逐个勾选一致
     toast('已全部标记为已学');
   }
-  saveState(); renderWordList(); renderUnits();
-  if (typeof renderToday === 'function') renderToday();
+  saveState(); renderWordList(); homeDirty = true;
 });
 
 /* ================= SRS 间隔复习（简化 SM-2） =================
@@ -2029,7 +2051,7 @@ function spellSubmit() {
     test.miss.push(item);
   }
   saveState();
-  if (typeof renderToday === 'function') renderToday();
+  homeDirty = true; // 首页今日卡回首页时刷（nav('units') 必调 renderToday）
 
   $('#spell-input').disabled = true;
   $('#spell-submit').classList.add('hidden');
@@ -2062,7 +2084,8 @@ $('#test-mode').addEventListener('click', () => {
 
 /* ---- 检验会话断点续做：judge 后与退出时存档，当天同 key 再进来从断点继续（已判定词不再出现） ---- */
 const TEST_SESS_KEY = 'sgwd_test_sess';
-function saveTestSess() {
+let testSessTimer = 0; // 防抖句柄：连续判定合并写盘（整队列序列化上百 KB，每题一写会把主线程卡出顿挫）
+function saveTestSessNow() {
   if (!test || !test.sessKey) return;
   try {
     localStorage.setItem(TEST_SESS_KEY, JSON.stringify({
@@ -2072,6 +2095,12 @@ function saveTestSess() {
     }));
   } catch (e) { /* 存储满等异常不阻断检验 */ }
 }
+function saveTestSess(immediate) {
+  if (!test || !test.sessKey) return;
+  if (immediate) { clearTimeout(testSessTimer); testSessTimer = 0; saveTestSessNow(); return; }
+  if (testSessTimer) return; // 已排程：这次判定的进度会随下次写盘一并落
+  testSessTimer = setTimeout(() => { testSessTimer = 0; saveTestSessNow(); }, 800);
+}
 function loadTestSess(key) {
   try {
     const s = JSON.parse(localStorage.getItem(TEST_SESS_KEY) || 'null');
@@ -2080,7 +2109,10 @@ function loadTestSess(key) {
     return s;
   } catch (e) { return null; }
 }
-function clearTestSess() { try { localStorage.removeItem(TEST_SESS_KEY); } catch (e) { } }
+function clearTestSess() {
+  if (testSessTimer) { clearTimeout(testSessTimer); testSessTimer = 0; } // 先撤挂起的写盘：迟到回调会把已清档案写回来
+  try { localStorage.removeItem(TEST_SESS_KEY); } catch (e) { }
+}
 
 function startTest(queue, title, sessKey) {
   if (!queue.length) { toast('没有可检验的词'); return; }
@@ -2092,7 +2124,7 @@ function startTest(queue, title, sessKey) {
     toast('已回到上次进度（' + (prev.pos + 1) + '/' + prev.queue.length + '）');
   } else {
     test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: (test && test.mode) || 'flash', sessKey: key };
-    saveTestSess();
+    saveTestSess(true);
   }
   $('#test-title').textContent = test.origin;
   nav('test');
@@ -2208,10 +2240,9 @@ function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   saveState();
 
   test.pos += 1;
-  saveTestSess(); // 判定粒度存档：退出再进从下一词继续
+  saveTestSess(); // 判定粒度存档：退出再进从下一词继续（800ms 防抖合并连续判定）
   showCard();
-  if (typeof renderToday === 'function') renderToday();
-  if (currentView === 'units') renderHeat();
+  homeDirty = true; // 首页今日卡/热力图回首页时刷（原为每题即时重渲，含 SRS 全队列排序）
 }
 
 function finishTest() {
@@ -2230,7 +2261,7 @@ function finishTest() {
       if (w) aiRememberWord(w);
     });
   }
-  renderUnits();
+  homeDirty = true; // 首页单元进度回首页时刷
   // 错词当场回炉：3 秒后自动再测（仍在检验页才触发；返回/切走即取消）
   if (test.miss.length) {
     const missSnapshot = test.miss.slice();
@@ -2671,8 +2702,9 @@ const Sakura = (() => {
     }
   }
   let t = 0;
+  let rafId = 0;
   function frame() {
-    if (!enabled) { ctx.clearRect(0, 0, W, H); requestAnimationFrame(frame); return; }
+    if (!enabled) { ctx.clearRect(0, 0, W, H); return; } // 关闭即停循环：不再调度下一帧（常驻 rAF 会耗电发热）
     ctx.clearRect(0, 0, W, H);
     t += 0.016;
     for (const p of petals) {
@@ -2688,16 +2720,20 @@ const Sakura = (() => {
       ctx.fill();
       ctx.restore();
     }
-    requestAnimationFrame(frame);
+    rafId = requestAnimationFrame(frame);
   }
 
   window.addEventListener('resize', () => { resize(); make(); });
   resize();
   make();
-  requestAnimationFrame(frame);
+  rafId = requestAnimationFrame(frame);
 
   return {
-    setEnabled(v) { enabled = v; if (!v) ctx.clearRect(0, 0, W, H); },
+    setEnabled(v) {
+      enabled = v;
+      if (!v) { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } ctx.clearRect(0, 0, W, H); }
+      else if (!rafId) { t = 0; rafId = requestAnimationFrame(frame); } // 重新开启：从静止状态重启循环
+    },
   };
 })();
 
@@ -5723,9 +5759,9 @@ async function boot() {
     ensureIndex();
   }
 }
-/* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存 */
+/* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存（仅内存，落盘见 saveStudyPos） */
 setInterval(() => {
-  if (currentView === 'study' && studyUnitId != null) saveStudyPos();
+  if (currentView === 'study' && studyUnitId != null) saveStudyPos(true);
 }, 3000);
 
 /* ================= 作文助手 ================= */

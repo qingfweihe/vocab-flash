@@ -483,7 +483,13 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
 .wc-phon { font-size: .8em; color: var(--ink-3); font-family: var(--mono); margin-top: 1px; }
 .wc-cn { font-size: .93em; color: var(--ink-2); margin-top: 4px; line-height: 1.62; }
 .wc-cn .pos { color: var(--brand); font-weight: 600; font-style: italic; margin-right: 3px; }
-.wc-cn.hide-cn, .ex-cn.hide-cn, .det-cn.hide-cn { filter: blur(7px); transition: filter .2s; cursor: pointer; user-select: none; }
+/* 遮中文：文字隐色代替 blur(7px)——长列表每卡多处 blur 合成层在 iOS 上会把 WebContent 进程
+   挤爆（滚动卡顿/标签页被杀回首页的根因之一）；隐色零 GPU 成本且版式不变 */
+.wc-cn.hide-cn, .ex-cn.hide-cn, .det-cn.hide-cn,
+.wc-cn.hide-cn *, .ex-cn.hide-cn *, .det-cn.hide-cn * {
+  color: transparent !important;
+  cursor: pointer; user-select: none;
+}
 .fav-hidetool { display: flex; justify-content: flex-end; padding: 2px 4px 4px; }
 .wc-actions { flex: none; display: flex; flex-direction: column; gap: 7px; align-items: center; }
 .speak-btn {
@@ -1029,6 +1035,15 @@ html.dark #topbar { background: #15161b; }
 html.dark #tabbar { background: #12131a; }
 html.dark .subhead { background: rgba(21, 22, 27, .94); }
 html.dark #fav-filters { background: rgba(21, 22, 27, .94); }
+
+/* iOS：去掉吸顶栏 backdrop-filter（滚动每帧重采样毛玻璃=掉帧元凶），换不透明背景。
+   原背景已 94% 不透明，视觉差异可忽略 */
+html.ios .subhead, html.ios #fav-filters {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #f2f3f5;
+}
+html.ios.dark .subhead, html.ios.dark #fav-filters { background: #15161b; }
 html.dark .speak-btn { background: var(--brand-soft); }
 html.dark .speak-btn:active { background: #2c3d5e; }
 html.dark .wcmask, html.dark #daily-cfg-mask { background: rgba(0, 0, 0, .55); }
