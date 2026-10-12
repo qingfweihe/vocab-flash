@@ -11,7 +11,7 @@ const DEFAULT_STATE = {
   wrong: {},     // unitId(str) -> {wordKey: true} 错词
   favorites: {}, // unitId(str) -> {wordKey: true} 收藏（以后再复习）
   stats: { tested: 0, correct: 0 },
-  settings: { rate: 0.9, fontSize: 17, sakura: true, theme: 'auto', hideCn: false },  // hideCn=遮住中文（自测）
+  settings: { rate: 0.9, fontSize: 17, sakura: true, theme: 'auto', hideCn: false, homeOrder: null },  // hideCn=遮住中文（自测）；homeOrder=主页入口顺序（设备本地，不进云同步）
   scrolls: {},   // unitId(str) -> 学习页滚动位置
   lastUnit: null,
   reminder: { id: '', enabled: false, time: '20:00', smart: true },  // 推送提醒
@@ -28,6 +28,7 @@ let META = null;          // 轻量索引（单元名+词数），首屏秒开�
 let DATA_PROMISE = null;  // 全量词库加载 Promise（后台并行）
 const loadedUnits = new Set(); // 已加载完整数据的单元 id
 const unitPromises = new Map(); // 进行中的单元加载 Promise
+const unitFailAt = new Map();   // unitId -> 上次加载失败时刻（30s 冷却：防失败时渲染函数无限重试打爆网络/CPU，iOS Safari 会崩标签页）
 let WORD_INDEX = null;    // 全库词头索引 { byWord: Map(词头小写->[unitId,...]), headsByUnit: Map(unitId->[词头小写,...]) }
 let INDEX_PROMISE = null; // index.json 加载 Promise
 let state = loadState();
@@ -120,6 +121,7 @@ function ensureUnits(ids) {
 function ensureUnitData(unitId) {
   if (loadedUnits.has(unitId)) return Promise.resolve(true);
   if (unitPromises.has(unitId)) return unitPromises.get(unitId);
+  if (Date.now() - (unitFailAt.get(unitId) || 0) < 30000) return Promise.resolve(false); // 冷却期内不重试
   const p = fetch('data/units/words_' + unitId + '.json', { cache: 'no-cache' })
     .then((r) => r.json())
     .then((j) => {
@@ -132,10 +134,11 @@ function ensureUnitData(unitId) {
         unitPromises.delete(unitId);
         return idx >= 0;
       }
+      unitFailAt.set(unitId, Date.now()); // SW 离线回落体 {"units":[]} 也算失败
       unitPromises.delete(unitId);
       return false;
     })
-    .catch(() => { unitPromises.delete(unitId); return false; });
+    .catch(() => { unitFailAt.set(unitId, Date.now()); unitPromises.delete(unitId); return false; });
   unitPromises.set(unitId, p);
   return p;
 }
@@ -1637,16 +1640,43 @@ function splitEx(s) {
   if (!m) return { en: str, cn: '' };
   return { en: str.slice(0, m.index).trim(), cn: str.slice(m.index).trim() };
 }
+/** 同族词 fam 解析：原始串 = "antique 古老的；年代久远的；；advantage 优势；…"（词条间靠"英文词头"重新开头区分，
+ *  释义以；分义项，混有 n./adj. 词性缩写与语料噪声 Pi57）。输出 [{w, cn:'义项；义项'}]，每词义项全保留、展示层自截。 */
+function parseFam(s) {
+  const str = String(s || '').replace(/[A-Za-z]{1,5}\d+/g, '').trim(); // 去噪声（Pi57 等）
+  if (!str) return [];
+  const out = [];
+  String(str).split(/；|;/).forEach((tok0) => {
+    let tok = tok0.trim().replace(/[（(、，,]+$/, '').trim();
+    if (!tok) return;
+    if (/^(n|adj|adv|v|vi|vt|prep|conj|pron|art)\.$/i.test(tok)) return; // 词性缩写：展示时忽略
+    const m = tok.match(/^([A-Za-z][A-Za-z'\-]*)((?:\s+(?:n|adj|adv|v|vi|vt|prep|conj|pron|art)\.)?)\s*(.*)$/i);
+    if (m && m[1]) {
+      out.push({ w: m[1], cn: (m[3] || '').trim() }); // 词条头（截断尾的孤立词也保留，出无释义 chip）
+    } else if (out.length) {
+      out[out.length - 1].cn += (out[out.length - 1].cn ? '；' : '') + tok; // 无词头 → 上一词条的续义项
+    }
+  });
+  return out;
+}
 function wordDetailRows(w) {
   const rows = [];
   if (w.root) rows.push(`<div class="row"><span class="lab ji">记</span><span class="det-cn">${w.root}</span></div>`);
   if (w.exs && w.exs.length) {
     rows.push(`<div class="row"><span class="lab">例</span></div>` + w.exs.map((x) => {
       const sp = splitEx(x);
-      return `<div class="wc-ex"><span class="ex-en">${sp.en}</span>${sp.cn ? ' <span class="ex-cn">' + sp.cn + '</span>' : ''}</div>`;
+      return `<div class="wc-ex"><span class="ex-en">${esc(sp.en)}</span>${sp.cn ? '<span class="ex-cn">' + esc(sp.cn) + '</span>' : ''}</div>`;
     }).join(''));
   }
-  if (w.fam) rows.push(`<div class="row"><span class="lab zu">族</span><span class="det-cn">${w.fam}</span></div>`);
+  if (w.fam) {
+    const famItems = parseFam(w.fam).slice(0, 8); // 上限 8 枚，防长列表撑爆卡片
+    if (famItems.length) {
+      rows.push('<div class="row"><span class="lab zu">族</span></div><div class="fam-list">' + famItems.map((it) => {
+        const senses = (it.cn || '').split(/；|;/).filter(Boolean).slice(0, 2).join('；'); // 每词最多展示 2 个义项
+        return `<span class="fam-item"><b>${esc(it.w)}</b>${senses ? '<span class="det-cn fam-cn">' + esc(senses) + '</span>' : ''}</span>`;
+      }).join('') + '</div>');
+    }
+  }
   if (w.syn) rows.push(`<div class="row"><span class="lab li">近</span><span class="det-cn">${w.syn}</span></div>`);
   if (w.ant) rows.push(`<div class="row"><span class="lab fan">反</span><span class="det-cn">${w.ant}</span></div>`);
   if (w.note) rows.push(`<div class="row"><span class="lab">注</span><span class="det-cn">${w.note}</span></div>`);
@@ -2085,7 +2115,10 @@ function showCard() {
   $('#fc-defs').innerHTML = w.defs.map((d) => `<div><span class="pos">${d.pos || ''}</span>${d.cn || ''}</div>`).join('');
   $('#fc-root').textContent = w.root ? '记 ' + w.root : '';
   $('#fc-root').style.display = w.root ? '' : 'none';
-  $('#fc-exs').innerHTML = (w.exs || []).map((x) => `<div>${x}</div>`).join('');
+  $('#fc-exs').innerHTML = (w.exs || []).map((x) => {
+    const sp = splitEx(x);
+    return `<div><span class="ex-en">${esc(sp.en)}</span>${sp.cn ? '<span class="ex-cn">' + esc(sp.cn) + '</span>' : ''}</div>`;
+  }).join('');
   $('#fc-exs').style.display = (w.exs && w.exs.length) ? '' : 'none';
 
   $('#fc-answer').classList.add('hidden');
@@ -2283,10 +2316,12 @@ function renderFavorites() {
   const box = $('#fav-list');
   if (!box) return;
   const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
-  // 收藏词卡要拿词对象：涉及单元的分片未加载时先拉齐，再重渲一次
+  // 收藏词卡要拿词对象：涉及单元的分片未加载时先拉齐，拉到新的才重渲（失败死循环防护）
   const needUnits = unitIdsWithKeys(state.favorites);
   if (needUnits.some((id) => !loadedUnits.has(id))) {
-    ensureUnits(needUnits).then(() => renderFavorites());
+    ensureUnits(needUnits).then(() => {
+      if (needUnits.some((id) => loadedUnits.has(id))) renderFavorites();
+    });
   }
   box.innerHTML = '';
   renderFavChips();
@@ -2396,7 +2431,9 @@ function renderWrongList() {
   // 错词卡片要拿词对象：涉及单元的分片未加载时先拉齐，再重渲一次（首次先用已加载的渲染，不等网络）
   const needUnits = unitIdsWithKeys(state.wrong);
   if (needUnits.some((id) => !loadedUnits.has(id))) {
-    ensureUnits(needUnits).then(() => renderWrongList());
+    ensureUnits(needUnits).then(() => {
+      if (needUnits.some((id) => loadedUnits.has(id))) renderWrongList(); // 拉到新的才重渲（失败死循环防护）
+    });
   }
   box.innerHTML = '';
   // 顶部统计行：错词数 / 涉及单元 / 累计正确率
@@ -4526,7 +4563,10 @@ const WordCard = (() => {
     }
     const exs = (hit && hit.entry && hit.entry.exs) || [];
     if (exs.length) {
-      exBox.innerHTML = '<div class="wc-exs-head">例句</div>' + exs.map((x) => '<div class="wc-ex">' + esc(x) + '</div>').join('');
+      exBox.innerHTML = '<div class="wc-exs-head">例句</div>' + exs.map((x) => {
+        const sp = splitEx(x);
+        return '<div class="wc-ex"><span class="ex-en">' + esc(sp.en) + '</span>' + (sp.cn ? '<span class="ex-cn">' + esc(sp.cn) + '</span>' : '') + '</div>';
+      }).join('');
       exBox.classList.remove('hidden');
     } else { exBox.classList.add('hidden'); exBox.innerHTML = ''; }
     const e = await Dict.lookup(w);
@@ -4665,7 +4705,7 @@ function renderContinue() {
       const idx = u.words.findIndex((x) => wordKey(x.w) === rec.w);
       if (idx > 0) pos = ` · 第 ${idx + 1} 词`;
     } else if (rec && typeof rec === 'object' && rec.w) {
-      ensureUnitData(Number(u.id)).then(() => renderContinue()); // 书签定位需要完整词表
+      ensureUnitData(Number(u.id)).then((ok) => { if (ok) renderContinue(); }); // 拉到才重渲（失败死循环防护）
     }
     b.textContent = `继续学习 · ${u.name}${pos}（已学 ${l}/${unitSize(u)}）`;
     b.classList.remove('hidden');
@@ -4680,6 +4720,114 @@ function renderContinue() {
 $('#btn-continue').addEventListener('click', () => {
   if (state.lastUnit) openStudy(state.lastUnit);
 });
+
+/* ---------- 主页入口自定义排序（2026-10-11）----------
+   state.settings.homeOrder = ['daily','today',...]（设备本地）。编辑模式=每行上/下移按钮，
+   不用触屏拖拽（安卓 WebView/iOS 手势兼容坑多）；新入口未记录时自动排最后（前向兼容）。 */
+const HOME_ENTRY_KEYS = { 'daily-card': 'daily', 'today-card': 'today', 'reading-card': 'reading', 'listening-card': 'listening', 'writing-card': 'writing', 'home-todo-card': 'todo', 'home-words-card': 'words', 'home-heat-card': 'heat' };
+let homeSortOn = false;
+function homeKeyOf(el) { return HOME_ENTRY_KEYS[el.id] || el.id; }
+function homeEntriesBox() { return document.querySelector('#home-main .set-entries'); }
+function applyHomeOrder() {
+  const box = homeEntriesBox();
+  if (!box) return;
+  const order = (state.settings && state.settings.homeOrder) || [];
+  if (!Array.isArray(order) || !order.length) return;
+  const byKey = {};
+  [].slice.call(box.children).forEach((el) => { byKey[homeKeyOf(el)] = el; });
+  order.forEach((k) => { if (byKey[k]) { box.appendChild(byKey[k]); delete byKey[k]; } });
+  Object.keys(byKey).forEach((k) => box.appendChild(byKey[k])); // 没记录过的卡片兜底排最后
+}
+function saveHomeOrder() {
+  const box = homeEntriesBox();
+  if (!box) return;
+  state.settings.homeOrder = [].slice.call(box.children).map(homeKeyOf);
+  saveState();
+}
+function moveHomeCard(el, dir) {
+  const sib = dir < 0 ? el.previousElementSibling : el.nextElementSibling;
+  if (!sib) return;
+  const box = el.parentElement;
+  if (dir < 0) box.insertBefore(el, sib); else box.insertBefore(sib, el);
+  saveHomeOrder();
+  updateHomeSortBtns();
+  try { buzz(10); } catch (e) { }
+}
+function updateHomeSortBtns() {
+  const box = homeEntriesBox();
+  if (!box) return;
+  const cards = [].slice.call(box.children).filter((el) => el.querySelector('.hs-ctl'));
+  cards.forEach((el, i) => {
+    el.querySelector('.hs-up').disabled = i === 0;
+    el.querySelector('.hs-down').disabled = i === cards.length - 1;
+  });
+}
+let HOME_DEFAULT_ORDER = null; // 启动时捕获的 HTML 默认顺序（恢复默认用）
+function resetHomeOrder() {
+  state.settings.homeOrder = null;
+  saveState();
+  const box = homeEntriesBox();
+  if (!box || !HOME_DEFAULT_ORDER) return;
+  const byKey = {};
+  [].slice.call(box.children).forEach((el) => { byKey[homeKeyOf(el)] = el; });
+  HOME_DEFAULT_ORDER.forEach((k) => { if (byKey[k]) box.appendChild(byKey[k]); });
+  updateHomeSortBtns();
+}
+function setHomeSort(on) {
+  homeSortOn = !!on;
+  const box = homeEntriesBox();
+  if (!box) return;
+  const btn = document.getElementById('home-sort-btn');
+  if (btn) { btn.textContent = on ? '✓ 完成排序' : '↕ 调整顺序'; btn.classList.toggle('on', on); }
+  let rbtn = document.getElementById('home-sort-reset');
+  if (!rbtn) {
+    rbtn = document.createElement('button');
+    rbtn.id = 'home-sort-reset';
+    rbtn.type = 'button';
+    rbtn.className = 'home-sort-reset';
+    rbtn.textContent = '↺ 恢复默认顺序';
+    rbtn.addEventListener('click', resetHomeOrder);
+    btn.parentElement.appendChild(rbtn);
+  }
+  rbtn.style.display = on ? 'block' : 'none';
+  [].slice.call(box.children).forEach((el) => {
+    if (on) {
+      el.classList.add('sorting');
+      const ctl = document.createElement('span');
+      ctl.className = 'hs-ctl';
+      ctl.innerHTML = '<button class="hs-up" aria-label="上移">↑</button><button class="hs-down" aria-label="下移">↓</button>';
+      el.appendChild(ctl);
+      ctl.querySelector('.hs-up').addEventListener('click', (e) => { e.stopPropagation(); moveHomeCard(el, -1); });
+      ctl.querySelector('.hs-down').addEventListener('click', (e) => { e.stopPropagation(); moveHomeCard(el, 1); });
+    } else {
+      el.classList.remove('sorting');
+      const ctl = el.querySelector('.hs-ctl');
+      if (ctl) ctl.remove();
+    }
+  });
+  updateHomeSortBtns();
+}
+function initHomeSort() {
+  const box0 = homeEntriesBox();
+  if (box0 && !HOME_DEFAULT_ORDER) HOME_DEFAULT_ORDER = [].slice.call(box0.children).map(homeKeyOf);
+  applyHomeOrder();
+  const box = homeEntriesBox();
+  if (!box || document.getElementById('home-sort-btn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'home-sort-btn';
+  btn.type = 'button';
+  btn.className = 'home-sort-btn';
+  btn.textContent = '↕ 调整顺序';
+  box.parentElement.appendChild(btn); // 放在入口盒外：不算一行入口
+  btn.addEventListener('click', () => setHomeSort(!homeSortOn));
+  // 排序模式下拦截入口自身点击（capture 阶段先于各卡片的 listener）
+  box.addEventListener('click', (e) => {
+    if (!homeSortOn) return;
+    if (e.target.closest('.hs-up') || e.target.closest('.hs-down')) return;
+    e.stopPropagation();
+    e.preventDefault();
+  }, true);
+}
 
 /* ================= 今日任务 & 学习热力图 ================= */
 function renderToday() {
@@ -5529,6 +5677,7 @@ async function boot() {
   } catch (e) { /* 版本信息可选，失败不影响使用 */ }
 
   applySettings();
+  initHomeSort(); // 主页入口顺序（用户自定义）+ 排序按钮
   renderUnits();
   renderContinue();
   renderWrongList();

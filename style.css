@@ -1451,3 +1451,29 @@ html.dark #wr-topic, html.dark #wr-essay { background: #242631; border-color: #3
 
 /* ---------- 同根词行可读性 ---------- */
 .wc-detail .row .det-cn { word-break: break-all; }
+
+/* ---------- 例句两行排版 + 同族词 chips（2026-10-11）---------- */
+/* 例句：英文一行、中文译文另起一行（遮中文只蒙 .ex-cn） */
+.wc-detail .wc-ex { padding-left: 9px; margin-bottom: 4px; }
+.wc-detail .wc-ex .ex-en { display: block; color: var(--ink-2); line-height: 1.55; overflow-wrap: anywhere; }
+.wc-detail .wc-ex .ex-cn { display: block; color: var(--ink-3); font-size: .92em; line-height: 1.55; margin-top: 1px; }
+.wc-exs .wc-ex .ex-en { display: block; color: var(--ink-2); line-height: 1.55; overflow-wrap: anywhere; }
+.wc-exs .wc-ex .ex-cn { display: block; color: var(--ink-3); font-size: .92em; margin-top: 1px; }
+.fc-exs .ex-en { display: block; color: var(--ink-2); }
+.fc-exs .ex-cn { display: block; color: var(--ink-3); font-size: .92em; margin-top: 1px; }
+/* 同族词：词条 chip 化（词头+最多 2 个义项），遮中文经 .det-cn 覆盖义项 */
+.fam-list { display: block; padding-left: 30px; margin-top: -3px; }
+.fam-item { display: inline-flex; align-items: baseline; gap: 4px; background: #f4f2fd; border: 1px solid #e6e0fa; border-radius: 7px; padding: 2px 8px; margin: 0 5px 5px 0; line-height: 1.55; max-width: 100%; vertical-align: bottom; }
+.fam-item b { color: #6b5bd2; font-weight: 600; }
+.wc-detail .row .fam-item .fam-cn { color: var(--ink-3); font-size: .92em; word-break: normal; overflow-wrap: anywhere; }
+html.dark .fam-item { background: #2a2740; border-color: #3a3560; }
+
+/* ---------- 主页入口自定义排序（2026-10-11）---------- */
+.home-sort-btn { display: block; width: 100%; margin-top: 8px; padding: 10px 0; border: 1px dashed var(--line-strong, var(--line)); border-radius: 10px; background: var(--brand-bg); color: var(--brand-deep); font-size: 13px; font-weight: 600; }
+.home-sort-btn.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+#home-main .set-entries .sorting { outline: 1px dashed var(--brand-soft); outline-offset: 2px; }
+.hs-ctl { margin-left: auto; display: flex; flex-direction: column; gap: 4px; flex: none; }
+.hs-ctl button { width: 32px; height: 24px; border: 1px solid var(--line); border-radius: 7px; background: var(--card); color: var(--ink-2); font-size: 13px; line-height: 1; padding: 0; }
+.hs-ctl button:disabled { opacity: .25; }
+html.dark .hs-ctl button { background: #1d1f26; }
+.home-sort-reset { display: none; width: 100%; margin-top: 6px; padding: 8px 0; border: none; background: none; color: var(--ink-3); font-size: 12px; }
