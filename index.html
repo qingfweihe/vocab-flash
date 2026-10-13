@@ -100,6 +100,7 @@
       <div id="today-list" class="today-list"></div>
       </div>
       <button class="primary-btn" id="today-start-review" style="width:100%;margin-top:6px">开始复习</button>
+      <button class="ghost-btn" id="today-start-spell" style="width:100%;margin-top:6px">拼写检验 · 上次单元</button>
     <div id="daily-cfg-mask" class="hidden">
       <div id="daily-cfg-sheet">
         <div class="wchead"><span class="wcword" style="font-size:17px">每日任务配置</span><button class="wcclose" id="daily-cfg-close"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.2%27 stroke-linecap=%27round%27%3E%3Cpath d=%27M18 6L6 18M6 6l12 12%27/%3E%3C/svg%3E&quot;)"></i></button></div>
@@ -284,8 +285,8 @@
   <section id="view-favorites" class="view hidden">
     <div class="subhead no-back">
       <div class="subhead-title" id="fav-title">收藏夹</div>
-      <button class="test-btn" id="btn-test-fav">检验收藏</button>
-      <button class="test-btn" id="btn-test-wrong">检验错词</button>
+      <button class="test-btn" id="btn-test-fav">复习收藏</button>
+      <button class="test-btn" id="btn-test-wrong">复习错词</button>
     </div>
     <div class="fav-seg-bar">
       <button class="fav-seg active" data-seg="fav">⭐ 收藏夹</button>
@@ -364,6 +365,11 @@
       <button class="set-entry" data-setpanel="data">
         <span class="ico set-entry-ico" style="--ico:var(--ico-download)"></span>
         <span class="set-entry-main"><b>数据备份</b><i>导出 · 导入 · 清空进度</i></span>
+        <span class="set-entry-arrow">›</span>
+      </button>
+      <button class="set-entry" id="set-entry-dailycfg">
+        <span class="ico set-entry-ico" style="--ico:var(--ico-target)"></span>
+        <span class="set-entry-main"><b>每日任务</b><i>每天背多少词 · 复习上限 · 各学习项开关</i></span>
         <span class="set-entry-arrow">›</span>
       </button>
       </div>
