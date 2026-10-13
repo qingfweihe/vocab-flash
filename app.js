@@ -1414,15 +1414,9 @@ window.addEventListener('pagehide', () => {
 document.addEventListener('click', (e) => {
   const navBtn = e.target.closest('[data-nav]');
   if (!navBtn) return;
-  let v = navBtn.dataset.nav;
-  // 底部「单词」tab：若正在学习中，切回学习页（保持原地）；页内「‹ 返回」则真回列表
-  if (v === 'units' && inStudy && studyUnitId != null && navBtn.closest('#tabbar')) {
-    nav('study');
-    const u = unitById(studyUnitId);
-    if (u) setTimeout(() => restorePos(u), 60);
-    return;
-  }
-  nav(v);
+  // 底部「首页」tab 一律真回首页：学习位置由 saveStudyPos/「继续学习」卡恢复，
+  // 不能再用 tab 劫持回学习页（会让用户回不了首页，实测三份体验报告都栽在这）
+  nav(navBtn.dataset.nav);
 });
 
 /* ================= 渲染：单元列表 & 总进度 ================= */
@@ -3718,8 +3712,8 @@ const Listening = (() => {
   }
 
   function renderPage() {
-    renderStats();
     ensure().then((ok) => {
+      renderStats();                 // 等索引就绪再渲染，避免"总段数 0"闪现
       if (!ok) { $('#ls-body').innerHTML = '<div class="set-note">题库索引加载失败，请联网重试。</div>'; return; }
       renderPapers();
     });
@@ -3730,6 +3724,7 @@ const Listening = (() => {
   function renderPapers() {
     paper = null; paperData = null; task = null; stopAudio();
     setTitle('六级听力精听');
+    const nt = $('#ls-next-top'); if (nt) nt.classList.add('hidden');
     const l = lState();
     const body = $('#ls-body');
     body.innerHTML = '<div class="set-note" style="margin:10px 2px 6px">' +
@@ -3766,6 +3761,7 @@ const Listening = (() => {
 
   function renderGroups() {
     task = null; stopAudio();
+    const nt = $('#ls-next-top'); if (nt) nt.classList.add('hidden');
     const l = lState();
     const body = $('#ls-body');
     const secs = {};
@@ -3820,6 +3816,7 @@ const Listening = (() => {
   function openTask(t) {
     task = t; loopLine = -1; showEn = true; showCn = true; subMode = 'follow'; activeIdx = -1; scrolledIdx = -1;
     setTitle(t.title || t.id);
+    const nt = $('#ls-next-top'); if (nt) nt.classList.remove('hidden');   // 精听页才显示"下一段"快捷钮
     renderDrill();
     window.scrollTo({ top: 0 });
   }
@@ -3875,12 +3872,12 @@ const Listening = (() => {
           <button class="mini-btn" id="ls-rate">1.0×</button>
           <button class="mini-btn" id="ls-loop">单句循环</button>
         </div>
-        <div class="ls-toggles">
-          <button class="mini-btn" id="ls-en">隐藏字幕</button>
-          <button class="mini-btn" id="ls-cn">隐藏中文</button>
-        </div>
-        <div class="set-note" id="ls-hint">边听边对照字幕；点任意一句可重听该句。</div>
       </div>
+      <div class="ls-toggles">
+        <button class="mini-btn" id="ls-en">隐藏字幕</button>
+        <button class="mini-btn" id="ls-cn">隐藏中文</button>
+      </div>
+      <div class="set-note" id="ls-hint">边听边对照字幕；点任意一句可重听该句。</div>
       <div class="ls-sub-sec" id="ls-sub-sec">
         <div class="ls-sub-head">
           <div class="ls-sub-title">听力字幕<span class="ls-sub-tip" id="ls-sub-tip"></span></div>
@@ -3971,6 +3968,9 @@ const Listening = (() => {
     }));
     box.querySelectorAll('.ls-w').forEach((el) => el.addEventListener('click', (ev) => {
       ev.stopPropagation();
+      // 点词 = 查词 + 重听该句（体验反馈：只点中文行才能重听，违背精听直觉）
+      const lineEl = el.closest('.ls-line');
+      if (lineEl) seekLine(Number(lineEl.dataset.i));
       showWord(el.dataset.w, el);
     }));
   }
@@ -3999,7 +3999,11 @@ const Listening = (() => {
   }
 
   function markWords(text) {
-    return esc(text).replace(/([A-Za-z][A-Za-z'’\-]*)/g, (m) => {
+    // 行首 "M:" / "F:" 是说话人标记，不是生词，不挂词卡热区
+    const head = /^([MF]):\s*/.exec(text);
+    const prefix = head ? esc(head[0]) : '';
+    const body = head ? text.slice(head[0].length) : text;
+    return prefix + body.replace(/([A-Za-z][A-Za-z'’\-]*)/g, (m) => {
       const key = m.toLowerCase().replace(/[’']s$/, '');
       const hit = words().has(key);
       return `<span class="ls-w ${hit ? 'in-dict' : ''}" data-w="${esc(m)}">${m}</span>`;
@@ -4156,11 +4160,15 @@ const Listening = (() => {
     $('#ls-mode-follow').addEventListener('click', () => { subMode = 'follow'; applySubState(); });
     $('#ls-mode-full').addEventListener('click', () => { subMode = 'full'; applySubState(); });
     $('#ls-to-groups').addEventListener('click', () => { stopAudio(); renderGroups(); });
-    $('#ls-next').addEventListener('click', () => {
-      const i = paperData.tasks.findIndex((t) => t.id === task.id);
-      const nxt = paperData.tasks[i + 1];
-      if (nxt) { stopAudio(); openTask(nxt); } else { toast('这一套练完了'); stopAudio(); renderGroups(); }
-    });
+    $('#ls-next').addEventListener('click', nextTask);
+  }
+
+  /* 下一段（页底按钮与子页头快捷钮共用） */
+  function nextTask() {
+    if (!task || !paperData) return;
+    const i = paperData.tasks.findIndex((t) => t.id === task.id);
+    const nxt = paperData.tasks[i + 1];
+    if (nxt) { stopAudio(); openTask(nxt); } else { toast('这一套练完了'); stopAudio(); renderGroups(); }
   }
 
   function bind() {
@@ -4174,6 +4182,8 @@ const Listening = (() => {
     });
     const cb = $('#ls-cache-btn');
     if (cb) cb.addEventListener('click', showCache);
+    const nt = $('#ls-next-top');
+    if (nt) nt.addEventListener('click', nextTask);
   }
 
   /* ---------- 缓存信息 / 清理 ---------- */
@@ -4181,13 +4191,13 @@ const Listening = (() => {
     const jobs = [];
     if (navigator.storage && navigator.storage.estimate) {
       jobs.push(navigator.storage.estimate().then((e) => {
-        const used = (e.usage || 0) / 1048576, quota = (e.quota || 0) / 1048576;
-        return `本应用已占 ${used.toFixed(1)} MB（可用上限约 ${quota.toFixed(0)} MB）`;
+        const used = (e.usage || 0) / 1048576;
+        return `本应用已占 ${used.toFixed(1)} MB`;
       }));
     }
-    jobs.push(caches.keys().then((ks) => '缓存区：' + (ks.filter((k) => k.indexOf('sgwd-audio') === 0).length ? '有音频缓存' : '暂无音频缓存')));
+    jobs.push(caches.open('sgwd-audio-v1').then((c) => c.keys()).then((ks) => `已缓存音频 ${ks.length} 段`).catch(() => '暂无音频缓存'));
     Promise.all(jobs).then((msgs) => {
-      if (confirm(msgs.join('\n') + '\n\n是否清理已下载的音频缓存？（不影响学习进度）')) {
+      if (confirm(msgs.join('\n') + '\n\n清理后离线将不能直接听（不影响学习进度）。要清理吗？')) {
         caches.keys().then((ks) => Promise.all(ks.filter((k) => k.indexOf('sgwd-audio') === 0).map((k) => caches.delete(k))))
           .then(() => toast('音频缓存已清理'));
       }

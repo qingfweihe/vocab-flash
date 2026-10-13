@@ -558,7 +558,7 @@ html.dark .wc-detail .lab.fan { color: #d9a3d3; background: #33222f; }
   padding: 13px 34px; border-radius: 999px; cursor: pointer;
 }
 .reveal-btn:active { background: var(--brand-deep); }
-.fc-judge { display: flex; gap: 10px; margin-top: 14px; }
+.fc-judge { display: flex; gap: 10px; margin-top: 14px; margin-bottom: calc(var(--safe-bottom) + 64px); }
 .judge-btn {
   flex: 1; border: none; padding: 15px 0;
   border-radius: var(--radius-sm); font-size: 15.5px; font-weight: 600;
@@ -818,8 +818,8 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .ls-group-mark.ok { color: var(--ok); }
 .ls-group-mark.no { color: var(--danger); }
 
-/* 播放器：滚动页面时钉在子页头下方（看题目时也能随时暂停/循环） */
-.ls-player { position: sticky; top: calc(var(--safe-top) + 104px); z-index: 12; background: var(--page-bg); padding: 10px 2px 8px; margin-bottom: 6px; box-shadow: 0 8px 10px -8px rgba(31, 35, 41, .10); }
+/* 播放器：滚动页面时钉在子页头下方（只钉 audio+控制条，开关/提示随页滚走，给内容让屏） */
+.ls-player { position: sticky; top: calc(var(--safe-top) + 104px); z-index: 12; background: var(--page-bg); padding: 10px 2px 8px; margin-bottom: 2px; box-shadow: 0 8px 10px -8px rgba(31, 35, 41, .10); }
 .ls-player audio { width: 100%; margin-bottom: 8px; }
 .ls-ctl, .ls-toggles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
 .ls-ctl .mini-btn.on, .ls-toggles .mini-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
@@ -837,8 +837,10 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .ls-seg .mini-btn:last-child { border-radius: 0 999px 999px 0; padding-left: 13px; }
 .ls-seg .mini-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); position: relative; z-index: 1; }
 
-/* 跟随窗口：限高、内部滚动，播到哪句滚到哪句（不带动整页） */
-.ls-sub { position: relative; max-height: 40vh; overflow-y: auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 6px 8px; scrollbar-width: none; }
+/* 跟随窗口：限高、内部滚动，播到哪句滚到哪句（不带动整页）；上下渐隐提示"还有内容" */
+.ls-sub { position: relative; max-height: 40vh; overflow-y: auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 6px 8px; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); }
 .ls-sub::-webkit-scrollbar { display: none; }
 /* 全文模式：整段铺开，页面级滚动 */
 .ls-full { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 8px 10px; }
@@ -1419,7 +1421,7 @@ html.dark .rd-q5-explain { background: #1a1c24; color: var(--ink-2); }
 .rd-dock-body .rd-opt.right { border-color: #3f8f5f; background: #eef7f0; }
 .rd-dock-body .rd-opt.wrong { border-color: #b04848; background: #fbeeee; }
 .rd-dock-body .rd-q5-explain { font-size: 12.5px; color: var(--ink-2); background: var(--page-bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
-.rd-dock-foot { margin-top: 6px; }
+.rd-dock-foot { margin-top: 6px; position: sticky; bottom: -8px; background: var(--card); padding: 6px 0 2px; }
 .rd-submit-btn { width: 100%; }
 .rd-hint { text-align: center; font-size: 12.5px; color: var(--ink-3); padding: 7px 0 2px; }
 html.dark .rd-dock { background: #242631; border-color: #34363f; }
