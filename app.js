@@ -3633,8 +3633,10 @@ const Listening = (() => {
   let audio = null;                     // 复用的 <audio>
   let loopLine = -1;                    // 单句循环的行号（-1 = 关）
   let rate = 1;                         // 播放速度
-  let showEn = false, showCn = false;   // 原文 / 中文 开关
-  let unlocked = false;                 // 本段是否已解锁中文（答完题自动解锁）
+  let showEn = true, showCn = true;     // 字幕 / 中文 开关（默认全开：进页即可看、可对照）
+  let subMode = 'follow';               // 字幕模式：follow=跟随滚动窗口 / full=全文铺开
+  let activeIdx = -1;                   // 当前高亮句（跨重渲保持）
+  let scrolledIdx = -1;                 // 跟随窗口已滚到第几句（去抖，防反复滚）
   let wordMap = null;                   // 词库索引（小写 → 词条）
   let blobUrl = null, blobFor = null;   // 当前段音频的 Blob URL
 
@@ -3816,7 +3818,7 @@ const Listening = (() => {
 
   /* ---------- 精听页 ---------- */
   function openTask(t) {
-    task = t; loopLine = -1; showEn = false; showCn = false; unlocked = false;
+    task = t; loopLine = -1; showEn = true; showCn = true; subMode = 'follow'; activeIdx = -1; scrolledIdx = -1;
     setTitle(t.title || t.id);
     renderDrill();
     window.scrollTo({ top: 0 });
@@ -3832,8 +3834,8 @@ const Listening = (() => {
         audio.dataset.bound = '1';
         audio.addEventListener('timeupdate', onTick);
         audio.addEventListener('ended', () => { loopLine = -1; updateLoopBtn(); });
-        audio.addEventListener('play', () => { const b = $('#ls-play'); if (b) b.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>暂停'; });
-        audio.addEventListener('pause', () => { const b = $('#ls-play'); if (b) b.textContent = '<i class="ico ls-ico" style="--ico:url(undefined)"></i>播放'; });
+        audio.addEventListener('play', () => { const b = $('#ls-play'); if (b) b.textContent = '暂停'; });
+        audio.addEventListener('pause', () => { const b = $('#ls-play'); if (b) b.textContent = '播放'; });
       }
       return audio;
     }
@@ -3862,33 +3864,37 @@ const Listening = (() => {
   function setHint(t) { const h = $('#ls-hint'); if (h) h.textContent = t; }
 
   function renderDrill() {
-    const l = lState();
-    const rec = l.done[task.id] || { picks: {} };
-    const lines = task.lines;
     const body = $('#ls-body');
     body.innerHTML = `
       <div class="ls-player">
         <audio id="ls-audio" controls preload="metadata"></audio>
         <div class="ls-ctl">
           <button class="mini-btn" id="ls-back5">« 5s</button>
-          <button class="mini-btn" id="ls-play"><i class="ico ls-ico" style="--ico:url(undefined)"></i>播放</button>
+          <button class="mini-btn" id="ls-play">播放</button>
           <button class="mini-btn" id="ls-fwd5">5s »</button>
           <button class="mini-btn" id="ls-rate">1.0×</button>
           <button class="mini-btn" id="ls-loop">单句循环</button>
         </div>
         <div class="ls-toggles">
-          <button class="mini-btn" id="ls-en">显示原文</button>
-          <button class="mini-btn" id="ls-cn">显示中文</button>
+          <button class="mini-btn" id="ls-en">隐藏字幕</button>
+          <button class="mini-btn" id="ls-cn">隐藏中文</button>
         </div>
-        <div class="set-note" id="ls-hint">先听；听不懂就点句重听，或开原文对照。</div>
+        <div class="set-note" id="ls-hint">边听边对照字幕；点任意一句可重听该句。</div>
+      </div>
+      <div class="ls-sub-sec" id="ls-sub-sec">
+        <div class="ls-sub-head">
+          <div class="ls-sub-title">听力字幕<span class="ls-sub-tip" id="ls-sub-tip"></span></div>
+          <div class="ls-seg">
+            <button class="mini-btn on" id="ls-mode-follow">跟随</button>
+            <button class="mini-btn" id="ls-mode-full">全文</button>
+          </div>
+        </div>
+        <div id="ls-sub" class="ls-sub"></div>
+        <div id="ls-tr" class="ls-full hidden"></div>
       </div>
       <div class="ls-q-sec">
         <div class="set-section-title">题目</div>
         <div id="ls-qs"></div>
-      </div>
-      <div class="ls-tr-sec">
-        <div class="set-section-title">听力原文 <span class="set-hint" id="ls-tr-hint"></span></div>
-        <div id="ls-tr" class="hidden"></div>
       </div>
       <div class="ls-actions">
         <button class="primary-btn" id="ls-next">下一段 ›</button>
@@ -3901,11 +3907,7 @@ const Listening = (() => {
     renderTranscript();
     bindDrill();
     updateLoopBtn();
-    $('#ls-tr').classList.toggle('hidden', !showEn);
-    $('#ls-en').textContent = showEn ? '隐藏原文' : '显示原文';
-    $('#ls-cn').textContent = showCn ? '隐藏中文' : '显示中文';
-    $('#ls-cn').disabled = false;
-    updateTrHint();
+    applySubState();
   }
 
   function renderQuestions() {
@@ -3946,32 +3948,23 @@ const Listening = (() => {
     rec.ts = Date.now();
     saveState();
     renderQuestions();
-    // 答完本题即解锁中文（用户要求：答完题或手动打开才显示中文）
-    unlocked = true;
-    const allDone = rec.answered >= task.questions.length;
-    if (allDone && !showCn) {                        // 整段答完，自动展开中文（手动关过则尊重用户选择）
-      showCn = true;
-      renderTranscript();
-      $('#ls-cn').textContent = '隐藏中文';
-      updateTrHint();
-    }
     renderStats();
     renderHome();
     const res = `第 ${n} 题：${letter === q.answer ? '✓ 对了' : '✗ 错了，正确答案 ' + q.answer}`;
     toast(res);
   }
 
-  /* ---------- 原文（逐句） ---------- */
-  function renderTranscript() {
-    const box = $('#ls-tr');
-    if (!box) return;
-    const cnOn = showCn; // 只看开关：unlocked 只表示"允许开"，隐藏必须真能藏掉
-    box.innerHTML = task.lines.map((ln, i) => `
+  /* ---------- 字幕（跟随窗口 + 全文铺开，同一份数据两处渲染） ---------- */
+  function transcriptHTML(withTime) {
+    return task.lines.map((ln, i) => `
       <div class="ls-line" data-i="${i}">
-        <span class="ls-line-t">${fmtTime(ln.start)}</span>
+        ${withTime ? `<span class="ls-line-t">${fmtTime(ln.start)}</span>` : ''}
         <span class="ls-line-en">${markWords(ln.t)}</span>
-        ${ln.cn && cnOn ? `<span class="ls-line-cn">${esc(ln.cn)}</span>` : ''}
+        ${ln.cn && showCn ? `<span class="ls-line-cn">${esc(ln.cn)}</span>` : ''}
       </div>`).join('');
+  }
+
+  function bindLines(box) {
     box.querySelectorAll('.ls-line').forEach((el) => el.addEventListener('click', (ev) => {
       if (ev.target.closest('.ls-w')) return;         // 点词交给词卡
       seekLine(Number(el.dataset.i));
@@ -3980,6 +3973,29 @@ const Listening = (() => {
       ev.stopPropagation();
       showWord(el.dataset.w, el);
     }));
+  }
+
+  function renderTranscript() {
+    const sub = $('#ls-sub'), full = $('#ls-tr');
+    if (sub) { sub.innerHTML = transcriptHTML(false); bindLines(sub); }
+    if (full) { full.innerHTML = transcriptHTML(true); bindLines(full); }
+    if (activeIdx >= 0) setActiveLine(activeIdx, true);
+  }
+
+  /* 切换"跟随/全文"与"字幕/中文"开关后的统一落地 */
+  function applySubState() {
+    const sec = $('#ls-sub-sec');
+    if (sec) sec.classList.toggle('hidden', !showEn);
+    const sub = $('#ls-sub'), full = $('#ls-tr');
+    if (sub) sub.classList.toggle('hidden', subMode !== 'follow');
+    if (full) full.classList.toggle('hidden', subMode !== 'full');
+    const bf = $('#ls-mode-follow'); if (bf) bf.classList.toggle('on', subMode === 'follow');
+    const bfl = $('#ls-mode-full'); if (bfl) bfl.classList.toggle('on', subMode === 'full');
+    const be = $('#ls-en'); if (be) be.textContent = showEn ? '隐藏字幕' : '显示字幕';
+    const bc = $('#ls-cn'); if (bc) bc.textContent = showCn ? '隐藏中文' : '显示中文';
+    const tip = $('#ls-sub-tip');
+    if (tip) tip.textContent = subMode === 'follow' ? ' · 播到哪 · 亮到哪' : ' · 带时间点全文';
+    if (showEn && subMode === 'follow' && activeIdx >= 0) scrollSubTo(activeIdx, true);
   }
 
   function markWords(text) {
@@ -4020,12 +4036,28 @@ const Listening = (() => {
     setActiveLine(i);
   }
 
-  function setActiveLine(i) {
-    const box = $('#ls-tr');
-    if (!box) return;
-    box.querySelectorAll('.ls-line.active').forEach((el) => el.classList.remove('active'));
+  function setActiveLine(i, resync) {
+    activeIdx = i;
+    ['#ls-sub', '#ls-tr'].forEach((sel) => {
+      const box = $(sel);
+      if (!box) return;
+      box.querySelectorAll('.ls-line.active').forEach((el) => el.classList.remove('active'));
+      const el = box.querySelector(`.ls-line[data-i="${i}"]`);
+      if (el) el.classList.add('active');
+    });
+    if (subMode === 'follow' && (i !== scrolledIdx || resync)) scrollSubTo(i, !!resync);
+  }
+
+  /* 跟随窗口内部滚动（不带动整页）：当前句滚到窗口中线 */
+  function scrollSubTo(i, instant) {
+    const box = $('#ls-sub');
+    if (!box || i == null || i < 0) return;
     const el = box.querySelector(`.ls-line[data-i="${i}"]`);
-    if (el) el.classList.add('active');
+    if (!el) return;
+    scrolledIdx = i;
+    const top = Math.max(0, el.offsetTop - box.clientHeight / 2 + el.offsetHeight / 2);
+    if (instant) box.scrollTop = top;
+    else box.scrollTo({ top: top, behavior: 'smooth' });
   }
 
   function onTick() {
@@ -4054,12 +4086,6 @@ const Listening = (() => {
     if (!b) return;
     b.textContent = loopLine >= 0 ? `循环中：第 ${loopLine + 1} 句 ✕` : '单句循环';
     b.classList.toggle('on', loopLine >= 0);
-  }
-
-  function updateTrHint() {
-    const h = $('#ls-tr-hint');
-    if (!h) return;
-    h.textContent = showCn ? '点句重听 · 点词看释义/收藏' : '点句重听 · 点词看释义';
   }
 
   /* ---------- 词卡 ---------- */
@@ -4115,25 +4141,20 @@ const Listening = (() => {
       $('#ls-rate').textContent = rate.toFixed(2).replace(/0$/, '') + '×';
     });
     $('#ls-loop').addEventListener('click', () => {
-      const active = $('#ls-tr .ls-line.active');
+      const active = document.querySelector('.ls-line.active');
       if (loopLine >= 0) { loopLine = -1; }
       else if (active) { loopLine = Number(active.dataset.i); seekLine(loopLine); }
       else { toast('先点一句原文再开循环'); return; }
       updateLoopBtn();
     });
-    $('#ls-en').addEventListener('click', () => {
-      showEn = !showEn;
-      $('#ls-tr').classList.toggle('hidden', !showEn);
-      $('#ls-en').textContent = showEn ? '隐藏原文' : '显示原文';
-      if (showEn && !$('#ls-tr').innerHTML) renderTranscript();
-    });
+    $('#ls-en').addEventListener('click', () => { showEn = !showEn; applySubState(); });
     $('#ls-cn').addEventListener('click', () => {
       showCn = !showCn;
-      if (showCn) unlocked = true;                 // 手动打开即解锁
-      renderQuestions(); renderTranscript(); updateTrHint();
-      $('#ls-cn').textContent = showCn ? '隐藏中文' : '显示中文';
-      if (showCn) toast('中文已展开（练完再关掉更有效）');
+      renderQuestions(); renderTranscript(); applySubState();
+      if (showCn) toast('中文已展开（练听力时可再关掉）');
     });
+    $('#ls-mode-follow').addEventListener('click', () => { subMode = 'follow'; applySubState(); });
+    $('#ls-mode-full').addEventListener('click', () => { subMode = 'full'; applySubState(); });
     $('#ls-to-groups').addEventListener('click', () => { stopAudio(); renderGroups(); });
     $('#ls-next').addEventListener('click', () => {
       const i = paperData.tasks.findIndex((t) => t.id === task.id);
@@ -5799,9 +5820,9 @@ const Writing = (() => {
       + '<div>' + list.map((t) => `
       <div class="wrt-card">
         <div class="wrt-title">${esc(t.title)}</div>
-        <div class="wrt-note">${esc(t.note)}</div>
-        ${t.tip ? `<div class="wrt-tip">${esc(t.tip)}</div>` : ''}
-        ${(t.sents || []).map((s) => `<div class="wrt-sent"><div class="wrt-en">${esc(s.en)}</div><div class="wrt-zh">${esc(s.zh)}</div></div>`).join('')}
+        ${t.note ? `<div class="wrt-note">${esc(t.note)}</div>` : ''}
+        ${t.tip ? `<div class="wrt-tipbar"><span class="wrt-tipbar-ico">要点</span><span>${esc(t.tip)}</span></div>` : ''}
+        ${(t.sents || []).map((s, si) => `<div class="wrt-sent"><span class="wrt-n">${si + 1}</span><div class="wrt-sent-b"><div class="wrt-en">${esc(s.en)}</div><div class="wrt-zh">${esc(s.zh)}</div></div></div>`).join('')}
       </div>`).join('') + '</div>';
     box.querySelectorAll('[data-cat]').forEach((b) => b.addEventListener('click', () => { cat = b.dataset.cat; renderTpl(box); }));
   }
@@ -5809,7 +5830,10 @@ const Writing = (() => {
   function renderSent(box) {
     box.innerHTML = DATA.sentences.map((s, i) => `
       <div class="wrt-card">
-        <div class="wrt-title">${esc(s.src)} <button class="wrt-speak" data-en="${esc(s.en)}"> 朗读</button></div>
+        <div class="wrt-head">
+          <div class="wrt-title">${esc(s.src)}</div>
+          <button class="wrt-speak" data-en="${esc(s.en)}"> 朗读</button>
+        </div>
         <div class="wrt-en">${esc(s.en)}</div>
         <div class="wrt-zh">${esc(s.zh)}</div>
         ${s.parse ? `<button class="ghost-btn wrt-more" data-i="${i}">结构解析 ▾</button><div class="wrt-parse hidden" data-parse="${i}">${esc(s.parse)}${s.cut ? '\n断句：' + s.cut : ''}</div>` : ''}

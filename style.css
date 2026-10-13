@@ -99,8 +99,8 @@ body { min-height: 100vh; min-height: 100dvh; }
   transform: translateZ(0);
   border-bottom: 1px solid var(--line);
 }
-#topbar-title { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .2px; }
-#topbar-sub { font-size: 12px; color: var(--ink-3); }
+#topbar-title { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: .2px; white-space: nowrap; flex: none; }
+#topbar-sub { font-size: 12px; color: var(--ink-3); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 
 /* ---------- 主内容区：手机单列 / 桌面居中限宽 ---------- */
 main {
@@ -716,6 +716,8 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .rd-speak { border: 1px solid var(--line-strong); background: var(--card); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; font-family: inherit; color: var(--ink-2); }
 .rd-text { padding: 14px; font-size: 15px; line-height: 1.78; color: var(--ink); margin-bottom: 12px; }
 .rd-text .rd-p { margin-bottom: 8px; }
+/* 英文正文段首缩进两字符（段首空两格）；中文逐段译文块（.cn）不缩进，保持蓝线灰底样式 */
+.rd-text .rd-p:not(.cn) { text-indent: 2em; }
 .rd-w { cursor: pointer; border-radius: 4px; padding: 0 1px; }
 .rd-w:active { background: var(--brand-soft); }
 .rd-q { font-size: 15px; font-weight: 600; margin: 4px 0 10px; color: var(--ink); }
@@ -816,34 +818,52 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .ls-group-mark.ok { color: var(--ok); }
 .ls-group-mark.no { color: var(--danger); }
 
-.ls-player { padding: 10px; margin-bottom: 12px; }
+/* 播放器：滚动页面时钉在子页头下方（看题目时也能随时暂停/循环） */
+.ls-player { position: sticky; top: calc(var(--safe-top) + 104px); z-index: 12; background: var(--page-bg); padding: 10px 2px 8px; margin-bottom: 6px; box-shadow: 0 8px 10px -8px rgba(31, 35, 41, .10); }
 .ls-player audio { width: 100%; margin-bottom: 8px; }
 .ls-ctl, .ls-toggles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-.ls-ctl .mini-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
-#ls-hint { margin: 4px 0 0; }
+.ls-ctl .mini-btn.on, .ls-toggles .mini-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+#ls-hint { margin: 2px 0 0; }
+
+/* ---------- 听力字幕 ---------- */
+.ls-sub-sec { margin: 0 0 12px; }
+.ls-sub-head { display: flex; align-items: center; gap: 8px; margin: 2px 2px 6px; }
+.ls-sub-title { flex: 1; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.ls-sub-tip { font-weight: 400; font-size: 11.5px; color: var(--ink-3); }
+.ls-seg { display: flex; }
+.ls-seg .mini-btn { margin: 0; }
+.ls-seg .mini-btn + .mini-btn { margin-left: -1px; }
+.ls-seg .mini-btn:first-child { border-radius: 999px 0 0 999px; padding-right: 13px; }
+.ls-seg .mini-btn:last-child { border-radius: 0 999px 999px 0; padding-left: 13px; }
+.ls-seg .mini-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); position: relative; z-index: 1; }
+
+/* 跟随窗口：限高、内部滚动，播到哪句滚到哪句（不带动整页） */
+.ls-sub { position: relative; max-height: 40vh; overflow-y: auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 6px 8px; scrollbar-width: none; }
+.ls-sub::-webkit-scrollbar { display: none; }
+/* 全文模式：整段铺开，页面级滚动 */
+.ls-full { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 8px 10px; }
 
 .ls-q { padding: 10px 12px; margin-bottom: 10px; }
-.ls-q-stem { font-size: 14px; line-height: 1.6; margin-bottom: 8px; color: var(--ink); }
+.ls-q-stem { font-size: 15px; line-height: 1.65; margin-bottom: 9px; color: var(--ink); }
 .ls-q-stem b { color: var(--brand); margin-right: 3px; }
-.ls-q-cn { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 3px; }
+.ls-q-cn { display: block; color: var(--ink-2); font-size: 13px; margin-top: 4px; }
 .ls-opts { display: flex; flex-direction: column; gap: 7px; }
-.ls-opt { text-align: left; border: 1px solid var(--line-strong); background: var(--card); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 13.5px; color: var(--ink); cursor: pointer; line-height: 1.5; font-family: inherit; }
+.ls-opt { text-align: left; border: 1px solid var(--line-strong); background: var(--card); border-radius: var(--radius-sm); padding: 11px 13px; font-size: 14px; color: var(--ink); cursor: pointer; line-height: 1.55; font-family: inherit; }
 .ls-opt b { color: var(--brand); margin-right: 4px; }
 .ls-opt.right { border-color: var(--ok); background: var(--ok-soft); }
 .ls-opt.wrong { border-color: var(--danger); background: var(--danger-soft); }
 .ls-opt:disabled { cursor: default; }
-.ls-opt-cn { display: block; color: var(--ink-3); font-size: 12px; margin-top: 2px; }
+.ls-opt-cn { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
 
-.ls-tr-sec { margin-top: 4px; }
-#ls-tr { padding: 8px 10px; }
-.ls-line { padding: 6px 4px; border-radius: 8px; cursor: pointer; line-height: 1.55; }
+.ls-line { position: relative; padding: 9px 8px; border-radius: 8px; cursor: pointer; }
 .ls-line.active { background: var(--brand-soft); }
+.ls-line.active .ls-line-en { font-weight: 600; }
 .ls-line.hit { border-left: 3px solid var(--brand); }
 .ls-line-t { color: var(--ink-4); font-size: 11px; margin-right: 6px; font-family: var(--mono); }
-.ls-line-en { font-size: 14px; color: var(--ink); }
-.ls-line-cn { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 2px; }
+.ls-line-en { font-size: 15.5px; line-height: 1.55; color: var(--ink); }
+.ls-line-cn { display: block; color: var(--ink-2); font-size: 13px; line-height: 1.5; margin-top: 3px; }
 .ls-w { border-radius: 4px; }
-.ls-w.in-dict { border-bottom: 1.5px dotted var(--brand); }
+.ls-w.in-dict { border-bottom: 1px dashed rgba(63, 123, 245, .35); }
 .ls-actions { margin: 12px 0 20px; display: flex; gap: 8px; flex-wrap: wrap; }
 .ls-q-sec { margin: 12px 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
 
@@ -1004,6 +1024,7 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
   #toast { left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2); }
   .subhead { top: calc(var(--safe-top) + 56px); }
   #fav-filters { top: calc(var(--safe-top) + 108px); }
+  .ls-player { top: calc(var(--safe-top) + 108px); }
 }
 
 /* ---------- 深色模式 ---------- */
@@ -1438,18 +1459,24 @@ html.dark .rd-dock-body .rd-q5-explain { background: #1a1c24; color: var(--ink-2
 .wr-tab { flex: none; border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-2); border-radius: 999px; padding: 7px 13px; font-size: 13px; cursor: pointer; font-family: inherit; }
 .wr-tab.on { background: var(--brand); border-color: var(--brand); color: #fff; }
 .wrt-cat { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 10px; }
-.wrt-catb { border: 1px solid var(--line-strong); background: var(--card); border-radius: 8px; padding: 4px 10px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
+.wrt-catb { border: 1px solid var(--line-strong); background: var(--card); border-radius: 999px; padding: 5px 12px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
 .wrt-catb.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
-.wrt-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
-.wrt-title { font-weight: 700; font-size: 14.5px; margin-bottom: 6px; color: var(--ink); }
-.wrt-note { font-size: 13px; color: var(--ink-2); line-height: 1.7; margin-bottom: 6px; }
+.wrt-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 15px 12px; margin-bottom: 12px; box-shadow: var(--shadow-1); }
+.wrt-head { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.wrt-head .wrt-title { flex: 1; min-width: 0; margin-bottom: 0; }
+.wrt-title { font-weight: 700; font-size: 15px; margin-bottom: 5px; color: var(--ink); letter-spacing: .2px; }
+.wrt-note { font-size: 13px; color: var(--ink-2); line-height: 1.75; margin-bottom: 8px; }
+.wrt-tipbar { display: flex; align-items: flex-start; gap: 7px; background: var(--brand-bg); border: 1px solid var(--brand-soft); border-radius: 8px; padding: 6px 10px; margin: 0 0 4px; font-size: 12.5px; color: var(--brand-deep); line-height: 1.6; }
+.wrt-tipbar-ico { flex: none; background: var(--brand); color: #fff; font-size: 10.5px; font-weight: 600; border-radius: 5px; padding: 1px 5px; margin-top: 1px; letter-spacing: .5px; }
 .wrt-tip { font-size: 12.5px; color: var(--ink-3); line-height: 1.7; }
-.wrt-sent { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
-.wrt-en { font-size: 13.5px; color: var(--ink); line-height: 1.6; }
-.wrt-zh { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; }
-.wrt-more { margin-top: 6px; }
+.wrt-sent { display: flex; gap: 9px; border-top: 1px dashed var(--line); margin-top: 9px; padding-top: 9px; }
+.wrt-n { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.wrt-sent-b { flex: 1; min-width: 0; }
+.wrt-en { font-size: 14.5px; color: var(--ink); line-height: 1.65; }
+.wrt-zh { font-size: 12.5px; color: var(--ink-3); line-height: 1.6; margin-top: 3px; }
+.wrt-more { margin-top: 8px; }
 .wrt-parse { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; white-space: pre-line; margin-top: 6px; }
-.wrt-speak { border: 1px solid var(--line-strong); background: var(--card); border-radius: 8px; padding: 2px 8px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
+.wrt-speak { flex: none; border: 1px solid var(--line-strong); background: var(--card); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--ink-2); cursor: pointer; font-family: inherit; }
 #wr-topic, #wr-essay { width: 100%; border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: var(--card); color: var(--ink); margin-bottom: 8px; }
 #wr-essay { min-height: 180px; resize: vertical; line-height: 1.6; }
 html.dark .wrt-card { background: #242631; border-color: #34363f; }
