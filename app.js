@@ -713,7 +713,7 @@ const Sync = (() => {
     const box = $('#friend-list');
     if (!box) return;
     if (!cfg().partner) {
-      box.innerHTML = '<div class="set-note">还没有好友——在下面「伙伴同步码」里填对方的码，点结对即可。</div>';
+      box.innerHTML = '<div class="set-note">还没有好友——在下面「加好友」里填对方的用户名（注册时设置的那个），点「加好友」即可。</div>';
       return;
     }
     const nm = friendName();
@@ -1409,6 +1409,8 @@ window.addEventListener('pagehide', () => {
   saveNavState(true);
   if (currentView === 'study' && studyUnitId != null) saveStudyPos();
   saveTestSess(true);
+  try { Reading.saveRdSess(); } catch (e) { } // 阅读断点续做：切后台/关闭前落盘
+  try { Listening.saveLast(); } catch (e) { } // 听力续播：切后台/关闭前记下"听到哪"
 });
 
 document.addEventListener('click', (e) => {
@@ -1547,7 +1549,8 @@ function gotoWord(unitId, idx) {
     const card = document.querySelector(`#word-list .word-card[data-idx="${idx}"]`);
     if (!card) return;
     card.scrollIntoView({ block: 'center' });
-    const d = card.querySelector('.wc-detail');
+    const ww = (unitById(unitId) || { words: [] }).words[idx];
+    const d = ww ? ensureWordDetail(card, ww) : card.querySelector('.wc-detail');
     if (d) d.classList.remove('collapsed');
     card.classList.add('locate');
     setTimeout(() => card.classList.remove('locate'), 2300);
@@ -1720,6 +1723,18 @@ function applyHideCnToCard(card, detail) {
   if (detail) detail.classList.remove('collapsed');
 }
 
+/** 详情懒建：首次展开时才把例句/词根等塞进 DOM（单元页 86 卡一次省数千节点，体验官 exp10 量化） */
+function ensureWordDetail(card, w) {
+  const d = card.querySelector('.wc-detail');
+  if (!d) return null;
+  if (!d.dataset.built) {
+    d.innerHTML = wordDetailRows(w);
+    d.dataset.built = '1';
+    applyHideCnToCard(card, d);   // 遮中文模式下，新塞进来的译文要一并蒙住
+  }
+  return d;
+}
+
 function renderWordList() {
   const u = unitById(studyUnitId);
   const box = $('#word-list');
@@ -1733,7 +1748,6 @@ function renderWordList() {
     card.dataset.idx = idx;
 
     const defsHtml = w.defs.map((d) => `<span class="pos">${d.pos || ''}</span>${d.cn || ''}`).join('<br>');
-    const rowsHtml = wordDetailRows(w);
 
     card.innerHTML = `
       <div class="wc-head">
@@ -1751,15 +1765,17 @@ function renderWordList() {
           <label class="wc-learn" title="标记已学"><input type="checkbox" data-learn="${idx}" ${isLearned(studyUnitId, w.w) ? 'checked' : ''}></label>
         </div>
       </div>
-      <div class="wc-detail${hideCn ? '' : ' collapsed'}" data-detail="${idx}">${rowsHtml}</div>`;
-    applyHideCnToCard(card, card.querySelector('.wc-detail')); // 遮住模式：详情全展开+中文全蒙
+      <div class="wc-detail${hideCn ? '' : ' collapsed'}" data-detail="${idx}"></div>`;
+    const detailEl = card.querySelector('.wc-detail');
+    if (hideCn) ensureWordDetail(card, w); // 遮中文模式：详情立即展开（保持原语义）；普通模式懒建
+    applyHideCnToCard(card, detailEl); // 遮住模式：详情全展开+中文全蒙
 
     // 点击卡片主体：遮住模式下=反复揭开/盖上该词中文；否则展开/收起详情
     card.addEventListener('click', (ev) => {
       if (ev.target.closest('.speak-btn') || ev.target.closest('input')) return;
       if (toggleCardCn(card)) return;
-      const d = card.querySelector('.wc-detail');
-      d.classList.toggle('collapsed');
+      const d = ensureWordDetail(card, w);
+      if (d) d.classList.toggle('collapsed');
     });
 
     card.querySelector('[data-speak]').addEventListener('click', (ev) => {
@@ -1844,11 +1860,11 @@ function dayStartTs(offsetDays) { // 北京日 0 点的 ts（offset=0 今天，1
   const t = Date.now() + 8 * 3600e3 + (offsetDays || 0) * 86400e3;
   return Math.floor(t / 86400e3) * 86400e3 - 8 * 3600e3;
 }
-function srsInit(unitId, w) { // 新学会的词入库：明天首轮复习
+function srsInit(unitId, w) { // 新学会的词入库：当天即可复习（原来排到明天，今日任务永远空）
   if (unitId == null || !w) return;
   const m = srsMap();
   const k = srsKeyOf(unitId, w);
-  if (!m[k]) m[k] = { n: 0, due: dayStartTs(1), last: 0 };
+  if (!m[k]) m[k] = { n: 0, due: dayStartTs(0), last: 0 };
 }
 function srsRemove(unitId, w) {
   const m = srsMap();
@@ -1888,7 +1904,7 @@ function srsMigrateLearned() { // 老数据兜底：已学过但没进 SRS 的�
     const bag = state.learned[u] || {};
     for (const wk in bag) {
       const k = u + ':' + wk;
-      if (!m[k]) m[k] = { n: 0, due: dayStartTs(1), last: 0 };
+      if (!m[k]) m[k] = { n: 0, due: dayStartTs(0), last: 0 }; // 与 srsInit 同口径：当天可复习
     }
   }
   state.srsInitAt = Date.now();
@@ -2054,7 +2070,7 @@ function spellSubmit() {
   if (ok) {
     res.className = 'spell-verdict ok';
     res.innerHTML = `✓ 拼对了：<b>${target}</b>`;
-    setTimeout(() => { if (test && test.mode === 'spell') { test.pos += 1; showCard(); } }, 650);
+    setTimeout(() => { if (test && test.mode === 'spell') { test.pos += 1; showCard(); } }, 1300); // 650→1300：答对的正反馈原来一闪而过（体验官 exp2，与答错"停下等点击"不对称）
     speak(item.word.w);
   } else {
     res.className = 'spell-verdict no';
@@ -2278,7 +2294,7 @@ $('#btn-test-unit').addEventListener('click', () => {
 
 $('#btn-test-wrong').addEventListener('click', () => {
   ensureUnits(unitIdsWithKeys(state.wrong)).then(() => { // 分片没到齐会漏词
-    startTest(buildQueueWrong(), '检验错词本', 'wrong');
+    startTest(buildQueueWrong(), '复习错词本', 'wrong');
   });
 });
 
@@ -2386,6 +2402,7 @@ function renderFavorites() {
         </div>
         <div class="wc-actions">
           <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
+          ${isWrong(u.id, w.w) ? '<button class="mini-btn" data-unwrong>移出错词</button>' : ''}
           <button class="mini-btn" data-unfav>取消收藏</button>
         </div>
       </div>
@@ -2411,6 +2428,13 @@ function renderFavorites() {
       renderFavChips(); // 数字实时更新，但不重建列表（避免滚动跳动）
       if (next === 3) toast('已标为熟练 ★★★');
       else if (next === 0) toast('已重置为 ☆☆☆');
+    });
+    const uw = card.querySelector('[data-unwrong]');
+    if (uw) uw.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      setWrong(u.id, w.w, false);
+      saveState(); renderFavorites(); renderUnits();
+      toast('已移出错词本');
     });
     card.querySelector('[data-unfav]').addEventListener('click', (ev) => {
       ev.stopPropagation();
@@ -2444,7 +2468,7 @@ $('#btn-test-fav').addEventListener('click', () => {
   ensureUnits(unitIdsWithKeys(state.favorites)).then(() => { // 分片没到齐会漏词
     const q = buildQueueFavorites();
     if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
-    const title = favFilter === 'all' ? '检验收藏' : '检验收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
+    const title = favFilter === 'all' ? '复习收藏' : '复习收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
     startTest(q, title, 'fav');
   });
 });
@@ -2501,6 +2525,7 @@ function renderWrongList() {
           </div>
           <div class="wc-actions">
             <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
+            <button class="mini-btn" data-favw="${esc(w.w)}">${isFav(u.id, w.w) ? '★' : '☆'}</button>
             <button class="mini-btn" data-remove>掌握</button>
           </div>
         </div>`;
@@ -2510,6 +2535,13 @@ function renderWrongList() {
         toggleCardCn(card); // 点一下揭开、再点盖上
       });
       card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(w.w); });
+      card.querySelector('[data-favw]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const b = ev.currentTarget;
+        if (isFav(u.id, w.w)) { setFav(u.id, w.w, false); b.textContent = '☆'; toast('已取消收藏'); }
+        else { setFav(u.id, w.w, true); b.textContent = '★'; toast('已加入收藏'); }
+        saveState();
+      });
       card.querySelector('[data-remove]').addEventListener('click', (ev) => {
         ev.stopPropagation();
         setWrong(u.id, w.w, false);
@@ -2519,7 +2551,7 @@ function renderWrongList() {
       box.appendChild(card);
     });
   });
-  if (!count) box.innerHTML = '<div class="empty-tip">错词本还是空的<br>检验时「没记住」的词会出现在这里<br>检验时「没记住」的词会出现在这里</div>';
+  if (!count) box.innerHTML = '<div class="empty-tip">错词本还是空的<br>做检验时点「忘了」的词会自动进来</div>';
 }
 
 /* ================= 设置 ================= */
@@ -2738,6 +2770,7 @@ const StudyAI = (() => {
   function errText(e) {
     const m = String((e && e.message) || e);
     if (e && e.code === 'LIMIT') return '今天的 AI 次数用完了（每天 100 次，讲解有云端缓存不受影响）';
+    if (e && (e.code === 'BAD_CODE' || e.code === 'NO_SUCH_CODE')) return '还没绑定同步码（设置 → 云同步 开启后再用 AI）';
     if (e && (e.code === 'NO_KEY' || /未配置/.test(m))) return 'AI 还没配置好（找青峰放 Key）';
     if (e && (e.code === 'TIMEOUT' || /超时/.test(m))) return '生成超时了，点一下再试';
     return '生成失败：' + m.slice(0, 80);
@@ -3012,6 +3045,7 @@ const Daily = (() => {
 
   function open() {
     if (typeof Sync !== 'undefined' && Sync.isShell && Sync.isShell()) return; // 壳内禁用
+    loadSummary(false); // 首屏不再无条件打云函数（体验官 exp10：836ms 全站最慢）；打开面板时一次拉齐
     loadFull(false);
     if (!DATA) loadFull(false);
   }
@@ -3029,7 +3063,6 @@ const Daily = (() => {
     if (box && !box.dataset.dbound) { box.dataset.dbound = '1'; box.addEventListener('click', onClick); }
     const rf = $('#daily-refresh');
     if (rf && !rf.dataset.dbound) { rf.dataset.dbound = '1'; rf.addEventListener('click', () => { loadFull(true); loadSummary(true); }); }
-    loadSummary(false);
   }
 
   return { init, open, renderHome, loadSummary, loadFull };
@@ -3103,14 +3136,50 @@ const Reading = (() => {
     }
   }
 
+  /* ---------- 阅读断点续做（独立 localStorage 键，不进 state——不碰同步 schema） ---------- */
+  const RD_SESS_KEY = 'sgwd_rd_sess';
+  function saveRdSess() {
+    try {
+      const box = $('#reading-quiz');
+      if (!cur || !box || box.classList.contains('hidden') || box.dataset.answered) return;
+      localStorage.setItem(RD_SESS_KEY, JSON.stringify({
+        id: cur.id, picks: box._picks || {}, qi: box._qi || 0, y: window.scrollY, day: bjDayStr(), ts: Date.now(),
+      }));
+    } catch (e) { }
+  }
+  function loadRdSess() {
+    try {
+      const s = JSON.parse(localStorage.getItem(RD_SESS_KEY) || 'null');
+      if (!s || s.day !== bjDayStr()) return null;     // 跨天作废
+      return s;
+    } catch (e) { return null; }
+  }
+  function clearRdSess() { try { localStorage.removeItem(RD_SESS_KEY); } catch (e) { } }
+
   function renderPage() {
     // 从别处切回阅读页时收起残留的做题界面——必须同步执行：
     // start() 会先走这里再同步渲染新题，若放到异步回调会把刚弹出的题面藏掉（"随机来一篇点不动"回归的根因）
     const q = $('#reading-quiz'), l = $('#reading-list');
     if (q) q.classList.add('hidden');
     if (l) l.classList.remove('hidden');
+    if (l && !l.innerHTML.trim()) l.innerHTML = '<div class="set-note" style="margin:12px 2px">题库加载中…</div>';
     // 先确保题库已加载：否则「做过的篇目」只能显示编号且点击无法定位文章（重做失灵的根因）
-    ensure().then((ok) => { if (ok) { cleanGhosts(); renderPageInner(); } });
+    ensure().then((ok) => {
+      if (ok) {
+        cleanGhosts();
+        // 断点续做：上次没做完的篇目（当天有效）→ 直接回到那篇，回填已选项/题号/滚动位置
+        const s = loadRdSess();
+        const it2 = s && ITEMS && ITEMS.find((x) => x.id === s.id);
+        if (it2) { cur = it2; renderQuiz(it2, false, s); return; }
+        renderPageInner();
+        return;
+      }
+      if (l) {   // 加载失败给出与"空白/加载中"可区分的外观 + 重试入口（体验官 exp9）
+        l.innerHTML = '<div class="set-note" style="margin:12px 2px">题库加载失败，请检查网络后重试</div>'
+          + '<button class="ghost-btn" id="rd-retry" style="width:100%">重试</button>';
+        const rb = $('#rd-retry'); if (rb) rb.addEventListener('click', () => renderPage());
+      }
+    });
   }
 
   function renderPageInner() {
@@ -3121,10 +3190,12 @@ const Reading = (() => {
       <div class="rs-item"><b>${s.done ? s.pct + '%' : '—'}</b><span>正确率</span></div>
       <div class="rs-item"><b>${s.streak}</b><span>连刷天数</span></div>
       <div class="rs-item"><b>${s.total}</b><span>题库总量</span></div>`;
-    // 做过列表（最近在前，可重做）；题库换代后的幽灵 id 在这里兜底过滤（正常已在 cleanGhosts 清掉）
+    // 篇目列表：做过的在前（可重做），未做的也全量列出（点击开始）——
+    // 旧版只列"做过的"，新用户只能"随机来一篇"、无法指定篇目（体验官报告 exp3）
     const r = rState();
     const knownSet = new Set(ITEMS.map((x) => x.id));
     const doneIds = Object.keys(r.done).filter((id) => knownSet.has(id)).sort((a, b) => r.done[b].ts - r.done[a].ts);
+    const undone = ITEMS.filter((x) => !r.done[x.id]);
     const list = $('#reading-list');
     list.innerHTML = (doneIds.length >= 3
       ? '<button class="ghost-btn" id="rd-pattern-btn" style="margin:12px 2px 4px;width:100%">AI 分析我的错题</button><div class="rd-ai-box hidden" id="rd-pattern-box"></div>'
@@ -3139,7 +3210,15 @@ const Reading = (() => {
               <span class="rd-pick">${d.picks ? ('得分 ' + d.right + '/' + d.total) : ('选了 ' + d.pick)}</span>
             </div>`;
           }).join('')
-        : '');
+        : '')
+      + (undone.length
+        ? `<div class="set-note" style="margin:12px 2px 6px">未做篇目（${undone.length} 篇 · 点击开始）</div>` + undone.map((it) => `
+            <div class="rd-item" data-rd="${it.id}">
+              <span class="rd-mark">·</span>
+              <span class="rd-src">${it.src}</span>
+              <span class="rd-pick">${it.words || ''} 词</span>
+            </div>`).join('')
+        : '<div class="set-note" style="margin:12px 2px 6px">未做篇目：已全部做完 ✓</div>');
     // 错题模式分析：近 20 篇记录（题干要点|我的答案|正确答案）→ 题型/错因/建议
     const pb = $('#rd-pattern-btn');
     if (pb) pb.addEventListener('click', () => {
@@ -3220,7 +3299,7 @@ const Reading = (() => {
     return { sent: para, ctx: '' };
   }
 
-  function renderQuiz(it, redo) {
+  function renderQuiz(it, redo, sess) {
     if (window.speechSynthesis) speechSynthesis.cancel(); // 换篇时停掉上一篇朗读
     $('#reading-list').classList.add('hidden');
     const box = $('#reading-quiz');
@@ -3230,9 +3309,9 @@ const Reading = (() => {
     box.classList.add('quiz-on'); // 底部固定面板占位：给内容区留出滚动底距
     box.dataset.dockCollapsed = ''; // 每篇重置为展开态
     const questions = it.q5 || [];
-    const picks = {}; // {num: 'A'} 交卷前可改选
+    const picks = Object.assign({}, (sess && sess.picks) || {}); // {num: 'A'} 交卷前可改选（断点恢复时回填）
     box._picks = picks; // submitReading 从这里读选择
-    box._qi = 0;        // 单题底部作答：当前题号
+    box._qi = (sess && sess.qi) || 0;        // 单题底部作答：当前题号
     box.innerHTML = `
       <div class="rd-src-line">${it.src} · 约 ${it.words} 词 · ${questions.length} 题
         <button class="rd-speak" id="rd-speak"> 朗读</button>
@@ -3377,13 +3456,17 @@ const Reading = (() => {
       if (jump) { box._qi = Number(jump.dataset.jump) || 0; renderQ(); return; }
       if (ev.target.closest('#rd-prev')) { if (box._qi > 0) { box._qi--; renderQ(); } return; }
       if (ev.target.closest('#rd-nextq')) { if (box._qi < questions.length - 1) { box._qi++; renderQ(); } return; }
-      const wk = ev.target.closest('.rd-w');
-      if (wk) { WordCard.show(wk.textContent); return; } // 选项里的单词=查词（不误触答题）
       const b = ev.target.closest('.rd-opt');
-      if (!b || box.dataset.answered) return; // 交卷后不可改选
-      picks[b.dataset.num] = b.dataset.opt;
-      if (box._qi < questions.length - 1) box._qi++;   // 答完自动轮到下一题；最后一题停在原地出交卷
-      renderQ();
+      if (b && !box.dataset.answered) {                // 未作答：整块选项=选答案（答题优先，体验官 exp3）
+        picks[b.dataset.num] = b.dataset.opt;
+        if (box._qi < questions.length - 1) box._qi++; // 答完自动轮到下一题；最后一题停在原地出交卷
+        renderQ();
+        saveRdSess();                                  // 断点续做：记下已选与题号
+        return;
+      }
+      const wk = ev.target.closest('.rd-w');
+      if (wk) { WordCard.show(wk.textContent); return; } // 已作答/交卷后：点词=查词
+      if (b) return;                                     // 交卷后不可改选
     });
     renderQ();
     // 朗读（TTS，壳内走系统语音）
@@ -3431,8 +3514,9 @@ const Reading = (() => {
     });
     $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
     $('#rd-next').addEventListener('click', () => { start(); });
-    $('#rd-back').addEventListener('click', () => { stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); dockPadSync = null; renderPage(); });
-    window.scrollTo({ top: 0 });
+    $('#rd-back').addEventListener('click', () => { saveRdSess(); stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); dockPadSync = null; renderPage(); });
+    if (sess && sess.y) setTimeout(() => window.scrollTo({ top: sess.y }), 80);   // 断点恢复：回到离开时的位置
+    else window.scrollTo({ top: 0 });
   }
 
   /** v2 交卷：统一判分 + 成绩总览 + 逐题解析 */
@@ -3449,6 +3533,7 @@ const Reading = (() => {
     });
     const total = questions.length;
     r.done[it.id] = { picks: Object.assign({}, picks), right, total, ok: right >= Math.ceil(total * 0.6), ts: Date.now() };
+    clearRdSess(); // 已交卷的篇目不再需要断点（重做从"做过的篇目"进）
     saveState();
     box.dataset.answered = '1';
     box.dataset.dockCollapsed = ''; // 交卷后展开看批改
@@ -3568,9 +3653,9 @@ const Reading = (() => {
     const head = $('#fav-read-head');
     const r = rState();
     const words = Object.keys(r.vocab);
-    if (wrap) wrap.classList.toggle('hidden', !words.length);
+    if (wrap) wrap.classList.remove('hidden'); // 空态也露出入口（体验官 exp6：原来 0 条时整块藏起来，用户不知道有这个池）
     if (head) head.innerHTML = `阅读生词（${words.length}）<button class="mini-btn" id="rv-promote-all" style="margin-left:8px">全部升入精背</button>`;
-    if (!words.length) return;
+    if (!words.length) { box.innerHTML = '<div class="set-note">阅读时点单词旁的 ★ 收进来，这里自动攒。</div>'; return; }
     box.innerHTML = words.map((w) => {
       const promoted = (() => { const h = AI.findWord(w); return h && isFav(h.unitId, w); })();
       return `<div class="rem-item rv-item${promoted ? ' promoted' : ''}" data-rvrow="${w}"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
@@ -3633,6 +3718,8 @@ const Listening = (() => {
   let scrolledIdx = -1;                 // 跟随窗口已滚到第几句（去抖，防反复滚）
   let wordMap = null;                   // 词库索引（小写 → 词条）
   let blobUrl = null, blobFor = null;   // 当前段音频的 Blob URL
+  const LAST_KEY = 'sgwd_ls_last';      // 上次听到哪（设备本地 UI 态，不进云同步）
+  let pendingSeek = 0, lastSaveAt = 0;  // 续播待应用的秒数 / 写盘节流时间戳
 
   /* ---------- 数据 ---------- */
   function ensure() {
@@ -3722,13 +3809,21 @@ const Listening = (() => {
   function setTitle(t) { const el = $('#ls-title'); if (el) el.textContent = t; }
 
   function renderPapers() {
-    paper = null; paperData = null; task = null; stopAudio();
+    stopAudio();                          // 先保存"听到哪"再清空（saveLast 需要 paper/task 还在）
+    paper = null; paperData = null; task = null;
     setTitle('六级听力精听');
     const nt = $('#ls-next-top'); if (nt) nt.classList.add('hidden');
     const l = lState();
     const body = $('#ls-body');
+    const L = readLast();
+    const lp = L && IDX.papers.find((p) => p.id === L.paper);
+    const lead = lp ? `<div class="ls-paper" data-continue="1">
+        <div class="ls-paper-main">
+          <div class="ls-paper-title">继续上次 ›</div>
+          <div class="ls-paper-sub">${esc(lp.title || lp.id)} · 停在第 ${Math.floor((L.t || 0) / 60)}:${String(Math.floor((L.t || 0) % 60)).padStart(2, '0')}</div>
+        </div><div class="ls-group-mark">▶</div></div>` : '';
     body.innerHTML = '<div class="set-note" style="margin:10px 2px 6px">' +
-      '按年份倒序 · 点开一套 → 选一段精听 · 音频按需下载</div>' +
+      '按年份倒序 · 点开一套 → 选一段精听 · 音频按需下载</div>' + lead +
       IDX.papers.map((p) => {
         const done = (paperDoneCount(p.id, l));
         const badge = done ? `<span class="ls-badge">${done}/${p.groups}</span>` : '';
@@ -3739,6 +3834,8 @@ const Listening = (() => {
           </div>${badge}</div>`;
       }).join('');
     body.querySelectorAll('[data-paper]').forEach((el) => el.addEventListener('click', () => openPaper(el.dataset.paper)));
+    const cf = body.querySelector('[data-continue]');
+    if (cf && lp) cf.addEventListener('click', () => openPaper(lp.id, L));
     window.scrollTo({ top: 0 });
   }
 
@@ -3748,7 +3845,7 @@ const Listening = (() => {
     return n;
   }
 
-  function openPaper(id) {
+  function openPaper(id, resume) {
     const meta = IDX.papers.find((p) => p.id === id);
     setTitle(meta ? (meta.title || id) : id);
     $('#ls-body').innerHTML = '<div class="set-note">加载中…</div>';
@@ -3756,11 +3853,16 @@ const Listening = (() => {
       if (!d) { $('#ls-body').innerHTML = '<div class="set-note">这一套加载失败，请联网重试。</div>'; return; }
       paper = meta || { id, title: id };
       renderGroups();
+      if (resume) {                                     // 续播：直接打开上次那一段，音频就绪后跳回时间点
+        const t = (paperData.tasks || []).find((x) => x.id === resume.task);
+        if (t) { pendingSeek = resume.t || 0; openTask(t); }
+      }
     });
   }
 
   function renderGroups() {
-    task = null; stopAudio();
+    stopAudio();                          // 先保存"听到哪"再清空
+    task = null;
     const nt = $('#ls-next-top'); if (nt) nt.classList.add('hidden');
     const l = lState();
     const body = $('#ls-body');
@@ -3839,13 +3941,35 @@ const Listening = (() => {
     if (!audio) { audio = new Audio(); audio.preload = 'metadata'; }
     return audio;
   }
-  function stopAudio() { const au = document.querySelector('#ls-audio'); if (au) { try { au.pause(); } catch (e) {} } loopLine = -1; }
+  function stopAudio() { const au = document.querySelector('#ls-audio'); if (au) { try { au.pause(); } catch (e) {} } loopLine = -1; saveLast(); }
+
+  /* ---------- 续播：记住上次听到哪（体验官 exp5：退出重进原来完全回到套列表顶部） ---------- */
+  function readLast() {
+    try { const s = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); return s && s.paper && s.task ? s : null; } catch (e) { return null; }
+  }
+  function saveLast() {
+    if (!paper || !task) return;
+    try {
+      const au = document.querySelector('#ls-audio');
+      localStorage.setItem(LAST_KEY, JSON.stringify({
+        paper: paper.id, task: task.id, t: au ? Math.round(au.currentTime * 10) / 10 : 0, ts: Date.now(),
+      }));
+    } catch (e) { }
+  }
+  /* 元数据未就绪时直接设 currentTime 会被丢弃（慢网/大文件必现）→ 挂到 loadedmetadata 上补做 */
+  function applyPendingSeek(au) {
+    if (!pendingSeek) return;
+    const at = pendingSeek; pendingSeek = 0;
+    const apply = () => { try { au.currentTime = at; } catch (e) {} };
+    if (au.readyState >= 1) apply();
+    else { const once = () => { au.removeEventListener('loadedmetadata', once); apply(); }; au.addEventListener('loadedmetadata', once); }
+  }
 
   /* 音频以"整文件 Blob"喂给播放器：绕开 HTTP Range 与 SW 缓存的兼容坑，
      离线可听、点句 seek 必定生效；SW 仍会把文件缓存下来供下次秒开。 */
   function attachAudio(rel) {
     const au = getAudio();
-    if (blobFor === rel && blobUrl) { au.src = blobUrl; return; }
+    if (blobFor === rel && blobUrl) { au.src = blobUrl; applyPendingSeek(au); return; }
     setHint('音频加载中…（首次需下载，之后离线可听）');
     fetch(rel).then((r) => {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -3855,6 +3979,7 @@ const Listening = (() => {
       blobUrl = URL.createObjectURL(b);
       blobFor = rel;
       au.src = blobUrl;
+      applyPendingSeek(au);
       setHint('音频就绪 · ' + (b.size / 1048576).toFixed(1) + ' MB（已缓存，可离线听）');
     }).catch(() => setHint('音频下载失败，请联网后重进本段'));
   }
@@ -3886,6 +4011,7 @@ const Listening = (() => {
             <button class="mini-btn" id="ls-mode-full">全文</button>
           </div>
         </div>
+        <div class="ls-lead-note hidden" id="ls-lead-note"></div>
         <div id="ls-sub" class="ls-sub"></div>
         <div id="ls-tr" class="ls-full hidden"></div>
       </div>
@@ -3902,6 +4028,13 @@ const Listening = (() => {
     attachAudio(task.audio);
     renderQuestions();
     renderTranscript();
+    // 开场读题段（首句 start 较大）给固定一行说明，避免"播放头在走、字幕区空着"被误判为卡住
+    const leadN = $('#ls-lead-note');
+    if (leadN) {
+      const t0 = task.lines[0] && task.lines[0].start;
+      if (t0 != null && t0 >= 10) { leadN.textContent = '开头约 ' + Math.round(t0) + ' 秒是题目说明/试听，字幕从 ' + fmtTime(t0) + ' 起'; leadN.classList.remove('hidden'); }
+      else leadN.classList.add('hidden');
+    }
     bindDrill();
     updateLoopBtn();
     applySubState();
@@ -3978,7 +4111,11 @@ const Listening = (() => {
   function renderTranscript() {
     const sub = $('#ls-sub'), full = $('#ls-tr');
     if (sub) { sub.innerHTML = transcriptHTML(false); bindLines(sub); }
-    if (full) { full.innerHTML = transcriptHTML(true); bindLines(full); }
+    // 全文容器懒渲染：仅在当前处于全文模式时渲染，省掉一半 DOM 与监听器（体验官 exp10 量化过元素规模）
+    if (full) {
+      if (subMode === 'full') { full.innerHTML = transcriptHTML(true); bindLines(full); }
+      else { full.innerHTML = ''; }
+    }
     if (activeIdx >= 0) setActiveLine(activeIdx, true);
   }
 
@@ -3989,6 +4126,11 @@ const Listening = (() => {
     const sub = $('#ls-sub'), full = $('#ls-tr');
     if (sub) sub.classList.toggle('hidden', subMode !== 'follow');
     if (full) full.classList.toggle('hidden', subMode !== 'full');
+    // 全文容器懒渲染：切到全文时补渲染
+    if (full && subMode === 'full' && !full.innerHTML) {
+      full.innerHTML = transcriptHTML(true); bindLines(full);
+      if (activeIdx >= 0) setActiveLine(activeIdx, true);
+    }
     const bf = $('#ls-mode-follow'); if (bf) bf.classList.toggle('on', subMode === 'follow');
     const bfl = $('#ls-mode-full'); if (bfl) bfl.classList.toggle('on', subMode === 'full');
     const be = $('#ls-en'); if (be) be.textContent = showEn ? '隐藏字幕' : '显示字幕';
@@ -4083,6 +4225,8 @@ const Listening = (() => {
       if (st != null && t >= st - LINE_TOL) cur = i; else break;
     }
     if (cur >= 0) setActiveLine(cur);
+    const _now = Date.now();                            // 续播进度：5 秒节流落盘
+    if (_now - lastSaveAt > 5000) { lastSaveAt = _now; saveLast(); }
   }
 
   function updateLoopBtn() {
@@ -4212,9 +4356,9 @@ const Listening = (() => {
     const head = $('#fav-listen-head');
     const l = lState();
     const ws = Object.keys(l.vocab);
-    if (wrap) wrap.classList.toggle('hidden', !ws.length); // 没收藏就整块藏起来
+    if (wrap) wrap.classList.remove('hidden'); // 空态也露出入口（体验官 exp6）
     if (head) head.textContent = `听力生词（${ws.length}）`;
-    if (!ws.length) return;
+    if (!ws.length) { box.innerHTML = '<div class="set-note">听力里点单词旁的 ★ 收进来，这里自动攒。</div>'; return; }
     box.innerHTML = ws.map((w) => `
       <div class="rem-item"><div><div>${esc(w)}</div><div class="rem-when">${esc(l.vocab[w].cn || '')}</div></div>
       <button class="rem-del" data-lvw="${esc(w)}">认识</button></div>`).join('');
@@ -4225,7 +4369,7 @@ const Listening = (() => {
     }));
   }
 
-  return { ensure, renderHome, renderPage, renderWrongVocab, bind, stats, showCache };
+  return { ensure, renderHome, renderPage, renderWrongVocab, bind, stats, showCache, saveLast };
 })();
 
 /* ================= 提醒（Web Push） ================= */
@@ -4753,7 +4897,7 @@ function gotoWordHead(unitId, head) {
     const card = document.querySelector(`#word-list .word-card[data-idx="${idx}"]`);
     if (!card) return;
     card.scrollIntoView({ block: 'center' });
-    const d = card.querySelector('.wc-detail');
+    const d = ensureWordDetail(card, u.words[idx]);
     if (d) d.classList.remove('collapsed');
     card.classList.add('locate');
     setTimeout(() => card.classList.remove('locate'), 2300);
@@ -4818,6 +4962,7 @@ function moveHomeCard(el, dir) {
   if (dir < 0) box.insertBefore(el, sib); else box.insertBefore(sib, el);
   saveHomeOrder();
   updateHomeSortBtns();
+  toast('顺序已保存'); // 静默保存→明确反馈（体验官 exp8）
   try { buzz(10); } catch (e) { }
 }
 function updateHomeSortBtns() {
@@ -4839,6 +4984,7 @@ function resetHomeOrder() {
   [].slice.call(box.children).forEach((el) => { byKey[homeKeyOf(el)] = el; });
   HOME_DEFAULT_ORDER.forEach((k) => { if (byKey[k]) box.appendChild(byKey[k]); });
   updateHomeSortBtns();
+  toast('已恢复默认顺序');
 }
 function setHomeSort(on) {
   homeSortOn = !!on;
@@ -5000,6 +5146,7 @@ function renderDailyCfg() {
     dailyCfg()._ts = Date.now();
     saveState();
     renderToday();
+    toast('已保存：' + ({ newWords: '新词目标', review: '复习上限', reading: '阅读篇数', listening: '听力段数' }[key] || key) + ' ' + v); // 静默保存→明确反馈（体验官 exp8）
   }));
   body.querySelectorAll('[data-cfg-on]').forEach((sw) => sw.addEventListener('change', () => {
     const key = sw.dataset.cfgOn;
@@ -5008,6 +5155,7 @@ function renderDailyCfg() {
     saveState();
     renderDailyCfg();
     renderToday();
+    toast((sw.checked ? '已开启：' : '已关闭：') + ({ newWords: '背新词', review: '复习', reading: '阅读', listening: '听力' }[key] || key));
   }));
   const tr = $('#daily-task-rows');
   if (tr) {
@@ -5071,6 +5219,22 @@ $('#today-start-review').addEventListener('click', () => {
     if (!q.length) { toast('今日复习已清空 ✓ 去完成清单里的其它任务吧'); return; }
     startTest(q, `今日复习 ${q.length} 词`, 'srs');
   });
+});
+// 拼写检验入口（体验官 exp2：原来只藏在单元页右上角，从今日任务要 4 次点击）
+$('#today-start-spell').addEventListener('click', () => {
+  const id = studyUnitId != null ? studyUnitId : state.lastUnit;
+  if (id == null) { toast('先选一个单元开始背吧'); return; }
+  ensureUnits([id]).then(() => {           // 桩单元只有 3 个预览词，必须先拉分片
+    const u = unitById(id); if (!u) return;
+    startTest(buildQueueByUnit(id), '检验 ' + u.name, 'unit:' + id);
+  });
+});
+// 设置页的「每日任务」入口（体验官 exp8：原来只有首页二级面板里的小齿轮）
+const _sd = $('#set-entry-dailycfg');
+if (_sd) _sd.addEventListener('click', () => {
+  const mask = $('#daily-cfg-mask');
+  if (mask && mask.parentElement !== document.body) document.body.appendChild(mask); // 提为 body 级浮层，否则被隐藏的首页面板祖先藏住
+  renderDailyCfg(); mask.classList.remove('hidden');
 });
 
 function heatLevel(total) {
@@ -5358,7 +5522,7 @@ const AI = (() => {
     box.innerHTML = V.list.length
       ? V.list.map((m) => m.role === 'user'
         ? '<div class="ai-msg user"><span class="ai-user-txt">' + esc(m.content) + '</span></div>'
-        : '<div class="ai-msg bot">' + mdLite(m.content) + '</div>').join('')
+        : '<div class="ai-msg bot' + (/^请求失败/.test(m.content) ? ' ai-err' : '') + '">' + mdLite(m.content) + '</div>').join('')
       : '<div class="ai-empty" style="text-align:center;padding:18px 6px">我来讲解～ 生成中可以点「停止」</div>';
     box.scrollTop = box.scrollHeight;
   }
@@ -5397,7 +5561,7 @@ const AI = (() => {
     } else {
       box.innerHTML = h.map((m, idx) => m.role === 'user'
         ? `<div class="ai-msg user"><span class="ai-user-txt">${esc(m.content)}</span><button class="msg-edit" data-edit="${idx}" title="编辑重发">✎</button></div>`
-        : `<div class="ai-msg bot">${mdLite(m.content)}</div>`).join('');
+        : `<div class="ai-msg bot${/^请求失败/.test(m.content) ? ' ai-err' : ''}">${mdLite(m.content)}</div>`).join('');
     }
     box.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => editResend(Number(b.dataset.edit))));
     const chips = $('#ai-chips');
@@ -5435,6 +5599,8 @@ const AI = (() => {
     const code = e && e.code;
     const m = String((e && e.message) || e);
     if (code === 'ABORTED') return '';
+    if (code === 'BAD_CODE') return '这台设备还没绑定同步码——去「设置 → 云同步」开启后再问；如果已开启，说明码失效了，重新开启一次';
+    if (code === 'NO_SUCH_CODE') return '同步码在云端对不上（去「设置 → 云同步」重新开启一次）';
     if (code === 'LIMIT') return '今天次数用完了（每天 100 次）';
     if (code === 'NO_KEY') return 'AI 还没配置好（找青峰放 Key）';
     if (code === 'AI_AUTH') return 'AI 密钥失效（' + m.slice(0, 90) + '）';
@@ -5497,6 +5663,8 @@ const AI = (() => {
     const msg = String(text !== undefined ? text : (input && input.value) || '').trim();
     // 生成中：程序化调用静默忽略；「停止」只在按钮/回车层处理（见 bind / 弹窗绑定）
     if (!msg || sending) return;
+    // 没绑定同步码就别白跑一趟云函数（体验官 exp7：秒回"请求失败：同步码格式不对"像天书）
+    if (!(state.sync && state.sync.code)) { toast('还没绑定同步码：去「设置 → 云同步」开启后就能问 AI'); return; }
     if (input) input.value = '';
     const h = hist();
     h.push({ role: 'user', content: msg });
@@ -5547,7 +5715,7 @@ const AI = (() => {
       const live = document.getElementById('sr-live');
       if (live) live.textContent = clean; // 读屏只播最新一条
     };
-    const { msgs, earlier } = earlierDigest(hist());
+    const { msgs, earlier } = earlierDigest(hist().filter((m) => !/^请求失败/.test(m.content))); // 失败提示不喂给模型当上下文
     const payload = { messages: msgs, context: contextSummary(), earlier };
     let attempt = 0;
     while (true) {
