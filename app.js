@@ -269,7 +269,11 @@ function learnedMap(id) { return state.learned[String(id)] || (state.learned[Str
 function wrongMap(id) { return state.wrong[String(id)] || (state.wrong[String(id)] = {}); }
 function isLearned(id, w) { return !!learnedMap(id)[wordKey(w)]; }
 function isWrong(id, w) { return !!wrongMap(id)[wordKey(w)]; }
-function setLearned(id, w, v) { const m = learnedMap(id); if (v) m[wordKey(w)] = true; else delete m[wordKey(w)]; }
+function setLearned(id, w, v) {
+  const m = learnedMap(id), k = wordKey(w);
+  if (v) { m[k] = true; if (typeof Sync !== 'undefined') Sync.untomb('l:' + id + ':' + k); }
+  else if (m[k]) { delete m[k]; if (typeof Sync !== 'undefined') Sync.tomb('l:' + id + ':' + k); } // 否则 30s 后 pullMerge 会把云端旧数据并回来（取消已学"复活"）
+}
 function setWrong(id, w, v) {
   const m = wrongMap(id), k = wordKey(w);
   if (v) { m[k] = true; if (typeof Sync !== 'undefined') Sync.untomb('w:' + id + ':' + k); }
@@ -539,7 +543,14 @@ const Sync = (() => {
           incTodo.forEach(x => {
             const cur = map[x.id];
             if (!cur) { map[x.id] = x; changed = true; }
-            else if ((x.done === true && cur.done !== true) || (x.createdAt || 0) > (cur.createdAt || 0)) { map[x.id] = x; changed = true; }
+            else {
+              // 打勾/取消勾选带 updatedAt（新数据）→ 按最后改动胜出；老数据无 updatedAt 走旧规则（完成态优先）
+              const xa = x.updatedAt || 0, ca = cur.updatedAt || 0;
+              if (xa > ca
+                || (xa === 0 && ca === 0 && (((x.done === true && cur.done !== true)) || (x.createdAt || 0) > (cur.createdAt || 0)))) {
+                map[x.id] = x; changed = true;
+              }
+            }
           });
           state.todo = Object.keys(map).map(k => map[k]).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
         }
@@ -585,6 +596,20 @@ const Sync = (() => {
           } else if (k.startsWith('rd:')) {
             const id = k.slice(3);
             if (state.reading.done[id]) { delete state.reading.done[id]; changed = true; }
+          } else if (k.startsWith('l:')) {
+            // 取消已学：清 learned + 对应 SRS 排期（键 l:<unitId>:<词头>）
+            const p = k.split(':');
+            if (state.learned[p[1]] && state.learned[p[1]][p[2]]) { delete state.learned[p[1]][p[2]]; changed = true; }
+            if (state.srs && state.srs[p[1] + ':' + p[2]]) { delete state.srs[p[1] + ':' + p[2]]; changed = true; }
+          } else if (k.startsWith('s:')) {
+            // 移出复习排期（键 s:<unitId>:<词头>）
+            if (state.srs && state.srs[k.slice(2)]) { delete state.srs[k.slice(2)]; changed = true; }
+          } else if (k.startsWith('dt:')) {
+            // 删除自定义每日事项
+            const id = k.slice(3);
+            if (Array.isArray(state.dailyTasks) && state.dailyTasks.some(x => String(x.id) === id)) {
+              state.dailyTasks = state.dailyTasks.filter(x => String(x.id) !== id); changed = true;
+            }
           } else if (k.startsWith('t:')) {
             const id = k.slice(2);
             if ((state.todo || []).some(x => x.id === id)) { state.todo = state.todo.filter(x => x.id !== id); changed = true; }
@@ -596,6 +621,16 @@ const Sync = (() => {
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
       if (changed) renderAfterSync();
       if (adoptedPartner) { renderUI(); toast('已与 ' + adoptedPartner + ' 结对 ✓ 可以互戳了'); }
+      // 消息盒：网页/iOS 端拉取未读互戳并展示（原来只有 App 壳轮询 pending 能收到，网页端永远看不到）
+      if (cfg().partner) {
+        request('pokes.get', {}).then((pr) => {
+          const fresh = (((pr || {}).items) || []).filter((it) => it && !it.apk && (Date.now() - (it.ts || 0)) < 24 * 3600e3);
+          if (fresh.length) {
+            toast('📩 ' + (friendName() || '好友') + '：' + String(fresh[0].text || '').slice(0, 40) + (fresh.length > 1 ? '（共 ' + fresh.length + ' 条）' : ''));
+            request('pending.ack', { ids: fresh.map((it) => it.ts) }).catch(() => { });
+          }
+        }).catch(() => { });
+      }
       status('已同步 ✓ ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }), 'ok');
     } catch (e) {
       status('拉取失败：' + String(e.message || e).slice(0, 70), 'err');
@@ -681,7 +716,7 @@ const Sync = (() => {
       let myTotal = 0;
       for (const k in state.learned) myTotal += countKeys(state.learned, k);
       const win = (a, b) => a === b ? '' : (a > b ? ' [赢]' : '');
-      const who = friendName() || 'TA';
+      const who = esc(friendName() || 'TA'); // 对方昵称是跨用户数据，必须转义后再进 innerHTML
       const rank = `今日：我 ${myToday} 词${win(myToday, s.todayCount || 0)} ⇄ ${who} ${s.todayCount || 0} 词${win(s.todayCount || 0, myToday)}`
         + ` · 连续：我 ${myStreak} 天${win(myStreak, s.streak || 0)} ⇄ ${who} ${s.streak || 0} 天${win(s.streak || 0, myStreak)}`
         + ` · 累计：我 ${myTotal} ⇄ ${who} ${s.learnedTotal || 0}`;
@@ -897,6 +932,14 @@ const Sync = (() => {
 
     async function accountTakeover(code) {
       // 登录后把账号绑定的码接过来：合并云端进度到本地，再整体上传
+      // 换账号登录（本机已有别人的同步码/进度）必须先清本机残留，否则两个人的进度会合并互污（2026-10-14 审查确认）
+      if (cfg().code && cfg().code !== code) {
+        if (!confirm('本机已有另一份同步进度。\n继续登录将以「' + code + '」的云端进度为准，本机现有进度不上传、不合并。\n继续吗？')) {
+          throw new Error('已取消登录');
+        }
+        try { localStorage.removeItem('sgwd_sync_hashes'); } catch (e) { }
+        state = normalizeProgress(null); // 清空本机残留（含墓碑），从空白基线拉取新账号
+      }
       await request('init', { code });
       cfg().code = code; cfg().on = true;
       saveState(); renderUI();
@@ -972,8 +1015,10 @@ const Sync = (() => {
     if (genBtn) genBtn.addEventListener('click', async () => {
       try { await ensureOn(); } catch (e) { nStatus('需要先开通云同步（自动开通失败：' + String(e.message || e).slice(0, 50) + '）', 'err'); return; }
       const alpha = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      const rnd = new Uint32Array(14);
+      (window.crypto || window.msCrypto).getRandomValues(rnd); // 主题名即密码：不用 Math.random
       let t = 'vf-';
-      for (let i = 0; i < 14; i++) t += alpha[Math.floor(Math.random() * alpha.length)];
+      for (let i = 0; i < 14; i++) t += alpha[rnd[i] % alpha.length];
       nStatus('正在保存主题…');
       try { await saveTopic(t); nStatus('已生成 ✓ 点「复制主题」，到 ntfy App 里订阅它', 'ok'); }
       catch (e) { nStatus('生成失败：' + String(e.message || e).slice(0, 60), 'err'); }
@@ -1259,8 +1304,10 @@ function bindTodo() {
       if (!it) return;
       if (it.type === 'once') {
         it.done = !it.done;
+        it.updatedAt = Date.now(); // 打勾/取消带时间戳：pullMerge 按最后改动合并（否则取消勾选会被云端"完成态优先"复活）
       } else {
         it.todayDone = it.todayDone === bjToday() ? '' : bjToday();
+        it.updatedAt = Date.now();
       }
       saveState(); renderTodo(); Reminder.sync(true);
     } else if (del) {
@@ -1316,8 +1363,12 @@ function nav(view) {
     saveStudyPos();                    // 离开学习页前保存精确位置（词级）
     if (view === 'units') inStudy = false; // 只有主动回列表才算退出学习态
   }
-  if (currentView === 'favorites' && view !== 'favorites') saveListPos('#fav-list', 'fav');
-  if (currentView === 'wrong' && view !== 'wrong') saveListPos('#wrong-list', 'wrong');
+  if (currentView === 'listening' && view !== 'listening' && typeof Listening !== 'undefined') {
+    Listening.stopAudio(); // 切走听力页停音频（原来继续在后台响，还会和背单词发音叠）
+    const lwc = $('#ls-wordcard');
+    if (lwc) lwc.remove(); // 字幕点词浮层挂在 body 下，切页不删会悬在别的页面半空
+  }
+  if (currentView === 'favorites' && view !== 'favorites') saveFavSegPos(false); // 按分段保存（离开收藏页时落盘）
   currentView = view;
   $$('.view').forEach((v) => v.classList.add('hidden'));
   const el = $('#view-' + view);
@@ -1402,12 +1453,14 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     saveNavState(true);
     if (currentView === 'study' && studyUnitId != null) saveStudyPos(); // 滚动位置只写内存，切后台必须落盘
+    if (currentView === 'favorites') saveFavSegPos(false); // 同上（收藏/错词分段）
     saveTestSess(true); // 检验档案防抖中：切后台立即落盘
   }
 });
 window.addEventListener('pagehide', () => {
   saveNavState(true);
   if (currentView === 'study' && studyUnitId != null) saveStudyPos();
+  if (currentView === 'favorites') saveFavSegPos(false);
   saveTestSess(true);
   try { Reading.saveRdSess(); } catch (e) { } // 阅读断点续做：切后台/关闭前落盘
   try { Listening.saveLast(); } catch (e) { } // 听力续播：切后台/关闭前记下"听到哪"
@@ -1608,8 +1661,9 @@ function restorePos(u) {
 /* 学习页滚动位置记忆（节流保存，词级） */
 let scrollTimer = null;
 
-/** 列表页（收藏/错词本）位置记忆：容器 + 存储键，卡片需带 data-key（uid:wordKey） */
-function saveListPos(containerSel, storageKey) {
+/** 列表页（收藏/错词本）位置记忆：容器 + 存储键，卡片需带 data-key（uid:wordKey）
+    memOnly=true 时只写内存 state，不落盘（滚动节流用，防每次滑动全量序列化写盘） */
+function saveListPos(containerSel, storageKey, memOnly) {
   const cards = document.querySelectorAll(containerSel + ' .word-card');
   let key = '';
   for (const c of cards) {
@@ -1617,7 +1671,13 @@ function saveListPos(containerSel, storageKey) {
   }
   state.scrolls = state.scrolls || {};
   state.scrolls[storageKey] = { w: key, y: window.scrollY };
-  saveState();
+  if (!memOnly) saveState();
+}
+/** 按当前分段保存收藏页/错词本位置（错词本并入收藏视图后 currentView 永远不等于 'wrong'，
+    必须看 favSeg 分流，否则会把收藏夹书签写坏） */
+function saveFavSegPos(memOnly) {
+  if (favSeg === 'wrong') saveListPos('#wrong-list', 'wrong', memOnly);
+  else saveListPos('#fav-list', 'fav', memOnly);
 }
 function restoreListPos(containerSel, storageKey) {
   const el = document.querySelector(containerSel);
@@ -1646,10 +1706,7 @@ window.addEventListener('scroll', () => {
     scrollTimer = setTimeout(() => saveStudyPos(true), 250);
   } else if (currentView === 'favorites') {
     clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => saveListPos('#fav-list', 'fav'), 250);
-  } else if (currentView === 'wrong') {
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => saveListPos('#wrong-list', 'wrong'), 250);
+    scrollTimer = setTimeout(() => saveFavSegPos(true), 250); // 滚动只写内存，切走/切后台时落盘
   }
 }, { passive: true });
 
@@ -1772,7 +1829,8 @@ function renderWordList() {
 
     // 点击卡片主体：遮住模式下=反复揭开/盖上该词中文；否则展开/收起详情
     card.addEventListener('click', (ev) => {
-      if (ev.target.closest('.speak-btn') || ev.target.closest('input')) return;
+      if (ev.target.closest('.speak-btn') || ev.target.closest('.wc-learn') || ev.target.closest('.fav-btn')) return;
+      // .wc-learn 整块拦截：点 label 边缘时原生转发仍会勾选复选框，但不能同时触发卡片展开
       if (toggleCardCn(card)) return;
       const d = ensureWordDetail(card, w);
       if (d) d.classList.toggle('collapsed');
@@ -1831,7 +1889,10 @@ $('#btn-mark-all').addEventListener('click', () => {
   const cur = countKeys(state.learned, studyUnitId);
   if (cur === u.words.length) {
     state.learned[String(studyUnitId)] = {};
-    u.words.forEach((w) => srsRemove(studyUnitId, w.w)); // 取消全标同步退出复习排期
+    u.words.forEach((w) => {
+      srsRemove(studyUnitId, w.w); // 取消全标同步退出复习排期（内含 s: 墓碑）
+      if (typeof Sync !== 'undefined') Sync.tomb('l:' + studyUnitId + ':' + wordKey(w.w)); // 防云端并集复活
+    });
     toast('已取消全部标记');
   } else {
     const m = {};
@@ -1839,6 +1900,7 @@ $('#btn-mark-all').addEventListener('click', () => {
     u.words.forEach((w) => {
       if (!state.learned[String(studyUnitId)] || !state.learned[String(studyUnitId)][wordKey(w.w)]) newly++;
       m[wordKey(w.w)] = true;
+      if (typeof Sync !== 'undefined') Sync.untomb('l:' + studyUnitId + ':' + wordKey(w.w));
       srsInit(studyUnitId, w.w); // 全标与逐个勾选同样进 SRS
     });
     state.learned[String(studyUnitId)] = m;
@@ -1865,10 +1927,12 @@ function srsInit(unitId, w) { // 新学会的词入库：当天即可复习（�
   const m = srsMap();
   const k = srsKeyOf(unitId, w);
   if (!m[k]) m[k] = { n: 0, due: dayStartTs(0), last: 0 };
+  if (typeof Sync !== 'undefined') Sync.untomb('s:' + k); // 重新入库要撤墓碑，否则下次拉取会被清掉
 }
 function srsRemove(unitId, w) {
   const m = srsMap();
-  delete m[srsKeyOf(unitId, w)];
+  const k = srsKeyOf(unitId, w);
+  if (m[k]) { delete m[k]; if (typeof Sync !== 'undefined') Sync.tomb('s:' + k); } // 同上：防 pullMerge 复活
 }
 function srsGrade(unitId, w, mode) { // mode: got 认得 / fuzzy 模糊 / nope 忘了
   if (unitId == null || !w) return;
@@ -1896,6 +1960,13 @@ function srsDueList() { // 今日到期（含逾期）
     if (idx >= 0) out.push({ unitId: u.id, idx, word: u.words[idx] });
   }
   return out;
+}
+function srsDueCount() { // 到期总数：不查词对象（分片没加载也计入）——首屏徽标用它，不会先闪 0 再跳数字
+  const m = srsMap();
+  const today = dayStartTs(0);
+  let n = 0;
+  for (const k in m) { const e = m[k]; if (e && e.due && e.due <= today) n++; }
+  return n;
 }
 function srsMigrateLearned() { // 老数据兜底：已学过但没进 SRS 的词，一次性入库（明天开始复习，不爆发）
   if (state.srsInitAt) return;
@@ -2069,25 +2140,32 @@ function spellSubmit() {
   res.classList.remove('hidden');
   if (ok) {
     res.className = 'spell-verdict ok';
-    res.innerHTML = `✓ 拼对了：<b>${target}</b>`;
-    setTimeout(() => { if (test && test.mode === 'spell') { test.pos += 1; showCard(); } }, 1300); // 650→1300：答对的正反馈原来一闪而过（体验官 exp2，与答错"停下等点击"不对称）
+    res.innerHTML = `✓ 拼对了：<b>${esc(target)}</b>`;
+    clearTimeout(spellTimer); // 防连点：上一个 1.3s 跳题定时器还没跑就又判了一题
+    spellTimer = setTimeout(() => {
+      spellTimer = 0;
+      if (test && test.mode === 'spell' && currentView === 'test') { test.pos += 1; saveTestSess(); showCard(); }
+    }, 1300); // 650→1300：答对的正反馈原来一闪而过（体验官 exp2，与答错"停下等点击"不对称）
     speak(item.word.w);
   } else {
     res.className = 'spell-verdict no';
-    res.innerHTML = `✗ 拼错了<br>你的：<span class="spell-you">${you}</span><br>正确：<span class="spell-right">${spellDiff(you, target)}</span>`;
+    res.innerHTML = `✗ 拼错了<br>你的：<span class="spell-you">${esc(you)}</span><br>正确：<span class="spell-right">${spellDiff(you, target)}</span>`;
     $('#spell-next').classList.remove('hidden');
     speak(item.word.w);
   }
+  saveTestSess(); // 拼写进度同样进断点档案（原来只有闪卡 judge 存，退出重进从头再来）
 }
 
 $('#spell-submit').addEventListener('click', spellSubmit);
-$('#spell-next').addEventListener('click', () => { test.pos += 1; showCard(); });
+$('#spell-next').addEventListener('click', () => { clearTimeout(spellTimer); spellTimer = 0; test.pos += 1; saveTestSess(); showCard(); });
 $('#spell-speak').addEventListener('click', () => { if (test && test.queue[test.pos]) speak(test.queue[test.pos].word.w); });
 $('#spell-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (!$('#spell-submit').classList.contains('hidden')) spellSubmit(); }
 });
+let spellTimer = 0; // 答对后 1.3s 自动跳题的句柄（切模式/切换下一题/重开时必须清，否则会错跳一题）
 $('#test-mode').addEventListener('click', () => {
   if (!test) return;
+  clearTimeout(spellTimer); spellTimer = 0;
   test.mode = test.mode === 'spell' ? 'flash' : 'spell';
   showCard();
 });
@@ -2124,16 +2202,16 @@ function clearTestSess() {
   try { localStorage.removeItem(TEST_SESS_KEY); } catch (e) { }
 }
 
-function startTest(queue, title, sessKey) {
+function startTest(queue, title, sessKey, mode) {
   if (!queue.length) { toast('没有可检验的词'); return; }
   const key = sessKey || ('t:' + title);
   const prev = loadTestSess(key);
   if (prev) {
     // 断点续做：恢复队列/进度/判定结果，已判定的词不再出现
-    test = { queue: prev.queue, pos: prev.pos, phase: 'read', origin: prev.title, right: prev.right || 0, miss: prev.miss || [], mode: prev.mode || 'flash', sessKey: key };
+    test = { queue: prev.queue, pos: prev.pos, phase: 'read', origin: prev.title, right: prev.right || 0, miss: prev.miss || [], mode: prev.mode || mode || 'flash', sessKey: key };
     toast('已回到上次进度（' + (prev.pos + 1) + '/' + prev.queue.length + '）');
   } else {
-    test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: (test && test.mode) || 'flash', sessKey: key };
+    test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: mode || (test && test.mode) || 'flash', sessKey: key };
     saveTestSess(true);
   }
   $('#test-title').textContent = test.origin;
@@ -2333,6 +2411,7 @@ function renderFavChips() {
 /* ================= 收藏页分段（收藏夹 / 错词本） ================= */
 let favSeg = 'fav';
 function setFavSeg(seg) {
+  if (currentView === 'favorites') saveFavSegPos(false); // 切分段前先落盘当前分段的位置
   favSeg = seg === 'wrong' ? 'wrong' : 'fav';
   const f = $('#fav-seg-fav'), w = $('#fav-seg-wrong');
   if (f) f.classList.toggle('hidden', favSeg !== 'fav');
@@ -2379,8 +2458,8 @@ function renderFavorites() {
   const shown = items.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
   if (!shown.length) {
     box.innerHTML = items.length
-      ? '<div class="empty-tip">这一档是空的<br>点上面的「全部」看看其它词<br>点上面的「全部」看看其它词</div>'
-      : '<div class="empty-tip">收藏夹是空的<br>学习时点单词旁的「☆」把不熟的词收进来<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
+      ? '<div class="empty-tip">这一档是空的<br>点上面的「全部」看看其它词</div>'
+      : '<div class="empty-tip">收藏夹是空的<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
     return;
   }
   shown.forEach((it) => {
@@ -2469,7 +2548,7 @@ $('#btn-test-fav').addEventListener('click', () => {
     const q = buildQueueFavorites();
     if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
     const title = favFilter === 'all' ? '复习收藏' : '复习收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
-    startTest(q, title, 'fav');
+    startTest(q, title, 'fav:' + favFilter); // 会话键带档位：否则切星级后仍被旧档断点劫持
   });
 });
 
@@ -2749,7 +2828,11 @@ const Sakura = (() => {
     rafId = requestAnimationFrame(frame);
   }
 
-  window.addEventListener('resize', () => { resize(); make(); });
+  window.addEventListener('resize', () => {
+    const w0 = W;
+    resize();
+    if (window.innerWidth !== w0) make(); // 只有宽度真变（转屏/分屏）才重撒花瓣；软键盘/地址栏伸缩只改高度，别把满屏花瓣闪没
+  });
   resize();
   make();
   rafId = requestAnimationFrame(frame);
@@ -3080,7 +3163,11 @@ const Reading = (() => {
     if (!PROMISE) {
       PROMISE = fetch('data/readings.json', { cache: 'no-cache' })
         .then((r) => r.json())
-        .then((j) => { if (j && j.items && j.items.length) { ITEMS = j.items; cleanGhosts(); return true; } return false; })
+        .then((j) => {
+          if (j && j.items && j.items.length) { ITEMS = j.items; cleanGhosts(); return true; }
+          PROMISE = null; // SW 离线回落体（{"units":[]}）也是失败：不复位 Promise 会把"加载失败"固化到重启（重试彻底失灵）
+          return false;
+        })
         .catch(() => { PROMISE = null; return false; });
     }
     return PROMISE;
@@ -3156,7 +3243,7 @@ const Reading = (() => {
   }
   function clearRdSess() { try { localStorage.removeItem(RD_SESS_KEY); } catch (e) { } }
 
-  function renderPage() {
+  function renderPage(skipResume) {
     // 从别处切回阅读页时收起残留的做题界面——必须同步执行：
     // start() 会先走这里再同步渲染新题，若放到异步回调会把刚弹出的题面藏掉（"随机来一篇点不动"回归的根因）
     const q = $('#reading-quiz'), l = $('#reading-list');
@@ -3167,8 +3254,9 @@ const Reading = (() => {
     ensure().then((ok) => {
       if (ok) {
         cleanGhosts();
-        // 断点续做：上次没做完的篇目（当天有效）→ 直接回到那篇，回填已选项/题号/滚动位置
-        const s = loadRdSess();
+        // 断点续做：上次没做完的篇目（当天有效）→ 直接回到那篇，回填已选项/题号/滚动位置。
+        // skipResume=true：从 #rd-back 回列表 / 随机来一篇 时不再自动弹回（否则做题中永远退不出去、新篇被旧断点覆盖）
+        const s = skipResume ? null : loadRdSess();
         const it2 = s && ITEMS && ITEMS.find((x) => x.id === s.id);
         if (it2) { cur = it2; renderQuiz(it2, false, s); return; }
         renderPageInner();
@@ -3246,7 +3334,7 @@ const Reading = (() => {
   function start() {
     ensure().then((ok) => {
       if (!ok) { toast('题库加载失败，请联网重试'); return; }
-      renderPage(); // 更新列表/统计
+      renderPage(true); // 更新列表/统计；不恢复旧断点（否则微任务回调会把刚渲染的随机新篇覆盖回旧篇）
       const undone = ITEMS.filter((x) => !rState().done[x.id]);
       const pool = undone.length ? undone : ITEMS;
       cur = pool[Math.floor(Math.random() * pool.length)];
@@ -3407,7 +3495,14 @@ const Reading = (() => {
           } else if (picked) cls += ' picked';
           return `<button class="${cls}" data-num="${q.num}" data-opt="${opt}"><span class="opt-en"><b>${opt}</b> ${wrapWords(o)}</span>${(q.optionsCn && q.optionsCn[oi]) ? `<span class="opt-cn">${q.optionsCn[oi]}</span>` : ''}</button>`;
         }).join('')}</div>
-        ${(answered && q.explain) ? `<div class="rd-q5-explain">${q.explain}</div>` : ''}`;
+        ${(answered && q.explain) ? `<div class="rd-q5-explain">${q.explain}</div>` : ''}
+        ${answered ? `<button class="ghost-btn rd-ai-btn" id="rd-ai-q" style="margin:8px 0 4px;width:100%">AI 讲这题</button><div class="rd-ai-box hidden" id="rd-ai-q-box"></div>` : ''}`;
+      if (answered) {
+        const aq = $('#rd-ai-q'); // 逐题 AI 讲解入口（rd-dock 改版时漏挂，功能在服务端一直都在）
+        if (aq) aq.addEventListener('click', () => {
+          StudyAI.ask('rdExplain', { text: it.text, q: q.stem, opts: q.options, ans: q.answer }, $('#rd-ai-q-box'), '讲解生成中，约 5~15 秒…');
+        });
+      }
       dotsBox.innerHTML = questions.map((qq, i) => {
         let st = picks[qq.num] ? 'on' : '';
         if (answered) st = (picks[qq.num] === qq.answer) ? 'ok' : 'no';
@@ -3514,7 +3609,7 @@ const Reading = (() => {
     });
     $('#rd-stop').addEventListener('click', () => { stopAll(); ttsReset(); });
     $('#rd-next').addEventListener('click', () => { start(); });
-    $('#rd-back').addEventListener('click', () => { saveRdSess(); stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); dockPadSync = null; renderPage(); });
+    $('#rd-back').addEventListener('click', () => { saveRdSess(); stopAll(); box.classList.add('hidden'); $('#reading-list').classList.remove('hidden'); dockPadSync = null; renderPage(true); }); // true=回列表不自动弹回断点（原样 renderPage() 会立刻把做题界面重新打开，永远退不出去）
     if (sess && sess.y) setTimeout(() => window.scrollTo({ top: sess.y }), 80);   // 断点恢复：回到离开时的位置
     else window.scrollTo({ top: 0 });
   }
@@ -3546,7 +3641,9 @@ const Reading = (() => {
       <div class="rd-vocab-sec">
         <div class="rd-vhead"><b>本篇生词 · 点词翻面背诵</b><button class="rd-reveal" id="rd-vocab-reveal">全部显示</button></div>
         <div class="rd-vwords">${it.vocab.map((v) => {
-          const faved = !!r.vocab[v.w];
+          // 初始态要与点击行为同源：词库内的词收藏在对应单元（isFav），词库外才在 r.vocab（原来只查后者，重进后星标全部显示反置）
+          const uid0 = findWordUnit(v.w);
+          const faved = uid0 != null ? isFav(uid0, v.w) : !!r.vocab[v.w];
           return `<div class="rd-vword" data-w="${v.w}">
             <button class="vw-main" data-w="${v.w}"><span class="vw-face">${v.w}</span><span class="vw-back hidden">${v.cn}</span></button>
             <button class="vw-fav ${faved ? 'on' : ''}" data-w="${v.w}" data-cn="${v.cn}" title="收藏到收藏夹">${faved ? '★' : '☆'}</button>
@@ -3559,13 +3656,25 @@ const Reading = (() => {
     const aiHtml = wrongQs.length ? `
       <button class="ghost-btn rd-ai-btn" id="rd-ai-wrong">AI 分析我的错题</button>
       <div class="rd-ai-box hidden" id="rd-ai-wrong-box"></div>` : '';
+    const quizHtml = `
+      <button class="ghost-btn rd-ai-btn" id="rd-ai-quiz" style="margin-top:6px">AI 出 3 道小练</button>
+      <div class="rd-ai-box hidden" id="rd-ai-quiz-box"></div>`;
     const res = $('#rd-result');
     res.classList.remove('hidden');
     res.innerHTML = `
       <div class="rd-verdict ${right >= Math.ceil(total * 0.6) ? 'ok' : 'no'}">得分 ${right} / ${total}${passLine}</div>
       ${aiHtml}
+      ${quizHtml}
       ${vocabHtml}
       ${cnHtml}`;
+    // AI 出 3 道小练（rdQuiz 服务端/渲染函数一直都在，dock 改版时入口漏挂了）
+    const qb = $('#rd-ai-quiz-box');
+    if (qb) {
+      $('#rd-ai-quiz').addEventListener('click', () => {
+        if (!qb.classList.contains('hidden')) { qb.classList.add('hidden'); return; }
+        StudyAI.ask('rdQuiz', { text: it.text }, qb, '出题中，约 15~40 秒…', renderRdQuiz);
+      });
+    }
     // AI 错题分析（错题题干|我的答案|正确答案）
     const ab = $('#rd-ai-wrong-box');
     if (ab) {
@@ -3658,8 +3767,8 @@ const Reading = (() => {
     if (!words.length) { box.innerHTML = '<div class="set-note">阅读时点单词旁的 ★ 收进来，这里自动攒。</div>'; return; }
     box.innerHTML = words.map((w) => {
       const promoted = (() => { const h = AI.findWord(w); return h && isFav(h.unitId, w); })();
-      return `<div class="rem-item rv-item${promoted ? ' promoted' : ''}" data-rvrow="${w}"><div><div>${w}</div><div class="rem-when">${r.vocab[w].cn}</div></div>
-      <span class="rv-acts"><button class="mini-btn rv-promote" data-rfav="${w}">${promoted ? '✓ 已精背' : '⬆ 精背'}</button><button class="rem-del" data-rvw="${w}">认识</button></span></div>`;
+      return `<div class="rem-item rv-item${promoted ? ' promoted' : ''}" data-rvrow="${esc(w)}"><div><div>${esc(w)}</div><div class="rem-when">${esc(r.vocab[w].cn)}</div></div>
+      <span class="rv-acts"><button class="mini-btn rv-promote" data-rfav="${esc(w)}">${promoted ? '✓ 已精背' : '⬆ 精背'}</button><button class="rem-del" data-rvw="${esc(w)}">认识</button></span></div>`;
     }).join('');
     box.querySelectorAll('[data-rvw]').forEach((b) => b.addEventListener('click', () => {
       delete rState().vocab[b.dataset.rvw];
@@ -3698,7 +3807,7 @@ const Reading = (() => {
     if (btn) btn.addEventListener('click', start);
   }
 
-  return { ensure, renderHome, renderPage, renderWrongVocab, bind, start, stats };
+  return { ensure, renderHome, renderPage, renderWrongVocab, bind, start, stats, saveRdSess }; // saveRdSess：pagehide 在调（原来没导出，切后台断点静默丢失）
 })();
 
 /* ================= 六级听力精听 ================= */
@@ -3727,7 +3836,11 @@ const Listening = (() => {
     if (!PROMISE) {
       PROMISE = fetch('data/listening/index.json', { cache: 'no-cache' })
         .then((r) => r.json())
-        .then((j) => { if (j && j.papers && j.papers.length) { IDX = j; return true; } return false; })
+        .then((j) => {
+          if (j && j.papers && j.papers.length) { IDX = j; return true; }
+          PROMISE = null; // 离线回落体也算失败：不复位会让"重试"永远不再发请求
+          return false;
+        })
         .catch(() => { PROMISE = null; return false; });
     }
     return PROMISE;
@@ -3756,6 +3869,12 @@ const Listening = (() => {
       }));
     }
     return wordMap;
+  }
+  /** 是否词库内（含分片未加载的单元）：words() 只有已加载分片 + 启动时的 279 个预览桩，
+      未拉分片的单元必须看全库词头索引 WORD_INDEX，否则字幕里绝大多数词都不挂下划线、点了也说没收录 */
+  function inDict(key) {
+    if (words().has(key)) return true;
+    return !!(WORD_INDEX && (WORD_INDEX.byWord.get(key) || []).length);
   }
 
   function stats() {
@@ -3975,6 +4094,7 @@ const Listening = (() => {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.blob();
     }).then((b) => {
+      if (!task || task.audio !== rel) return; // 下载期间已切段/返回列表：旧音频作废，别覆盖当前段
       if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch (e) {} }
       blobUrl = URL.createObjectURL(b);
       blobFor = rel;
@@ -4147,7 +4267,7 @@ const Listening = (() => {
     const body = head ? text.slice(head[0].length) : text;
     return prefix + body.replace(/([A-Za-z][A-Za-z'’\-]*)/g, (m) => {
       const key = m.toLowerCase().replace(/[’']s$/, '');
-      const hit = words().has(key);
+      const hit = inDict(key);
       return `<span class="ls-w ${hit ? 'in-dict' : ''}" data-w="${esc(m)}">${m}</span>`;
     });
   }
@@ -4237,9 +4357,17 @@ const Listening = (() => {
   }
 
   /* ---------- 词卡 ---------- */
-  function showWord(raw, el) {
+  async function showWord(raw, el) {
     const key = raw.toLowerCase().replace(/[^a-z'’\-]/g, '').replace(/[’']s$/, '');
-    const hit = words().get(key);
+    let hit = words().get(key);
+    // 分片没加载时按全库词头索引兜底：把所在单元拉全量再取词对象（离线/冷却期内自然回落到"词库里没有"）
+    if (!hit && WORD_INDEX) {
+      const ids = WORD_INDEX.byWord.get(key);
+      if (ids && ids.length) {
+        await ensureUnitData(ids[0]);
+        hit = words().get(key);
+      }
+    }
     const l = lState();
     const faved = !!l.vocab[key];
     const box = $('#ls-wordcard');
@@ -4369,7 +4497,7 @@ const Listening = (() => {
     }));
   }
 
-  return { ensure, renderHome, renderPage, renderWrongVocab, bind, stats, showCache, saveLast };
+  return { ensure, renderHome, renderPage, renderWrongVocab, bind, stats, showCache, saveLast, stopAudio }; // stopAudio：nav 切走听力页时停音频用
 })();
 
 /* ================= 提醒（Web Push） ================= */
@@ -4646,9 +4774,9 @@ const Dict = (() => {
     if (cache[letter]) return Promise.resolve(cache[letter]);
     if (!loading[letter]) {
       loading[letter] = fetch('data/dict/' + letter + '.json', { cache: 'no-cache' })
-        .then((r) => (r.ok ? r.json() : {}))
-        .then((j) => { cache[letter] = j || {}; return cache[letter]; })
-        .catch(() => { cache[letter] = {}; return cache[letter]; });
+        .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then((j) => { const d = j || {}; cache[letter] = d; delete loading[letter]; return d; })
+        .catch(() => { delete loading[letter]; return {}; }); // 失败不进 cache：否则这个首字母整场会话永远是空词典
     }
     return loading[letter];
   }
@@ -5048,7 +5176,10 @@ function renderToday() {
   const badge = $('#today-badge');
   if (!sub) return;
   const c = dailyCfg();
-  const due = srsDueCapped().length;
+  // 全量到期数只算一次（原来 renderToday→renderTodayList 一轮要扫 4 遍 + 排序，词量大时卡顿）
+  const dueTotal = srsDueCount();
+  const cap = Number(c.review.cap) || 0;
+  const due = cap > 0 ? Math.min(dueTotal, cap) : dueTotal;
   const t = todayCount();
   const parts = [];
   if (c.newWords.on) parts.push(`新词 ${t.n}/${c.newWords.goal}`);
@@ -5063,10 +5194,10 @@ function renderToday() {
   badge.classList.toggle('today-clear', due === 0 && (dt.length ? dailyDoneCount() === dt.length : true));
   const rb = $('#today-start-review');
   if (rb) rb.textContent = due > 0 ? `开始复习（${due} 词）` : '今日复习已清空 ✓';
-  renderTodayList();
+  renderTodayList(due, dueTotal, cap);
 }
 
-function renderTodayList() {
+function renderTodayList(due, dueTotal, cap) {
   const box = $('#today-list');
   if (!box) return;
   const c = dailyCfg();
@@ -5077,8 +5208,7 @@ function renderTodayList() {
     rows.push(`<div class="today-item ${ok ? 'done' : ''}" data-go="newword"><span class="ti-ico">${ok ? '<b class="ok">✓</b>' : '<i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></i>'}</span><span class="ti-text">背新词</span><span class="ti-num">${t.n}/${c.newWords.goal}</span></div>`);
   }
   if (c.review.on) {
-    const due = srsDueCapped().length;
-    rows.push(`<div class="today-item ${due === 0 ? 'done' : ''}" data-go="review"><span class="ti-ico">${due === 0 ? '<b class="ok">✓</b>' : ''}</span><span class="ti-text">复习到期词</span><span class="ti-num">${due}${c.review.cap > 0 && srsDueList().length > c.review.cap ? '（总' + srsDueList().length + '，今日上限' + c.review.cap + '）' : ''}</span></div>`);
+    rows.push(`<div class="today-item ${due === 0 ? 'done' : ''}" data-go="review"><span class="ti-ico">${due === 0 ? '<b class="ok">✓</b>' : ''}</span><span class="ti-text">复习到期词</span><span class="ti-num">${due}${cap > 0 && dueTotal > cap ? '（总' + dueTotal + '，今日上限' + cap + '）' : ''}</span></div>`);
   }
   if (c.reading.on) {
     const n = readingDoneToday();
@@ -5102,9 +5232,11 @@ function renderTodayList() {
       if (state.lastUnit) openStudy(state.lastUnit);
       else toast('选一个单元开始背吧');
     } else if (g === 'review') {
-      const q = srsDueCapped();
-      if (!q.length) { toast('今日复习已清空 ✓'); return; }
-      startTest(q, `今日复习 ${q.length} 词`, 'srs');
+      ensureUnits(srsUnitIds()).then(() => { // 与 #today-start-review 同流程：先把到期单元分片拉齐再出队（缺片会漏词）
+        const q = srsDueCapped();
+        if (!q.length) { toast('今日复习已清空 ✓'); return; }
+        startTest(q, `今日复习 ${q.length} 词`, 'srs');
+      });
     } else if (g === 'reading') nav('reading');
     else if (g === 'listening') nav('listening');
   }));
@@ -5165,6 +5297,7 @@ function renderDailyCfg() {
       : '<div class="set-note">还没有自定义事项，下面加一条试试。</div>';
     tr.querySelectorAll('[data-dtask-del]').forEach((b) => b.addEventListener('click', () => {
       const id = b.dataset.dtaskDel;
+      if (typeof Sync !== 'undefined') Sync.tomb('dt:' + id); // 防云端按 id 并集复活
       state.dailyTasks = dailyTasks().filter((x) => String(x.id) !== id);
       saveState();
       renderDailyCfg();
@@ -5183,7 +5316,9 @@ $('#daily-task-add').addEventListener('click', () => {
   const el = $('#daily-task-input');
   const text = (el.value || '').trim();
   if (!text) { toast('先写点内容'); return; }
-  dailyTasks().push({ id: 'dt' + Date.now().toString(36), text, done: '', doneTs: 0, createdAt: Date.now() });
+  const nt2 = { id: 'dt' + Date.now().toString(36), text, done: '', doneTs: 0, createdAt: Date.now() };
+  dailyTasks().push(nt2);
+  if (typeof Sync !== 'undefined') Sync.untomb('dt:' + nt2.id);
   el.value = '';
   saveState();
   renderDailyCfg();
@@ -5226,7 +5361,7 @@ $('#today-start-spell').addEventListener('click', () => {
   if (id == null) { toast('先选一个单元开始背吧'); return; }
   ensureUnits([id]).then(() => {           // 桩单元只有 3 个预览词，必须先拉分片
     const u = unitById(id); if (!u) return;
-    startTest(buildQueueByUnit(id), '检验 ' + u.name, 'unit:' + id);
+    startTest(buildQueueByUnit(id), '检验 ' + u.name, 'unit:' + id, 'spell'); // 明确拼写模式（原来继承上次模式，按钮写着拼写却进闪卡）
   });
 });
 // 设置页的「每日任务」入口（体验官 exp8：原来只有首页二级面板里的小齿轮）
@@ -5337,7 +5472,8 @@ const AI = (() => {
     const t = esc(s0);
     const restore = (x) => x.replace(/\u0000C(\d+)\u0000/g, (m, i) => {
       const c = codes[Number(i)] || { lang: '', code: '' };
-      return '<div class="md-code"><div class="md-code-lang">' + c.lang + '</div><pre>' + c.code + '</pre></div>';
+      // 代码块内容来自 AI 输出，必须转义：否则 <sth.>、<vf-action>、<img onerror=…> 会被当真标签（吞字/注入）
+      return '<div class="md-code"><div class="md-code-lang">' + esc(c.lang) + '</div><pre>' + esc(c.code) + '</pre></div>';
     });
     const lines = t.split('\n');
     const out = [];
@@ -5406,6 +5542,7 @@ const AI = (() => {
     const KNOWN = ['fav', 'unfav', 'star', 'learn', 'unlearn', 'master', 'review', 'quiz', 'nav'];
     if (KNOWN.indexOf(op) < 0) throw new Error('未知操作：' + op); // 白名单前置：删数据类操作永远到不了这里
     if (op === 'review') {
+      if (V) closePop(); // 跳转类操作：收起迷你弹窗，别挡住检验页
       await ensureUnits(srsUnitIds()); // 分片没到齐会漏到期词
       const q = srsDueCapped();
       if (!q.length) return '今日没有到期的复习词';
@@ -5413,6 +5550,7 @@ const AI = (() => {
       return '已开始今日复习（' + q.length + ' 词）';
     }
     if (op === 'quiz') {
+      if (V) closePop();
       const n = Number(a.unit);
       const u = (n >= 1 && n <= DATA.units.length) ? DATA.units[n - 1] : DATA.units[Math.floor(Math.random() * DATA.units.length)];
       await ensureUnitData(u.id); // 桩单元只有 3 个预览词，出题前先拉全量
@@ -5420,6 +5558,7 @@ const AI = (() => {
       return '已开始「' + u.name + '」检验';
     }
     if (op === 'nav') {
+      if (V) closePop();
       const views = ['units', 'favorites', 'reading', 'listening', 'settings'];
       const v = String(a.view || '');
       if (views.indexOf(v) < 0) throw new Error('不支持的页面：' + v);
@@ -5469,7 +5608,7 @@ const AI = (() => {
   const curMsgs = () => (V ? V.msgs : $('#ai-msgs'));
   const curInput = () => (V ? V.input : $('#ai-input'));
   const curSendBtn = () => (V ? V.send : $('#ai-send'));
-  const curRender = () => (V ? renderPop : renderMsgs);
+  const curRender = () => (V ? renderPop() : renderMsgs()); // 直接调渲染（原定义返回函数引用没调用，发送后自己的气泡整个流式期间不显示）
 
   function ensurePop() {
     if (document.getElementById('ai-pop')) return;
@@ -5766,12 +5905,17 @@ const AI = (() => {
     }
   }
 
-  /** 发送键双态：send=发消息 / stop=停止生成 */
+  /** 发送键双态：send=发消息 / stop=停止生成（主页面与迷你弹窗两颗按钮一起复位——
+      生成中途关掉弹窗后 V=null，只复位 curSendBtn() 会让弹窗按钮永远卡在「停止」） */
   function setSendMode(mode) {
-    const btn = curSendBtn();
-    if (!btn) return;
-    btn.classList.toggle('stopping', mode === 'stop');
-    btn.innerHTML = mode === 'stop' ? '■<span class="ai-stop-txt">停止</span>' : '发送';
+    const apply = (btn) => {
+      if (!btn) return;
+      btn.classList.toggle('stopping', mode === 'stop');
+      btn.innerHTML = mode === 'stop' ? '■<span class="ai-stop-txt">停止</span>' : '发送';
+    };
+    apply(curSendBtn());
+    apply($('#ai-send'));
+    apply($('#ai-pop-send'));
   }
 
   function showLeft(left) {
@@ -5890,6 +6034,25 @@ async function boot() {
   let pendingNav = null;
   try { pendingNav = JSON.parse(localStorage.getItem(NAV_MEM_KEY) || 'null'); } catch (e) { }
 
+  // 主题/字号/主页排序是纯本地设置：先应用，弱网下也不白屏不闪黑（原来排在两个网络请求之后）
+  applySettings();
+  initHomeSort(); // 主页入口顺序（用户自定义）+ 排序按钮
+
+  // 版本号只喂设置页小字和更新提示：后台并行，不阻塞首屏（弱网下它曾把整个启动串行卡住）
+  try {
+    fetch('version.json', { cache: 'no-cache' }).then((r) => r.json()).then((v) => {
+      if (v && v.v) {
+        const line = $('#ver-line');
+        if (line) line.textContent = `当前版本 v${v.v} · 发布于 ${v.t || ''}`;
+        const seen = localStorage.getItem('sgwd_seen_ver');
+        if (seen && seen !== v.v) toast(` 已更新到 v${v.v}`);
+        localStorage.setItem('sgwd_seen_ver', v.v);
+        // 安卓壳：比对安装包版本，有新版时红字提示重装（壳自己也会发系统通知）
+        showApkUpdate(v);
+      }
+    }).catch(() => { /* 版本信息可选 */ });
+  } catch (e) { /* ignore */ }
+
   // 阶段一：轻量索引，秒开首页
   try {
     const m = await (await fetch('data/meta.json', { cache: 'no-cache' })).json();
@@ -5897,22 +6060,6 @@ async function boot() {
     $('#topbar-sub').textContent = (m.meta && m.meta.subtitle) || '';
   } catch (e) { /* 忽略，等全量 */ }
 
-  // 版本号：设置页常显；检测到新版本弹一次提示
-  try {
-    const v = await (await fetch('version.json', { cache: 'no-cache' })).json();
-    if (v && v.v) {
-      const line = $('#ver-line');
-      if (line) line.textContent = `当前版本 v${v.v} · 发布于 ${v.t || ''}`;
-      const seen = localStorage.getItem('sgwd_seen_ver');
-      if (seen && seen !== v.v) toast(` 已更新到 v${v.v}`);
-      localStorage.setItem('sgwd_seen_ver', v.v);
-      // 安卓壳：比对安装包版本，有新版时红字提示重装（壳自己也会发系统通知）
-      showApkUpdate(v);
-    }
-  } catch (e) { /* 版本信息可选，失败不影响使用 */ }
-
-  applySettings();
-  initHomeSort(); // 主页入口顺序（用户自定义）+ 排序按钮
   renderUnits();
   renderContinue();
   renderWrongList();
@@ -5973,7 +6120,11 @@ const Writing = (() => {
     if (!PROMISE) {
       PROMISE = fetch('data/writing.json', { cache: 'no-cache' })
         .then((r) => r.json())
-        .then((j) => { if (j && j.templates && j.templates.length) { DATA = j; return true; } return false; })
+        .then((j) => {
+          if (j && j.templates && j.templates.length) { DATA = j; return true; }
+          PROMISE = null; // 离线回落体也算失败：不复位"重试"就永远失灵
+          return false;
+        })
         .catch(() => { PROMISE = null; return false; });
     }
     return PROMISE;
