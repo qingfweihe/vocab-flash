@@ -2224,6 +2224,7 @@ function showCard() {
   if (pos >= queue.length) { finishTest(); return; }
   const item = queue[pos];
   const w = item.word;
+  refreshStarbar(); // 熟练度星行：换词/换模式（闪卡↔拼写）都经过这里，一处刷新全覆盖
 
   $('#test-counter').textContent = `${pos + 1}/${queue.length}`;
   if (test.mode === 'spell') { showSpell(item); return; }
@@ -2551,6 +2552,36 @@ $('#btn-test-fav').addEventListener('click', () => {
     startTest(q, title, 'fav:' + favFilter); // 会话键带档位：否则切星级后仍被旧档断点劫持
   });
 });
+
+/* 复习收藏时的熟练度星行（只有收藏复习会话显示；+ 加一星 / − 扣一星，0 和 3 封底封顶）
+   与收藏页共用 getFavStar/setFavStar 存储，改完即存档、回收藏页档位计数自动对上，云端同步走既有通道 */
+function favTestStarVisible() {
+  return !!(test && test.sessKey && String(test.sessKey).startsWith('fav:') && test.queue[test.pos]);
+}
+function refreshStarbar() {
+  const bar = $('#fc-starbar');
+  if (!bar) return;
+  if (!favTestStarVisible()) { bar.classList.add('hidden'); return; }
+  const it = test.queue[test.pos];
+  const v = getFavStar(it.unitId, it.word.w);
+  bar.classList.remove('hidden');
+  $('#star-display').textContent = favStarHtml(v);
+  $('#star-minus').disabled = v <= 0;
+  $('#star-plus').disabled = v >= 3;
+}
+function bumpTestStar(d) {
+  if (!favTestStarVisible()) return;
+  const it = test.queue[test.pos];
+  const v = Math.max(0, Math.min(3, getFavStar(it.unitId, it.word.w) + d));
+  setFavStar(it.unitId, it.word.w, v);
+  saveState();
+  refreshStarbar();
+  buzz(10);
+  if (v === 3) toast('已标为熟练 ★★★');
+  else if (v === 0) toast('已重置为 ☆☆☆');
+}
+$('#star-minus').addEventListener('click', () => bumpTestStar(-1));
+$('#star-plus').addEventListener('click', () => bumpTestStar(1));
 
 /* ================= 错词本 ================= */
 function renderWrongList() {

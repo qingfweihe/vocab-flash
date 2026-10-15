@@ -574,6 +574,24 @@ html.dark .wc-detail .lab.fan { color: #d9a3d3; background: #33222f; }
 .judge-btn.mid:active { background: #f7e4c3; }
 .judge-btn.yes { background: var(--ok-soft); color: var(--ok); }
 .judge-btn.yes:active { background: #d3eeda; }
+/* 复习收藏的熟练度星行：加/扣一星各一个按钮，到 0/3 变灰按不动 */
+.fc-starbar {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin: 0 0 12px; padding: 7px 12px;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.fs-label { font-size: 12.5px; color: var(--ink-3); }
+.fs-stars { color: var(--warn); font-size: 17px; letter-spacing: 2px; min-width: 66px; text-align: center; }
+.fs-btn {
+  width: 40px; height: 34px; border: 1px solid var(--line-strong); border-radius: 8px;
+  background: var(--page-bg); color: var(--ink-2);
+  font-size: 17px; font-weight: 600; font-family: inherit; line-height: 1;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.fs-btn:active { background: var(--brand-bg); border-color: var(--brand); color: var(--brand); }
+.fs-btn:disabled { opacity: .32; cursor: default; }
+.fs-btn:disabled:active { background: var(--page-bg); border-color: var(--line-strong); color: var(--ink-2); }
 
 .done-card { padding: 30px 20px; text-align: center; }
 .done-emoji { font-size: 38px; color: var(--ok); }
