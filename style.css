@@ -592,6 +592,29 @@ html.dark .wc-detail .lab.fan { color: #d9a3d3; background: #33222f; }
 .fs-btn:active { background: var(--brand-bg); border-color: var(--brand); color: var(--brand); }
 .fs-btn:disabled { opacity: .32; cursor: default; }
 .fs-btn:disabled:active { background: var(--page-bg); border-color: var(--line-strong); color: var(--ink-2); }
+/* AI 回答里的英文单词可点（弹词卡：发音/AI讲解/收藏） */
+.ai-w { border-bottom: 1px dashed var(--brand); cursor: pointer; }
+.ai-w:active { background: var(--brand-soft); }
+/* AI 历史对话面板 */
+#view-ai .subhead .test-btn { padding: 6px 9px; font-size: 12px; }
+#ai-hist-mask { position: fixed; inset: 0; background: rgba(0, 0, 0, .25); z-index: 60; }
+#ai-hist-panel {
+  position: fixed; left: 12px; right: 12px; top: calc(var(--safe-top) + 56px);
+  max-height: 72vh; overflow-y: auto; z-index: 61; padding: 12px;
+  background: var(--card); border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+}
+.aih-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.aih-head b { flex: 1; font-size: 15px; }
+.aih-day { font-size: 12px; color: var(--ink-3); margin: 10px 2px 4px; }
+.aih-item { position: relative; padding: 9px 32px 9px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); margin-bottom: 6px; cursor: pointer; }
+.aih-item.on { border-color: var(--brand); background: var(--brand-soft); }
+.aih-t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aih-s { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aih-del { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; background: none; color: var(--ink-3); font-size: 14px; padding: 6px 8px; cursor: pointer; }
+.aih-empty { text-align: center; color: var(--ink-3); font-size: 13px; padding: 18px 0; }
+/* 收藏主列表里的阅读生词卡 */
+.mini-btn.tag-f { border: none; background: var(--brand-soft); color: var(--brand); }
 
 .done-card { padding: 30px 20px; text-align: center; }
 .done-emoji { font-size: 38px; color: var(--ok); }

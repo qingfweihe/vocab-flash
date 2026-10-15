@@ -295,6 +295,15 @@ function setFav(id, w, v) {
 function favStarMap(id) { return state.favStars[String(id)] || (state.favStars[String(id)] = {}); }
 function getFavStar(id, w) { const e = favStarMap(id)[wordKey(w)]; return (e && e.v) || 0; }
 function setFavStar(id, w, v) { favStarMap(id)[wordKey(w)] = { v: v | 0, ts: Date.now() }; }
+/* 阅读生词自由池（词库外的收藏词）：存 state.reading.vocab，词条可带 star(0~3)，随 reading 域同步 */
+function freeVocabMap() {
+  if (!state.reading || typeof state.reading !== 'object') state.reading = {};
+  if (!state.reading.vocab || typeof state.reading.vocab !== 'object') state.reading.vocab = {};
+  return state.reading.vocab;
+}
+function getFreeStar(w) { const e = freeVocabMap()[wordKey(w)]; return (e && e.star) || 0; }
+function setFreeStar(w, v) { const e = freeVocabMap()[wordKey(w)]; if (e) { e.star = v | 0; e.ts = Date.now(); } }
+function freeInVocab(w) { return !!(WORD_INDEX && WORD_INDEX.byWord.has(wordKey(w))); } // true=属于背诵词库某单元（主列表走单元卡，不重复出自由卡）
 function countKeys(store, id) {
   const v = store[String(id)];
   if (!v) return 0;
@@ -356,19 +365,32 @@ const Sync = (() => {
      返回 {text, left, model, partial}；onDelta(piece, full) 逐字回调。
      握手失败（非 2xx JSON）抛 err.code 契约错误；流式中途 error 事件且已有输出 → partial=true。 */
   const STREAM_API = 'https://qinfweihe1-d5gxpjjli9f8f238b.service.tcloudbase.com/vfstream';
+  /* AI 聊天死线：send 循环设 45s 总预算，streamChat 的握手/卡死看门狗都向它看齐——
+     链路进坏窗口时最坏 ~45s 明确报错，不会出现「管不住在飞请求」的 91s 长尾 */
+  let AI_DEADLINE = 0;
+  function setAiDeadline(t) { AI_DEADLINE = t; }
+  function aiRemainMs() { return AI_DEADLINE ? Math.max(0, AI_DEADLINE - Date.now()) : Infinity; }
   async function streamChat(payload, onDelta, signal) {
+    // 握手超时：连接挂起时不再无限转圈；预算紧张时向死线收缩（下限 8s）；用户「停止」也能穿透（外层 signal 挂到 hs 上）
+    const hsMs = Math.min(20000, Math.max(8000, aiRemainMs()));
+    const hs = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const hsTimer = hs ? setTimeout(() => hs.abort(), hsMs) : 0;
+    if (hs && signal) { try { signal.addEventListener('abort', () => hs.abort(), { once: true }); } catch (e) { } }
     let res;
     try {
       res = await fetch(STREAM_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({ action: 'ai.chat', code: cfg().code || undefined }, payload || {})),
-        signal,
+        signal: hs ? hs.signal : signal,
       });
     } catch (e) {
-      if (e.name === 'AbortError') { const err = new Error('已停止'); err.code = 'ABORTED'; throw err; }
-      const err = new Error('网络异常（流式通道不可达）'); err.code = 'TIMEOUT'; throw err;
+      clearTimeout(hsTimer);
+      if (signal && signal.aborted) { const err = new Error('已停止'); err.code = 'ABORTED'; throw err; }
+      const err = new Error(hs && hs.signal.aborted ? Math.round(hsMs / 1000) + ' 秒没连上服务器' : '网络异常（流式通道不可达）');
+      err.code = 'TIMEOUT'; throw err;
     }
+    clearTimeout(hsTimer);
     if (!res.ok) {
       const j = await res.json().catch(() => ({}));
       const e = new Error((j && j.message) || ('HTTP ' + res.status));
@@ -379,13 +401,22 @@ const Sync = (() => {
     const reader = res.body.getReader();
     const dec = new TextDecoder();
     let buf = '', text = '', left = null, model = '', streamErr = null, aborted = false;
+    // 看门狗：连接活着但持续不吐字节 = 通道卡死，掐断报错（否则 read() 永远挂起、转圈到天荒地老）
+    let stalled = false;
+    const stallMs = () => Math.min(45000, Math.max(8000, aiRemainMs()));
+    let stallTimer = setTimeout(() => { stalled = true; try { reader.cancel(); } catch (e) { } }, stallMs());
+    const bump = () => { clearTimeout(stallTimer); stallTimer = setTimeout(() => { stalled = true; try { reader.cancel(); } catch (e) { } }, stallMs()); };
     while (true) {
       let chunk;
-      try { chunk = await reader.read(); } catch (e) {
+      try { chunk = await reader.read(); }
+      catch (e) {
+        clearTimeout(stallTimer);
         if (signal && signal.aborted) { aborted = true; break; }
-        throw e;
+        const err = new Error('流式通道卡住/中断（45 秒无内容或连接被掐断）'); err.code = 'TIMEOUT'; throw err;
       }
+      clearTimeout(stallTimer);
       if (chunk.done) break;
+      bump();
       buf += dec.decode(chunk.value, { stream: true });
       let nl;
       while ((nl = buf.indexOf('\n')) >= 0) {
@@ -401,6 +432,8 @@ const Sync = (() => {
       }
     }
     buf += dec.decode(); // TextDecoder 无 end()：无参调用即 flush 尾部多字节（问史坑：别用 StringDecoder 的 API）
+    clearTimeout(stallTimer);
+    if (stalled) { const e = new Error('通道卡住（45 秒没有任何内容），已自动断开'); e.code = 'TIMEOUT'; throw e; }
     if (aborted) { const e = new Error('已停止生成'); e.code = 'ABORTED'; e.partialText = text; throw e; }
     if (streamErr && !text) throw streamErr;
     return { text, left, model, partial: !!streamErr };
@@ -1132,7 +1165,7 @@ const Sync = (() => {
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, streamChat, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
+  return { init, markDirty, tomb, untomb, request, streamChat, setAiDeadline, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -2318,12 +2351,12 @@ function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   if (item.unitId != null && item.word) {
     srsGrade(item.unitId, item.word.w, mode);
     logLearn('r');
+    if (remembered) setWrong(item.unitId, item.word.w, false); // 从错词本移除
+    else if (mode === 'nope') setWrong(item.unitId, item.word.w, true); // 只有"忘了"进错词本
   }
   if (remembered) {
-    setWrong(item.unitId, item.word.w, false); // 从错词本移除
     test.right += 1;
   } else {
-    if (mode === 'nope') setWrong(item.unitId, item.word.w, true); // 只有"忘了"进错词本
     test.miss.push(item);
   }
   saveState();
@@ -2392,6 +2425,12 @@ function favCounts() {
       c['s' + getFavStar(u.id, k)]++;
     });
   });
+  const rv = freeVocabMap();
+  Object.keys(rv).forEach((k) => {
+    if (freeInVocab(k)) return; // 词库内词已按单元计数，不重复
+    c.all++;
+    c['s' + ((rv[k] && rv[k].star) || 0)]++;
+  });
   return c;
 }
 function favStarHtml(v) { return '★'.repeat(v) + '☆'.repeat(3 - v); }
@@ -2444,6 +2483,7 @@ function renderFavorites() {
       if (needUnits.some((id) => loadedUnits.has(id))) renderFavorites();
     });
   }
+  if (!WORD_INDEX) ensureIndex().then(() => { if (WORD_INDEX) renderFavorites(); }); // 自由词与词库内词的去重靠词头索引
   box.innerHTML = '';
   renderFavChips();
   const items = [];
@@ -2457,7 +2497,9 @@ function renderFavorites() {
     });
   });
   const shown = items.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
-  if (!shown.length) {
+  const freeShownN = Object.keys(freeVocabMap()).filter((k) => !freeInVocab(k))
+    .filter((k) => favFilter === 'all' || ((freeVocabMap()[k] && freeVocabMap()[k].star) || 0) === Number(favFilter.slice(1))).length;
+  if (!shown.length && !freeShownN) {
     box.innerHTML = items.length
       ? '<div class="empty-tip">这一档是空的<br>点上面的「全部」看看其它词</div>'
       : '<div class="empty-tip">收藏夹是空的<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
@@ -2525,6 +2567,61 @@ function renderFavorites() {
     });
     box.appendChild(card);
   });
+
+  // 词库外的阅读生词：完整词卡进主列表（发音/调星/进复习队列），与单元收藏同权
+  const rv = freeVocabMap();
+  Object.keys(rv).filter((k) => !freeInVocab(k))
+    .filter((k) => favFilter === 'all' || ((rv[k] && rv[k].star) || 0) === Number(favFilter.slice(1)))
+    .forEach((k) => {
+      const e = rv[k] || {};
+      const card = document.createElement('div');
+      card.className = 'word-card free-card';
+      card.dataset.key = 'free:' + k;
+      card.innerHTML = `
+      <div class="wc-head">
+        <div class="wc-main">
+          <div class="wc-word-row">
+            <span class="wc-word">${esc(k)}</span>
+            <span class="mini-btn tag-f">阅读生词</span>
+          </div>
+          <div class="wc-phon free-phon"></div>
+          <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${esc(e.cn || '')}</div>
+        </div>
+        <div class="wc-actions">
+          <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
+          <button class="mini-btn" data-unrv>删除</button>
+        </div>
+      </div>
+      <button class="star-btn" data-star aria-label="熟练度"><span>熟练度</span> <b>${favStarHtml((e.star) || 0)}</b><span class="star-hint">点一下加一星</span></button>`;
+      applyHideCnToCard(card);
+      card.addEventListener('click', (ev) => {
+        if (ev.target.closest('.star-btn') || ev.target.closest('.speak-btn') || ev.target.closest('[data-unrv]')) return;
+        toggleCardCn(card); // 自由卡没有详情区：点主体=揭开/盖上中文
+      });
+      card.querySelector('.speak-btn').addEventListener('click', (ev) => { ev.stopPropagation(); speak(k); });
+      card.querySelector('[data-unrv]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        delete freeVocabMap()[k];
+        if (typeof Sync !== 'undefined') Sync.tomb('rv:' + k);
+        saveState(); renderFavorites(); renderWrongVocab();
+        toast('已删除该生词');
+      });
+      card.querySelector('[data-star]').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const next = (((e.star) || 0) + 1) % 4; // 0→1→2→3→0 循环（与单元收藏卡一致）
+        setFreeStar(k, next);
+        saveState();
+        const b = ev.currentTarget.querySelector('b');
+        if (b) b.textContent = favStarHtml(next);
+        renderFavChips();
+        if (next === 3) toast('已标为熟练 ★★★');
+        else if (next === 0) toast('已重置为 ☆☆☆');
+      });
+      box.appendChild(card);
+      Dict.lookup(k).then((d) => { // 音标从离线词典补（没有就空着）
+        if (d && d.p && card.isConnected) card.querySelector('.free-phon').textContent = '[' + d.p + ']';
+      }).catch(() => { });
+    });
 }
 
 function buildQueueFavorites() {
@@ -2539,6 +2636,15 @@ function buildQueueFavorites() {
       const idx = u.words.findIndex((w) => wordKey(w.w) === k);
       if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
     });
+  });
+  const rv = freeVocabMap();
+  Object.keys(rv).forEach((k) => {
+    if (freeInVocab(k)) return; // 词库内词已按单元出题
+    const star = (rv[k] && rv[k].star) || 0;
+    if (favFilter !== 'all' && star !== Number(favFilter.slice(1))) return;
+    const e = rv[k] || {};
+    // 自由词合成词条：能过闪卡/拼写，但不进 SRS、不进错词本（judge 已按 free/unitId 判空跳过）
+    q.push({ free: true, unitId: null, idx: -1, word: { w: k, ph: '', defs: [{ pos: '', cn: e.cn || '' }], exs: [] } });
   });
   shuffle(q);
   return q;
@@ -2563,7 +2669,7 @@ function refreshStarbar() {
   if (!bar) return;
   if (!favTestStarVisible()) { bar.classList.add('hidden'); return; }
   const it = test.queue[test.pos];
-  const v = getFavStar(it.unitId, it.word.w);
+  const v = it.free ? getFreeStar(it.word.w) : getFavStar(it.unitId, it.word.w);
   bar.classList.remove('hidden');
   $('#star-display').textContent = favStarHtml(v);
   $('#star-minus').disabled = v <= 0;
@@ -2572,8 +2678,9 @@ function refreshStarbar() {
 function bumpTestStar(d) {
   if (!favTestStarVisible()) return;
   const it = test.queue[test.pos];
-  const v = Math.max(0, Math.min(3, getFavStar(it.unitId, it.word.w) + d));
-  setFavStar(it.unitId, it.word.w, v);
+  const v = Math.max(0, Math.min(3, (it.free ? getFreeStar(it.word.w) : getFavStar(it.unitId, it.word.w)) + d));
+  if (it.free) setFreeStar(it.word.w, v);
+  else setFavStar(it.unitId, it.word.w, v);
   saveState();
   refreshStarbar();
   buzz(10);
@@ -3800,8 +3907,9 @@ const Reading = (() => {
     box.innerHTML = words.map((w) => {
       const promoted = (() => { const h = AI.findWord(w); return h && isFav(h.unitId, w); })();
       return `<div class="rem-item rv-item${promoted ? ' promoted' : ''}" data-rvrow="${esc(w)}"><div><div>${esc(w)}</div><div class="rem-when">${esc(r.vocab[w].cn)}</div></div>
-      <span class="rv-acts"><button class="mini-btn rv-promote" data-rfav="${esc(w)}">${promoted ? '✓ 已精背' : '⬆ 精背'}</button><button class="rem-del" data-rvw="${esc(w)}">认识</button></span></div>`;
+      <span class="rv-acts"><button class="mini-btn" data-rvs="${esc(w)}">发音</button><button class="mini-btn rv-promote" data-rfav="${esc(w)}">${promoted ? '✓ 已精背' : '⬆ 精背'}</button><button class="rem-del" data-rvw="${esc(w)}">认识</button></span></div>`;
     }).join('');
+    box.querySelectorAll('[data-rvs]').forEach((b) => b.addEventListener('click', () => speak(b.dataset.rvs)));
     box.querySelectorAll('[data-rvw]').forEach((b) => b.addEventListener('click', () => {
       delete rState().vocab[b.dataset.rvw];
       if (typeof Sync !== 'undefined') Sync.tomb('rv:' + b.dataset.rvw);
@@ -5451,13 +5559,63 @@ function renderHeat() {
 /* ================= AI 学习助手 ================= */
 const AI = (() => {
   const HIST_KEY = 'sgwd_ai_hist';
+  const CUR_KEY = 'sgwd_ai_cur';
   let sending = false;
+  let CUR = null; // 当前会话 id（懒加载；老格式首次访问自动迁移）
 
+  function todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function yesterStr() { const d = new Date(Date.now() - 86400000); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function loadStore() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(HIST_KEY) || 'null'); } catch (e) { }
+    if (s && Array.isArray(s.convs)) return s;
+    // 旧格式（平铺消息数组）迁移成一个会话，标题取第一条提问
+    const old = Array.isArray(s) ? s : [];
+    const fu = old.find((m) => m && m.role === 'user');
+    s = { v: 2, convs: old.length ? [{ id: 'c' + Date.now(), title: (fu ? fu.content : '以前的提问').slice(0, 18), day: todayStr(), msgs: old }] : [] };
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(s)); } catch (e) { }
+    return s;
+  }
+  function saveStore(s) { try { localStorage.setItem(HIST_KEY, JSON.stringify(s)); } catch (e) { } }
+  function newConv() {
+    const s = loadStore();
+    const c = { id: 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), title: '新对话', day: todayStr(), msgs: [] };
+    s.convs.unshift(c);
+    if (s.convs.length > 30) s.convs.length = 30; // 只留最近 30 个会话
+    saveStore(s);
+    CUR = c.id;
+    try { localStorage.setItem(CUR_KEY, CUR); } catch (e) { }
+    return c.id;
+  }
+  function ensureCur() { // 必须先于任何 find 调用：空会话列表时首次访问会建第一个会话
+    const s = loadStore();
+    if (CUR) {
+      if (s.convs.some((c) => c.id === CUR)) return CUR;
+      CUR = null; // 缓存的会话已不存在（被删/被清空）：失效重选，不能盲信
+    }
+    let cur = null;
+    try { cur = localStorage.getItem(CUR_KEY) || null; } catch (e) { }
+    if (!cur || !s.convs.some((c) => c.id === cur)) cur = s.convs.length ? s.convs[0].id : newConv();
+    CUR = cur;
+    return CUR;
+  }
   function hist() {
-    try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch (e) { return []; }
+    const cur = ensureCur();
+    const s = loadStore(); // ensureCur 可能刚建了会话，必须重新 load
+    const c = s.convs.find((x) => x.id === cur);
+    return c ? c.msgs : [];
   }
   function saveHist(h) {
-    try { localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(-60))); } catch (e) { }
+    const cur = ensureCur();
+    const s = loadStore();
+    const c = s.convs.find((x) => x.id === cur);
+    if (!c) return;
+    c.msgs = h.slice(-60);
+    c.day = todayStr();
+    const fu = c.msgs.find((m) => m.role === 'user');
+    if (fu) c.title = fu.content.slice(0, 18); // 自动标题：第一条提问
+    s.convs.splice(s.convs.indexOf(c), 1); s.convs.unshift(c); // 最近使用置顶
+    saveStore(s);
   }
 
   /** 进度上下文：AI 知道你在学什么 */
@@ -5535,6 +5693,42 @@ const AI = (() => {
     return restore(out.join(''));
   }
 
+  /* AI 回答里的英文单词可点：包一层 .ai-w，点击弹词卡（发音/AI讲解/收藏）。
+     只处理文本节点并跳过链接/代码/按钮——不会碰 HTML 标签属性和 URL。 */
+  const AIW_RE = /[A-Za-z][A-Za-z'\u2019-]*/g;
+  function linkifyWords(rootEl) {
+    if (!rootEl) return;
+    const skip = { A: 1, CODE: 1, SCRIPT: 1, STYLE: 1, BUTTON: 1, PRE: 1 };
+    const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => {
+        const p = n.parentNode;
+        if (!p || skip[p.nodeName] || (p.classList && p.classList.contains('ai-w'))) return NodeFilter.FILTER_REJECT;
+        return /[A-Za-z]{2,}/.test(n.nodeValue || '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((n) => {
+      const s = n.nodeValue;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      AIW_RE.lastIndex = 0;
+      while ((m = AIW_RE.exec(s))) {
+        if (m[0].length < 2) continue;
+        if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+        const sp = document.createElement('span');
+        sp.className = 'ai-w';
+        sp.textContent = m[0];
+        frag.appendChild(sp);
+        last = m.index + m[0].length;
+      }
+      if (!last) return;
+      if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+      n.parentNode.replaceChild(frag, n);
+    });
+  }
+  function linkifyMsgBox(box) { if (box) box.querySelectorAll('.ai-msg.bot').forEach(linkifyWords); }
+
   /* ================= 应用操控（vf-action 协议） =================
      AI 在回复末尾输出 <vf-action>{"op":...}</vf-action>，前端白名单解析执行。
      只允许低危操作（收藏/星级/已学/错词/复习/检验/跳转），每轮最多 3 个；
@@ -5598,7 +5792,18 @@ const AI = (() => {
       return '已跳转';
     }
     const f = findWord(a.word);
-    if (!f) throw new Error('词库中没有「' + a.word + '」');
+    if (!f) {
+      // 词库外的词：fav/star 走阅读生词自由池（其余操作确实无从谈起）
+      if (op !== 'fav' && op !== 'star') throw new Error('词库中没有「' + a.word + '」');
+      const k = wordKey(a.word);
+      if (!k) throw new Error('没认出这个词');
+      const e0 = freeVocabMap()[k] || {};
+      freeVocabMap()[k] = { cn: e0.cn || '', star: op === 'star' ? Math.max(1, Math.min(3, Number(a.v) || 1)) : (e0.star || 0), ts: Date.now() };
+      if (typeof Sync !== 'undefined') Sync.untomb('rv:' + k);
+      saveState();
+      if (currentView === 'favorites') { renderFavorites(); renderWrongVocab(); }
+      return '已收藏「' + k + '」到收藏夹（阅读生词）';
+    }
     const id = f.unitId, w = f.w;
     if (op === 'fav') {
       if (isFav(id, w)) return '「' + w + '」已在收藏夹';
@@ -5657,6 +5862,10 @@ const AI = (() => {
     document.body.appendChild(el);
     el.querySelector('.aip-mask').addEventListener('click', closePop);
     el.querySelector('.aip-close').addEventListener('click', closePop);
+    el.querySelector('#ai-pop-msgs').addEventListener('click', (ev) => {
+      const w = ev.target.closest('.ai-w');
+      if (w && typeof WordCard !== 'undefined') WordCard.show(w.textContent);
+    });
     const sendBtn = el.querySelector('#ai-pop-send');
     sendBtn.addEventListener('click', () => {
       if (sending) { if (abortCtrl) abortCtrl.abort(); return; } // 生成中=停止
@@ -5695,6 +5904,7 @@ const AI = (() => {
         ? '<div class="ai-msg user"><span class="ai-user-txt">' + esc(m.content) + '</span></div>'
         : '<div class="ai-msg bot' + (/^请求失败/.test(m.content) ? ' ai-err' : '') + '">' + mdLite(m.content) + '</div>').join('')
       : '<div class="ai-empty" style="text-align:center;padding:18px 6px">我来讲解～ 生成中可以点「停止」</div>';
+    linkifyMsgBox(box);
     box.scrollTop = box.scrollHeight;
   }
 
@@ -5735,6 +5945,7 @@ const AI = (() => {
         : `<div class="ai-msg bot${/^请求失败/.test(m.content) ? ' ai-err' : ''}">${mdLite(m.content)}</div>`).join('');
     }
     box.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => editResend(Number(b.dataset.edit))));
+    linkifyMsgBox(box);
     const chips = $('#ai-chips');
     if (chips) {
       const u = state.lastUnit && unitById(state.lastUnit);
@@ -5775,11 +5986,11 @@ const AI = (() => {
     if (code === 'LIMIT') return '今天次数用完了（每天 100 次）';
     if (code === 'NO_KEY') return 'AI 还没配置好（找青峰放 Key）';
     if (code === 'AI_AUTH') return 'AI 密钥失效（' + m.slice(0, 90) + '）';
-    if (code === 'AI_BALANCE') return 'AI 额度已用完（资源包耗尽）——去智谱后台充值，或换一个可用的 key';
+    if (code === 'AI_BALANCE') return 'AI 额度用完了——需要换一个可用的 Key（找青峰）';
     if (code === 'AI_RATE') return 'AI 正被限流，等十几秒再试';
     if (code === 'AI_MODEL') return '模型不可用：' + m.slice(0, 90);
     if (code === 'AI_UPSTREAM' || code === 'AI_EMPTY') return 'AI 服务异常：' + m.slice(0, 90);
-    if (code === 'TIMEOUT' || code === 'NO_STREAM') return '网络不通（' + m.slice(0, 60) + '）';
+    if (code === 'TIMEOUT' || code === 'NO_STREAM') return '通道不稳/超时（' + m.slice(0, 60) + '）——检查手机网络后重试；多次失败可开飞行模式再关一次刷新网络';
     return m.slice(0, 90);
   }
 
@@ -5889,6 +6100,8 @@ const AI = (() => {
     const { msgs, earlier } = earlierDigest(hist().filter((m) => !/^请求失败/.test(m.content))); // 失败提示不喂给模型当上下文
     const payload = { messages: msgs, context: contextSummary(), earlier };
     let attempt = 0;
+    const t0all = Date.now(); // 本次提问总预算起点（60s 后不再重试/降级）
+    if (typeof Sync !== 'undefined' && Sync.setAiDeadline) Sync.setAiDeadline(Date.now() + 45000); // 流式通道死线：最坏 ~45s 报错
     while (true) {
       try {
         let r = null;
@@ -5900,9 +6113,9 @@ const AI = (() => {
           if (se.code === 'ABORTED') { finish(se.partialText || raw || '（已停止）'); return; }
           // 流式通道不可达/异常 → 降级走原非流式（业务类错误码不降级，如实报错）
           const BIZ = ['LIMIT', 'NO_KEY', 'AI_AUTH', 'AI_RATE', 'AI_BALANCE', 'AI_MODEL', 'BAD_CODE', 'BAD_MSGS', 'NO_SUCH_CODE'];
-          if (attempt === 0 && BIZ.indexOf(se.code) < 0) {
+          if (attempt === 0 && BIZ.indexOf(se.code) < 0 && Date.now() - t0all < 60000) { // 总预算：超过 60s 不再降级硬等
             attempt++;
-            r = await Sync.request('ai.chat', payload, 90000);
+            r = await Sync.request('ai.chat', payload, 45000); // 45s：聊天回复短，挂太久不如早 fail
           } else throw se;
         }
         if (r && r.left != null) showLeft(r.left);
@@ -5912,7 +6125,7 @@ const AI = (() => {
       } catch (e) {
         if (e.code === 'ABORTED') { finish(e.partialText || raw || '（已停止）'); return; }
         attempt++;
-        if (attempt <= 2 && isRetryable(e)) {
+        if (attempt <= 2 && isRetryable(e) && Date.now() - t0all < 60000) { // 总预算 60s：到点立刻报错，不无限转圈
           // 限流用长退避（上游恢复要时间），网络类用短退避；提示条可点「停止」取消
           const isRate = e.code === 'AI_RATE';
           const waitMs = Math.round((isRate ? (attempt === 1 ? 8000 : 15000) : 700 * attempt) * (window.__aiRetryScale || 1));
@@ -5988,6 +6201,67 @@ const AI = (() => {
     }
   }
 
+  /* 历史对话面板：按 今天/昨天/日期 分组，点会话载入继续聊，可删单条/全部清空 */
+  function closeHistPanel() {
+    const p = $('#ai-hist-panel'), m = $('#ai-hist-mask');
+    if (p) p.classList.add('hidden');
+    if (m) m.classList.add('hidden');
+  }
+  function renderHistPanel() {
+    const panel = $('#ai-hist-panel');
+    if (!panel) return;
+    const s = loadStore();
+    const cur = ensureCur();
+    const days = {};
+    s.convs.forEach((c) => { (days[c.day] = days[c.day] || []).push(c); });
+    const label = (d) => d === todayStr() ? '今天' : d === yesterStr() ? '昨天' : d.slice(5);
+    let html = '<div class="aih-head"><b>历史对话</b><button class="mini-btn" id="aih-new">＋ 新对话</button><button class="mini-btn" id="aih-clearall">全部清空</button></div>';
+    if (!s.convs.length) html += '<div class="aih-empty">还没有对话记录</div>';
+    Object.keys(days).sort().reverse().forEach((d) => {
+      html += `<div class="aih-day">${label(d)}</div>`;
+      days[d].forEach((c) => {
+        const lastA = c.msgs.slice().reverse().find((m) => m.role === 'assistant');
+        html += `<div class="aih-item${c.id === cur ? ' on' : ''}" data-aihc="${c.id}">
+          <div class="aih-t">${esc(c.title || '新对话')}</div>
+          <div class="aih-s">${c.msgs.length} 条${lastA ? ' · ' + esc(lastA.content.replace(/\s+/g, ' ').slice(0, 30)) : ''}</div>
+          <button class="aih-del" data-aihd="${c.id}" aria-label="删除">✕</button></div>`;
+      });
+    });
+    panel.innerHTML = html;
+    panel.querySelectorAll('[data-aihc]').forEach((el) => el.addEventListener('click', (ev) => {
+      if (ev.target.closest('[data-aihd]')) return;
+      if (sending) { toast('等这轮回答完再切换'); return; }
+      CUR = el.dataset.aihc;
+      try { localStorage.setItem(CUR_KEY, CUR); } catch (e) { }
+      closeHistPanel(); renderMsgs();
+    }));
+    panel.querySelectorAll('[data-aihd]').forEach((el) => el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const s2 = loadStore();
+      const i = s2.convs.findIndex((c) => c.id === el.dataset.aihd);
+      if (i < 0) return;
+      const wasCur = s2.convs[i].id === ensureCur();
+      s2.convs.splice(i, 1);
+      if (wasCur) { CUR = null; try { localStorage.removeItem(CUR_KEY); } catch (e) { } }
+      saveStore(s2);
+      renderHistPanel();
+      if (wasCur) renderMsgs(); // ensureCur() 会自动落到最近一条或建新会话
+    }));
+    const nb = panel.querySelector('#aih-new');
+    if (nb) nb.addEventListener('click', () => {
+      if (sending) { toast('等这轮回答完'); return; }
+      newConv(); closeHistPanel(); renderMsgs();
+    });
+    const ca = panel.querySelector('#aih-clearall');
+    if (ca) ca.addEventListener('click', () => {
+      if (!loadStore().convs.length) return;
+      if (!confirm('清空全部 AI 对话历史？（不可恢复）')) return;
+      const s2 = loadStore(); s2.convs = []; saveStore(s2);
+      CUR = null; try { localStorage.removeItem(CUR_KEY); } catch (e) { }
+      closeHistPanel(); renderMsgs();
+    });
+  }
+
   function bind() {
     const btn = $('#ai-send');
     if (btn) btn.addEventListener('click', () => {
@@ -5999,16 +6273,39 @@ const AI = (() => {
       // isComposing：中文输入法回车是"确认候选词"，不能当发送（防误触）
       if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (!sending) send(); }
     });
+    const mainBox = $('#ai-msgs');
+    if (mainBox) mainBox.addEventListener('click', (ev) => {
+      const w = ev.target.closest('.ai-w');
+      if (w && typeof WordCard !== 'undefined') WordCard.show(w.textContent);
+    });
+    const newBtn = $('#ai-newchat');
+    if (newBtn) newBtn.addEventListener('click', () => {
+      if (sending) { toast('等这轮回答完'); return; }
+      if (hist().length === 0 && loadStore().convs.length && ensureCur() === loadStore().convs[0].id) { toast('已经是新对话'); return; }
+      newConv(); renderMsgs(); toast('已开新对话，旧的在「历史」里');
+    });
+    const histBtn = $('#ai-hist-btn');
+    if (histBtn) histBtn.addEventListener('click', () => {
+      renderHistPanel();
+      $('#ai-hist-panel').classList.remove('hidden');
+      $('#ai-hist-mask').classList.remove('hidden');
+    });
+    const mask = $('#ai-hist-mask');
+    if (mask) mask.addEventListener('click', closeHistPanel);
     const clear = $('#ai-clear');
     if (clear) clear.addEventListener('click', () => {
       if (!hist().length) return;
-      if (confirm('清空 AI 对话记录？')) { localStorage.removeItem(HIST_KEY); renderMsgs(); }
+      if (confirm('清空当前这段对话？（其它历史保留，点「历史」查看）')) {
+        const s = loadStore(); const c = s.convs.find((x) => x.id === ensureCur());
+        if (c) { c.msgs = []; c.title = '新对话'; saveStore(s); }
+        renderMsgs();
+      }
     });
   }
 
   const backBtn = document.getElementById('ai-back');
   if (backBtn) backBtn.addEventListener('click', () => { returnView = null; }); // data-nav 委托负责跳转
-  return { bind, renderMsgs, askWith, popAsk, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn };
+  return { bind, renderMsgs, askWith, popAsk, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn, hist, saveHist, newConv, loadStore };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆（就地弹窗，不跳 AI 页） */
