@@ -615,6 +615,17 @@ html.dark .wc-detail .lab.fan { color: #d9a3d3; background: #33222f; }
 .aih-empty { text-align: center; color: var(--ink-3); font-size: 13px; padding: 18px 0; }
 /* 收藏主列表里的阅读生词卡 */
 .mini-btn.tag-f { border: none; background: var(--brand-soft); color: var(--brand); }
+/* 阅读生词的语境句：闪卡正面块 + 主列表卡小字行 */
+.fc-sent {
+  width: 100%; margin-top: 12px; padding: 10px 12px;
+  background: var(--page-bg); border-left: 3px solid var(--brand-soft); border-radius: 10px;
+  font-size: .93em; line-height: 1.65; color: var(--ink-2); text-align: left; font-style: italic;
+}
+.fc-sent-w { color: var(--brand); font-style: normal; }
+.wc-sent {
+  margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--ink-3); font-style: italic;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 
 .done-card { padding: 30px 20px; text-align: center; }
 .done-emoji { font-size: 38px; color: var(--ok); }

@@ -2257,6 +2257,13 @@ function showCard() {
   if (pos >= queue.length) { finishTest(); return; }
   const item = queue[pos];
   const w = item.word;
+  if (test.mode === 'spell' && item.free) { // 阅读生词只认不拼：拼写模式整轮跳过（判过的不再出现，直接推进）
+    if (!test._freeSkipToasted) { test._freeSkipToasted = 1; toast('阅读生词只认不拼，已自动跳过'); }
+    test.pos += 1;
+    saveTestSess();
+    showCard();
+    return;
+  }
   refreshStarbar(); // 熟练度星行：换词/换模式（闪卡↔拼写）都经过这里，一处刷新全覆盖
 
   $('#test-counter').textContent = `${pos + 1}/${queue.length}`;
@@ -2266,6 +2273,32 @@ function showCard() {
   $('#test-mode').textContent = 'Aa 拼写';
   $('#fc-word').textContent = w.w;
   $('#fc-phon').textContent = w.ph ? `[${w.ph}]` : '';
+  // 阅读生词：音标从离线词典异步补（回来时确认还是这张卡才填）
+  if (item.free && !w.ph) {
+    Dict.lookup(w.w).then((d) => {
+      const cur = test && test.queue[test.pos];
+      if (d && d.p && cur && cur.word && cur.word.w === w.w) $('#fc-phon').textContent = '[' + d.p + ']';
+    }).catch(() => { });
+  }
+  // 阅读生词：正面加「语境句」块（遇到它的那句话，词高亮）——只要认得出，不拼写
+  const sentEl = $('#fc-sent');
+  if (sentEl) {
+    const sent = item.free ? String(item.sent || '') : '';
+    if (sent) {
+      const base = w.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      let html = esc(sent);
+      if (new RegExp('\\b' + base + '\\b', 'i').test(sent)) {
+        html = html.replace(new RegExp('\\b' + base + '\\b', 'gi'), (m) => '<b class="fc-sent-w">' + m + '</b>');
+      } else {
+        html = html.replace(new RegExp('\\b' + base + '\\w*', 'gi'), (m) => '<b class="fc-sent-w">' + m + '</b>'); // 句中是变形（abandoned/abandoning）
+      }
+      sentEl.innerHTML = html;
+      sentEl.classList.remove('hidden');
+    } else {
+      sentEl.classList.add('hidden');
+      sentEl.innerHTML = '';
+    }
+  }
   $('#fc-defs').innerHTML = w.defs.map((d) => `<div><span class="pos">${d.pos || ''}</span>${d.cn || ''}</div>`).join('');
   $('#fc-root').textContent = w.root ? '记 ' + w.root : '';
   $('#fc-root').style.display = w.root ? '' : 'none';
@@ -2586,6 +2619,7 @@ function renderFavorites() {
           </div>
           <div class="wc-phon free-phon"></div>
           <div class="wc-cn${hideCn ? ' hide-cn' : ''}">${esc(e.cn || '')}</div>
+          ${e.sent ? `<div class="wc-sent">${esc(e.sent)}</div>` : ''}
         </div>
         <div class="wc-actions">
           <button class="speak-btn"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M11 5L6 9H2v6h4l5 4V5z%27/%3E%3Cpath d=%27M15.5 8.5a5 5 0 0 1 0 7M19 5a9.5 9.5 0 0 1 0 14%27/%3E%3C/svg%3E&quot;)"></i></button>
@@ -2644,7 +2678,7 @@ function buildQueueFavorites() {
     if (favFilter !== 'all' && star !== Number(favFilter.slice(1))) return;
     const e = rv[k] || {};
     // 自由词合成词条：能过闪卡/拼写，但不进 SRS、不进错词本（judge 已按 free/unitId 判空跳过）
-    q.push({ free: true, unitId: null, idx: -1, word: { w: k, ph: '', defs: [{ pos: '', cn: e.cn || '' }], exs: [] } });
+    q.push({ free: true, unitId: null, idx: -1, sent: e.sent || '', word: { w: k, ph: '', defs: [{ pos: '', cn: e.cn || '' }], exs: [] } });
   });
   shuffle(q);
   return q;
@@ -3526,6 +3560,18 @@ const Reading = (() => {
     return { sent: para, ctx: '' };
   }
 
+  /** 从当前渲染的原文里找某词所在的句子（生词列表收藏时补语境用；找不到返回空） */
+  function sentOfWord(w) {
+    const lw = String(w || '').toLowerCase();
+    if (!lw) return '';
+    const ps = document.querySelectorAll('#rd-text .rd-p');
+    for (let i = 0; i < ps.length; i++) {
+      const t = ps[i].textContent || '';
+      if (t.toLowerCase().indexOf(lw) >= 0) return findSentence(t, w).sent || '';
+    }
+    return '';
+  }
+
   function renderQuiz(it, redo, sess) {
     if (window.speechSynthesis) speechSynthesis.cancel(); // 换篇时停掉上一篇朗读
     $('#reading-list').classList.add('hidden');
@@ -3869,7 +3915,7 @@ const Reading = (() => {
         saveState();
       } else {
         if (r.vocab[w]) { delete r.vocab[w]; if (typeof Sync !== 'undefined') Sync.tomb('rv:' + w); b.classList.remove('on'); b.textContent = '☆'; toast('已取消收藏'); }
-        else { r.vocab[w] = { cn: b.dataset.cn, ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到收藏夹·阅读生词'); }
+        else { r.vocab[w] = { cn: b.dataset.cn, sent: sentOfWord(w), ts: Date.now() }; if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w); b.classList.add('on'); b.textContent = '★'; toast('已收藏到收藏夹·阅读生词'); }
         saveState();
       }
     }));
@@ -5001,7 +5047,7 @@ const WordCard = (() => {
       btn.classList.remove('on');
       toast('已取消收藏');
     } else {
-      state.reading.vocab[w] = { cn: el.dataset.cn || '', ts: Date.now() };
+      state.reading.vocab[w] = { cn: el.dataset.cn || '', sent: el.dataset.sent || '', ts: Date.now() }; // sent=遇到它的那句话（语境复习用）
       if (typeof Sync !== 'undefined') Sync.untomb('rv:' + w);
       btn.textContent = '★ 已收藏';
       btn.classList.add('on');
@@ -5028,6 +5074,10 @@ const WordCard = (() => {
     box.querySelector('.wcphon').textContent = '…';
     box.querySelector('.wccn').textContent = '';
     const faved = inVocab(w);
+    if (faved && sent) { // 老词补语境：打开词卡时顺手把句子补进已收藏的条目（早期收藏没存句子）
+      const e0 = state.reading.vocab[w];
+      if (e0 && !e0.sent) { e0.sent = String(sent); saveState(); }
+    }
     const fav = box.querySelector('.wcfav');
     fav.classList.toggle('on', faved);
     fav.textContent = faved ? '★ 已收藏' : '☆ 收藏生词';
