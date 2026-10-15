@@ -3020,7 +3020,7 @@ const Daily = (() => {
   }
 
   function itemHtml(d, it) {
-    const key = d.date + ':' + it.source;
+    const key = d.date + ':' + it.source + (it.ref ? ':' + it.ref : '');
     const openKey = 'it:' + key;
     const isToday = d.date === DATA.today;
     const bodyOpen = OPEN[openKey] !== undefined ? OPEN[openKey] : isToday;
@@ -3087,11 +3087,12 @@ const Daily = (() => {
     const day = (DATA.days || []).find((d) => d.date === date);
     if (!day) return;
     const answers = {};
-    for (const s of ['mao', 'ai']) {
-      const ta = document.querySelector('[data-daily-ta="' + date + ':' + s + '"]');
+    for (const it of day.items || []) {
+      const k = it.source + (it.ref ? ':' + it.ref : '');
+      const ta = document.querySelector('[data-daily-ta="' + date + ':' + k + '"]');
       if (!ta) continue;
       const text = (ta.value || '').trim();
-      if (text) answers[s] = { text, at: Date.now() };
+      if (text) answers[k] = { text, at: Date.now() };
     }
     if (!Object.keys(answers).length) { toast('先写两句再提交'); return; }
     const btn = document.querySelector('[data-daily-act="submit"][data-date="' + date + '"]');
