@@ -2111,6 +2111,7 @@ function buildQueueSrs() {
 
 /* ---------- 拼写模式（看中文+听音 → 拼英文） ---------- */
 function showSpell(item) {
+  test._backReveal = 0; // 拼写退回来重拼：showSpell 本身就是「可输入」初始态，标记用不上
   const w = item.word;
   $('#flashcard').classList.add('hidden');
   $('#fc-judge').classList.add('hidden');
@@ -2149,6 +2150,7 @@ function spellSubmit() {
   const target = String(item.word.w).toLowerCase();
   const you = String($('#spell-input').value || '').trim().toLowerCase().replace(/\s+/g, ' ');
   if (!you) { toast('先输入字母再提交'); return; }
+  pushTestUndo(item); // 改判底照：同 judge，拼写判分动账前拍旧值
   const ok = you === target;
 
   state.stats.tested += 1;
@@ -2240,11 +2242,11 @@ function startTest(queue, title, sessKey, mode) {
   const key = sessKey || ('t:' + title);
   const prev = loadTestSess(key);
   if (prev) {
-    // 断点续做：恢复队列/进度/判定结果，已判定的词不再出现
-    test = { queue: prev.queue, pos: prev.pos, phase: 'read', origin: prev.title, right: prev.right || 0, miss: prev.miss || [], mode: prev.mode || mode || 'flash', sessKey: key };
+    // 断点续做：恢复队列/进度/判定结果，已判定的词不再出现（undo 底照只在本次会话内存里，恢复进来不带走）
+    test = { queue: prev.queue, pos: prev.pos, phase: 'read', origin: prev.title, right: prev.right || 0, miss: prev.miss || [], mode: prev.mode || mode || 'flash', sessKey: key, undo: [] };
     toast('已回到上次进度（' + (prev.pos + 1) + '/' + prev.queue.length + '）');
   } else {
-    test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: mode || (test && test.mode) || 'flash', sessKey: key };
+    test = { queue, pos: 0, phase: 'read', origin: title, right: 0, miss: [], mode: mode || (test && test.mode) || 'flash', sessKey: key, undo: [] };
     saveTestSess(true);
   }
   $('#test-title').textContent = test.origin;
@@ -2254,6 +2256,9 @@ function startTest(queue, title, sessKey, mode) {
 
 function showCard() {
   const { queue, pos } = test;
+  refreshBackBtn(); // 「上一词」按钮跟 undo 底照栈同步（含 finishTest 早退：结算页也允许撤最后一词）
+  $('#test-stage').classList.remove('hidden'); // 翻屏放顶上：从结算页返回若正处拼写模式，闪卡分支到不了这里会把人困在结算页
+  $('#test-done').classList.add('hidden');
   if (pos >= queue.length) { finishTest(); return; }
   const item = queue[pos];
   const w = item.word;
@@ -2316,8 +2321,11 @@ function showCard() {
   $('#srs-ctx-box').innerHTML = '';
   $('#btn-srs-ctx').classList.remove('hidden');
   $('#btn-srs-ctx').textContent = '语境挑战';
-  $('#test-stage').classList.remove('hidden');
-  $('#test-done').classList.add('hidden');
+  if (test._backReveal) { // 从「上一词」退回来的：答案判的时候已看过，直接展示释义进入可判定态    test._backReveal = 0;
+    $('#fc-answer').classList.remove('hidden');
+    $('#btn-reveal').classList.add('hidden');
+    $('#fc-judge').classList.remove('hidden');
+  }
   window.scrollTo({ top: 0 });
 }
 
@@ -2372,9 +2380,57 @@ $('#btn-got').addEventListener('click', () => judge('got'));
 $('#btn-fuzzy').addEventListener('click', () => judge('fuzzy'));
 $('#btn-nope').addEventListener('click', () => judge('nope'));
 
+/* ---- 「上一词」改判：判定动账前拍底照（对错数/SRS 排期/错词本/当日复习量/本组对错），
+   返回时按底照整单恢复——可连续返回，每次撤最近一次判定；
+   底照只在内存里：断点续做/错词回炉这类新会话从零起算（防止往回撤已同步到云端的旧账） ---- */
+function pushTestUndo(item) {
+  if (!test) return;
+  if (!test.undo) test.undo = [];
+  const snap = { pos: test.pos, right: test.right, missLen: test.miss.length, tested: state.stats.tested, correct: state.stats.correct };
+  if (item.unitId != null && item.word) { // 词库外的自由词（free）不走 SRS/错词本，只拍公共四项
+    const m = srsMap(); const k = srsKeyOf(item.unitId, item.word.w);
+    snap.srsKey = k;
+    snap.srs = m[k] ? JSON.parse(JSON.stringify(m[k])) : null;
+    snap.wrong = isWrong(item.unitId, item.word.w);
+    const d = todayLog()[bjDayStr()];
+    snap.dayR = d ? d.r : 0;
+  }
+  test.undo.push(snap);
+}
+function refreshBackBtn() {
+  const b = $('#btn-back-word');
+  if (b) b.classList.toggle('hidden', !(test && test.undo && test.undo.length));
+}
+function goBackTest() {
+  if (!test || !test.undo || !test.undo.length) return;
+  const s = test.undo.pop();
+  clearTimeout(spellTimer); spellTimer = 0; // 拼写答对的 1.3s 自动跳题定时器必须撤，否则恢复完 pos 它又推走一格
+  const item = test.queue[s.pos];
+  if (item && item.unitId != null && item.word) {
+    const m = srsMap();
+    if (s.srs) m[s.srsKey] = s.srs;
+    else { delete m[s.srsKey]; if (typeof Sync !== 'undefined') Sync.tomb('s:' + s.srsKey); } // 新建排期当场撤：带墓碑防云端 pullMerge 复活（与 srsRemove 同法）
+    setWrong(item.unitId, item.word.w, s.wrong); // setWrong 双向都带 tomb/untomb，恢复对云端也对称
+    const d = todayLog()[bjDayStr()];
+    if (d && s.dayR != null) d.r = s.dayR;
+  }
+  state.stats.tested = s.tested;
+  state.stats.correct = s.correct;
+  test.right = s.right;
+  test.miss.length = s.missLen;
+  test.pos = s.pos;
+  saveState();
+  saveTestSess(true);
+  test._backReveal = 1; // 闪卡模式直接亮释义进入可判定态（showSpell 分支会把它清掉）
+  homeDirty = true; // 对错数/当日复习量被恢复，回首页要刷
+  showCard();
+}
+$('#btn-back-word').addEventListener('click', goBackTest);
+
 function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   if (!test || !test.queue[test.pos]) return; // 防重入：快速双击判定按钮时不重复计分
   const item = test.queue[test.pos];
+  pushTestUndo(item); // 改判底照：动账之前拍下这词的全部旧值，「上一词」按它整单恢复
   const remembered = mode === 'got';
   state.stats.tested += 1;
   if (remembered) state.stats.correct += 1;
