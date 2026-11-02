@@ -4072,6 +4072,45 @@ const Listening = (() => {
   const LAST_KEY = 'sgwd_ls_last';      // 上次听到哪（设备本地 UI 态，不进云同步）
   let pendingSeek = 0, lastSaveAt = 0;  // 续播待应用的秒数 / 写盘节流时间戳
 
+  /* ---------- 电脑键盘 + 变速档（2026-11-02 桌面适配） ---------- */
+  const RATES = [0.5, 0.75, 1, 1.25, 1.5];       // 变速档位（按钮/键盘共用）
+  const fmtRate = (r) => r.toFixed(2).replace(/0$/, '') + '×';
+  function setRate(r) {
+    rate = r;
+    try { getAudio().playbackRate = r; } catch (e) {}
+    const b = $('#ls-rate'); if (b) b.textContent = fmtRate(r);
+  }
+  function rateStep(dir) {
+    const i = RATES.indexOf(rate);
+    setRate(RATES[Math.min(RATES.length - 1, Math.max(0, (i < 0 ? 2 : i) + dir))]);
+  }
+  function stepLine(dir) {
+    if (!task || !task.lines.length) return;
+    const i = activeIdx < 0 ? 0 : Math.min(task.lines.length - 1, Math.max(0, activeIdx + dir));
+    seekLine(i);
+  }
+  function onDesktopKey(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    if (typeof currentView === 'undefined' || currentView !== 'listening' || !task) return;
+    const card = document.querySelector('#ls-wordcard');
+    if (e.key === 'Escape') { if (card) { e.preventDefault(); card.remove(); } return; }
+    if (e.key === ' ') {
+      e.preventDefault();                        // 防页面滚动/焦点按钮误触发
+      const au = getAudio();
+      if (au.paused) au.play().catch(() => toast('音频还没下好，稍等再点')); else au.pause();
+      return;
+    }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); stepLine(-1); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepLine(1); return; }
+    const k = e.key.toLowerCase();
+    if (k === 'r') { if (activeIdx >= 0) seekLine(activeIdx); return; }
+    if (k === 'l') { const b = $('#ls-loop'); if (b) b.click(); return; }
+    if (e.key === '[') { rateStep(-1); return; }
+    if (e.key === ']') { rateStep(1); return; }
+  }
+
   /* ---------- 数据 ---------- */
   function ensure() {
     if (IDX) return Promise.resolve(true);
@@ -4365,6 +4404,7 @@ const Listening = (() => {
         <button class="mini-btn" id="ls-cn">隐藏中文</button>
       </div>
       <div class="set-note" id="ls-hint">边听边对照字幕；点任意一句可重听该句。</div>
+      <div class="set-note" id="ls-kbd-tip"></div>
       <div class="ls-sub-sec" id="ls-sub-sec">
         <div class="ls-sub-head">
           <div class="ls-sub-title">听力字幕<span class="ls-sub-tip" id="ls-sub-tip"></span></div>
@@ -4386,7 +4426,7 @@ const Listening = (() => {
         <button class="ghost-btn" id="ls-to-groups">返回段列表</button>
       </div>`;
     const au = getAudio();
-    au.playbackRate = rate;
+    setRate(rate);      // 同时刷按钮文案（旧版硬编码 1.0×，变速后切段文案会假回位）
     attachAudio(task.audio);
     renderQuestions();
     renderTranscript();
@@ -4400,6 +4440,10 @@ const Listening = (() => {
     bindDrill();
     updateLoopBtn();
     applySubState();
+    const kbdTip = $('#ls-kbd-tip');
+    if (kbdTip && window.matchMedia && window.matchMedia('(min-width: 1100px)').matches) {
+      kbdTip.textContent = '键盘：空格 播放/暂停 · ←→ 上一句/下一句 · R 重听本句 · L 单句循环 · [ ] 变速';
+    }
   }
 
   function renderQuestions() {
@@ -4653,11 +4697,7 @@ const Listening = (() => {
     });
     $('#ls-back5').addEventListener('click', () => { au.currentTime = Math.max(0, au.currentTime - 5); });
     $('#ls-fwd5').addEventListener('click', () => { au.currentTime = Math.min(au.duration || 1e9, au.currentTime + 5); });
-    $('#ls-rate').addEventListener('click', () => {
-      rate = rate === 1 ? 0.75 : rate === 0.75 ? 1.25 : 1;
-      au.playbackRate = rate;
-      $('#ls-rate').textContent = rate.toFixed(2).replace(/0$/, '') + '×';
-    });
+    $('#ls-rate').addEventListener('click', () => rateStep(1));
     $('#ls-loop').addEventListener('click', () => {
       const active = document.querySelector('.ls-line.active');
       if (loopLine >= 0) { loopLine = -1; }
@@ -4698,6 +4738,7 @@ const Listening = (() => {
     if (cb) cb.addEventListener('click', showCache);
     const nt = $('#ls-next-top');
     if (nt) nt.addEventListener('click', nextTask);
+    document.addEventListener('keydown', onDesktopKey);   // 电脑键盘：空格/←→/R/L/[]（桌面适配 2026-11-02）
   }
 
   /* ---------- 缓存信息 / 清理 ---------- */

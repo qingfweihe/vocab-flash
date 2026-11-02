@@ -1583,3 +1583,56 @@ html.dark .fam-item { background: #2a2740; border-color: #3a3560; }
 .hs-ctl button:disabled { opacity: .25; }
 html.dark .hs-ctl button { background: #1d1f26; }
 .home-sort-reset { display: none; width: 100%; margin-top: 6px; padding: 8px 0; border: none; background: none; color: var(--ink-3); font-size: 12px; }
+
+/* ---------- 电脑宽屏适配（≥1100px，2026-11-02） ----------
+   原则：手机布局零变化——所有规则都关在宽屏媒体查询里；纯 CSS + :has() 感知听力做题态，不动 DOM。
+   听力精听页 = 左栏播放器+字幕对照 / 右栏题目，底部整行操作栏，同屏不再来回滚。 */
+@media (min-width: 1100px) {
+  main { max-width: 960px; }
+
+  /* ---- 首页：功能卡双列仪表盘，底部链接行保持整行 ---- */
+  #home-main .set-entries { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  #home-main .set-entries .todo-card { margin: 0; }
+  #home-main .set-entries .set-entry { grid-column: 1 / -1; }
+
+  /* ---- 背单词单元列表双列 ---- */
+  #unit-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  #unit-list .unit-card { margin: 0; }
+
+  /* ---- 学习/检验/收藏/阅读/作文：居中限宽，别让眼睛跑马拉松 ---- */
+  #view-study, #view-test, #view-favorites, #view-reading, #view-writing { max-width: 780px; margin: 0 auto; }
+  #test-stage { max-width: 620px; margin: 0 auto; width: 100%; }
+
+  /* ---- 收藏夹词卡自适应多列（每张 ≥400px，与手机同量级） ---- */
+  #fav-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; align-items: start; }
+
+  /* ---- AI 对话限宽居中 ---- */
+  #view-ai { max-width: 860px; margin: 0 auto; }
+
+  /* ---- 听力：套/段列表双列 ---- */
+  #ls-body:not(:has(.ls-player)) { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-items: start; }
+  #ls-body:not(:has(.ls-player)) > .set-note,
+  #ls-body:not(:has(.ls-player)) > .set-section-title,
+  #ls-body:not(:has(.ls-player)) > .ls-actions { grid-column: 1 / -1; }
+  #ls-body:not(:has(.ls-player)) .ls-paper,
+  #ls-body:not(:has(.ls-player)) .ls-group { margin: 0; }
+
+  /* ---- 听力：精听做题态双栏同屏 ----
+     右栏题目 height:0+min-height:100% 是网格标准技巧：行高分配时它贡献 0，
+     渲染时再撑满——否则长题目会把左栏每一行都注水，出现大片空白 */
+  #ls-body:has(.ls-player) { display: grid; grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); column-gap: 22px; align-items: start;
+    grid-template-areas: "player q" "toggles q" "hint q" "kbd q" "sub q" "actions actions"; }
+  #ls-body:has(.ls-player) .ls-player { grid-area: player; }
+  #ls-body:has(.ls-player) .ls-toggles { grid-area: toggles; }
+  #ls-body:has(.ls-player) > .set-note { grid-area: hint; }
+  #ls-body:has(.ls-player) > #ls-kbd-tip { grid-area: kbd; color: var(--ink-3); }
+  #ls-body:has(.ls-player) .ls-sub-sec { grid-area: sub; }
+  #ls-body:has(.ls-player) .ls-q-sec { grid-area: q; height: 0; min-height: 100%; }
+  #ls-body:has(.ls-player) .ls-actions { grid-area: actions; justify-content: center; margin-top: 16px; }
+  /* 字幕窗口拉高到接近整屏，精听逐句对照不用频繁滚动 */
+  #ls-body:has(.ls-player) .ls-sub { max-height: max(520px, calc(100vh - 330px)); }
+
+  /* ---- 桌面悬停反馈（触屏没有 hover，不受影响） ---- */
+  .todo-card:hover, .unit-card:hover, .ls-paper:hover, .ls-group:hover, .rd-item:hover { border-color: var(--brand); }
+  .tab:not(.active):hover { color: var(--brand); }
+}
