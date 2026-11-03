@@ -117,18 +117,35 @@ function srsUnitIds() {
 }
 
 /** 批量确保单元分片已加载（幂等，只拉缺失的） */
-function ensureUnits(ids) {
+function ensureUnits(ids, limit = 6) {
   const need = [];
   (ids || []).forEach((id) => { if (id && !loadedUnits.has(id) && need.indexOf(id) < 0) need.push(id); });
   if (!need.length) return Promise.resolve(true);
-  return Promise.all(need.map((id) => ensureUnitData(id))).then(() => true);
+  // 小并发池（2026-11-03）：原先是全部 Promise.all 齐发，跨几十个单元时会把手机连接数占满，
+  // 和首屏资源/云同步抢通道。限 6 路，结果语义不变（仍返回 true，单个失败由调用方按 loadedUnits 判断）。
+  return new Promise((resolve) => {
+    let i = 0, running = 0, done = 0;
+    const total = need.length;
+    const next = () => {
+      while (running < limit && i < total) {
+        const id = need[i++]; running++;
+        ensureUnitData(id).then(() => { }, () => { }).then(() => {
+          running--; done++;
+          if (done === total) resolve(true); else next();
+        });
+      }
+    };
+    next();
+  });
 }
 
-/** 懒加载：按单元获取完整词数据（第一次打开某单元时调用） */
-function ensureUnitData(unitId) {
+/** 懒加载：按单元获取完整词数据（第一次打开某单元时调用）
+ *  force=true 表示"用户显式重试"：跳过 30 秒失败冷却。冷却本身是防渲染死循环的，不能去掉，
+ *  但用户点了重试还拦着会出现"提示我重试、重试必然失败"的怪圈（2026-11-03）。 */
+function ensureUnitData(unitId, force) {
   if (loadedUnits.has(unitId)) return Promise.resolve(true);
   if (unitPromises.has(unitId)) return unitPromises.get(unitId);
-  if (Date.now() - (unitFailAt.get(unitId) || 0) < 30000) return Promise.resolve(false); // 冷却期内不重试
+  if (!force && Date.now() - (unitFailAt.get(unitId) || 0) < 30000) return Promise.resolve(false); // 冷却期内不重试
   const p = fetch('data/units/words_' + unitId + '.json', { cache: 'no-cache' })
     .then((r) => r.json())
     .then((j) => {
@@ -136,6 +153,7 @@ function ensureUnitData(unitId) {
         const idx = DATA.units.findIndex((u) => u.id === Number(j.id));
         if (idx >= 0) {
           DATA.units[idx].words = j.words;
+          UNIT_POS.delete(DATA.units[idx]); // 词表换新：词头→下标表必须作废（否则按老下标取词会错位）
           loadedUnits.add(unitId); // 词表没就位时不标记（否则 unitSize 会误信桩的 3 个预览词）
         }
         unitPromises.delete(unitId);
@@ -229,9 +247,29 @@ function loadState() {
   }
 }
 function saveState() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch (e) {
+    // 配额满兜底（2026-11-03）：滚动位置是纯锦上添花，先丢它换"进度本身能存下"，
+    // 绝不能让整份进度因为几百条滚动记录而静默写不进去。
+    try { state.scrolls = {}; localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e2) { }
+  }
   if (typeof Reminder !== 'undefined') Reminder.ping(); // 学习动作后上报（自带节流）
   if (typeof Sync !== 'undefined') Sync.markDirty();    // 改动后节流上传云端
+}
+/* 落盘分级（2026-11-03）：判题/答题这类高频动作每一下都全量序列化太贵（state 到中后期有几千条记录）。
+   这些路径改走 saveStateSoon：立刻上报提醒与云同步，写盘合并到 800ms 一次；
+   切后台 / 关闭页面由 flushStateSoon 强制落盘（已是硬钩子，见 visibilitychange / pagehide）。 */
+let saveTimer = 0;
+function saveStateSoon(ms = 800) {
+  if (typeof Reminder !== 'undefined') Reminder.ping();
+  if (typeof Sync !== 'undefined') Sync.markDirty();
+  if (saveTimer) return;
+  saveTimer = setTimeout(() => { saveTimer = 0; saveState(); }, ms);
+}
+function flushStateSoon() {
+  if (!saveTimer) return;
+  clearTimeout(saveTimer); saveTimer = 0;
+  saveState();
 }
 
 /* ================= 工具 ================= */
@@ -251,7 +289,28 @@ function toast(msg, ms = 1800) {  const t = $('#toast');
   t._tid = setTimeout(() => t.classList.add('hidden'), ms);
 }
 
-function unitById(id) { return DATA.units.find((u) => u.id === Number(id)); }
+/* 单元 id → 单元对象的映射（2026-11-03）：原先每次都 find 93 条，嵌在逐词循环里会被放大。
+   用 WeakMap 以 units 数组为缓存键：DATA 整体换掉（重载/同步重建）时自动失效，不用手工清。 */
+const UNIT_BY_ID = new WeakMap();
+function unitById(id) {
+  if (!DATA || !DATA.units) return null;
+  let m = UNIT_BY_ID.get(DATA.units);
+  if (!m) { m = new Map(); DATA.units.forEach((u) => m.set(u.id, u)); UNIT_BY_ID.set(DATA.units, m); }
+  return m.get(Number(id)) || null;
+}
+
+/* 词头 → 该单元 words 下标（2026-11-03）：SRS/收藏/错词原先对每个词头都 findIndex 整个单元，
+   N 个词 × M 词 = N×M 次比较。分片加载（ensureUnitData 替换 words）时必须 delete 这张表。 */
+const UNIT_POS = new WeakMap();
+function wordPosOf(u, key) {
+  let m = UNIT_POS.get(u);
+  if (!m) {
+    m = new Map();
+    (u.words || []).forEach((w, i) => { const k = wordKey(w.w); if (!m.has(k)) m.set(k, i); });
+    UNIT_POS.set(u, m);
+  }
+  return m.has(key) ? m.get(key) : -1;
+}
 
 /** HTML 转义：用户输入渲染进 innerHTML 前必过 */
 function esc(s) {
@@ -324,6 +383,7 @@ const Sync = (() => {
   let applyingRemote = false;
   let pushTimer = null;
   let inFlight = false;
+  let lastPullAt = 0;   // 上次成功拉取时间：切前台限频用（手机来回切应用很频繁，每次都全量拉太费流量电）
 
   function cfg() {
     if (!state.sync) state.sync = { code: '', partner: '', on: false, lastSync: 0, tomb: {} };
@@ -478,16 +538,18 @@ const Sync = (() => {
     try {
       const hs = hashes();
       const failed = [];
+      // 并行上传（2026-11-03）：原先逐域串行 await，弱网下一轮同步 = 7×往返。
+      // 各域写的是各自文件，互不依赖；失败隔离语义不变（哪个域 reject 就记哪个域）。
+      const todo = [];
       for (const d of DOMAINS) {
         const h = domainHash(d);
         if (!force && hs[d] === h) continue;
-        try {
-          await request('state.put', { domain: d, data: domainPayload(d) });
-          setHash(d, h);
-        } catch (e) {
-          failed.push(d); // 单域失败（如超限）不阻断其它域同步
-        }
+        todo.push({ d, h });
       }
+      const settled = await Promise.allSettled(todo.map((x) =>
+        request('state.put', { domain: x.d, data: domainPayload(x.d) }).then(() => setHash(x.d, x.h))
+      ));
+      settled.forEach((r, i) => { if (r.status === 'rejected') failed.push(todo[i].d); });
       cfg().lastSync = Date.now();
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
       if (failed.length) status('部分域同步失败：' + failed.join('、') + '（其它已同步）', 'err');
@@ -500,6 +562,7 @@ const Sync = (() => {
     inFlight = true;
     try {
       const r = await request('state.get', { domain: 'ALL' });
+      lastPullAt = Date.now();
       const dom = (r && r.domains) || {};
       // 对方在自己手机上完成结对后，这一侧自动认到伙伴码（免手动重填）
       let adoptedPartner = '';
@@ -651,7 +714,8 @@ const Sync = (() => {
       } finally { applyingRemote = false; }
       if (changed) saveState();
       cfg().lastSync = Date.now();
-      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+      // 仅在其它域没变更时补写一次（saveState 已写过同一份，重复写等于双倍磁盘写）
+      if (!changed) { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
       if (changed) renderAfterSync();
       if (adoptedPartner) { renderUI(); toast('已与 ' + adoptedPartner + ' 结对 ✓ 可以互戳了'); }
       // 消息盒：网页/iOS 端拉取未读互戳并展示（原来只有 App 壳轮询 pending 能收到，网页端永远看不到）
@@ -1158,14 +1222,18 @@ const Sync = (() => {
     });
     document.addEventListener('visibilitychange', () => {
       if (!cfg().on || !cfg().code) return;
-      if (document.visibilityState === 'visible') pullMerge().catch(() => {});
+      if (document.visibilityState === 'visible') {
+        // 60 秒内刚拉过就不重复拉（启动首拉、手动「立即同步」、切走时的合并推送不受此限）
+        if (Date.now() - (Sync.lastPullAt ? Sync.lastPullAt() : 0) < 60000) return;
+        pullMerge().catch(() => {});
+      }
       else { clearTimeout(pushTimer); pullMerge().then(() => pushAll(false)).catch(() => {}); }
     });
     if (cfg().on && cfg().code) pullMerge().catch(() => {});
     if (cfg().partner) refreshPartnerStatus(); // 打开设置页即看对方连接状态
   }
 
-  return { init, markDirty, tomb, untomb, request, streamChat, setAiDeadline, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI };
+  return { init, markDirty, tomb, untomb, request, streamChat, setAiDeadline, ensureOn, ensureCode, enable, disable, pushAll, pullMerge, afterReset, isShell, renderFriends, refreshPartnerStatus, renderUI, lastPullAt: () => lastPullAt };
 })();
 
 /* 旧格式（数组下标）迁移为词头键；全量词库加载后调用一次 */
@@ -1485,6 +1553,7 @@ function applyNavRestore(nv) {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     saveNavState(true);
+    flushStateSoon(); // 判题合并写盘还没落：切后台必须先落（原来只有在内存里，杀进程会丢）
     if (currentView === 'study' && studyUnitId != null) saveStudyPos(); // 滚动位置只写内存，切后台必须落盘
     if (currentView === 'favorites') saveFavSegPos(false); // 同上（收藏/错词分段）
     saveTestSess(true); // 检验档案防抖中：切后台立即落盘
@@ -1492,6 +1561,7 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', () => {
   saveNavState(true);
+  flushStateSoon(); // 同上：关闭/跳转前把合并中的判定落盘
   if (currentView === 'study' && studyUnitId != null) saveStudyPos();
   if (currentView === 'favorites') saveFavSegPos(false);
   saveTestSess(true);
@@ -1603,9 +1673,10 @@ function openStudy(id, then, skipRestore) {
     const u = unitById(id);
     if (!u || !loadedUnits.has(Number(id))) {
       toast('单元加载中…');
-      ensureUnitData(Number(id)).then((ok) => {
+      // 用户点进来的（单元卡片/继续学习/搜索结果）一律 force：跳过失败冷却，让"重试"真能重试
+      ensureUnitData(Number(id), true).then((ok) => {
         if (ok) doOpen();
-        else toast('加载失败，请检查网络后重试');
+        else toast('加载失败：检查网络后再点一次');
       });
       return;
     }
@@ -1884,7 +1955,7 @@ function renderWordList() {
       } else {
         srsRemove(studyUnitId, w.w);
       }
-      saveState();
+      saveStateSoon(); // 逐个勾选：高频，合并落盘
       card.classList.toggle('is-wrong', isWrong(studyUnitId, w.w)); // 红标即时跟随
       homeDirty = true; // 首页统计回首页时刷（原为即时 renderUnits+renderToday，连勾时连环重建 93 卡）
     });
@@ -1950,7 +2021,7 @@ const SRS_DAYS = [1, 2, 4, 7, 15, 30, 60, 120];
 
 function srsMap() { if (!state.srs || typeof state.srs !== 'object') state.srs = {}; return state.srs; }
 function srsKeyOf(unitId, w) { return unitId + ':' + wordKey(w); }
-function bjDayStr(ts) { return new Date(((ts || Date.now()) + 8 * 3600e3)).toISOString().slice(0, 10); }
+function bjDayStr(ts) { return bjDateOf(ts); } // 与 bjDateOf 同一实现，保留名字供既有调用点
 function dayStartTs(offsetDays) { // 北京日 0 点的 ts（offset=0 今天，1 明天…）
   const t = Date.now() + 8 * 3600e3 + (offsetDays || 0) * 86400e3;
   return Math.floor(t / 86400e3) * 86400e3 - 8 * 3600e3;
@@ -1989,7 +2060,7 @@ function srsDueList() { // 今日到期（含逾期）
     const p = k.split(':');
     const u = unitById(Number(p[0]));
     if (!u) continue;
-    const idx = u.words.findIndex((x) => wordKey(x.w) === p[1]);
+    const idx = wordPosOf(u, p[1]);
     if (idx >= 0) out.push({ unitId: u.id, idx, word: u.words[idx] });
   }
   return out;
@@ -2085,7 +2156,7 @@ function buildQueueWrong() {
     const keys = Array.isArray(m) ? null : Object.keys(m);
     if (keys) {
       keys.forEach((k) => {
-        const idx = u.words.findIndex((w) => wordKey(w.w) === k);
+        const idx = wordPosOf(u, k);
         if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
       });
     } else {
@@ -2166,7 +2237,7 @@ function spellSubmit() {
     setWrong(item.unitId, item.word.w, true);
     test.miss.push(item);
   }
-  saveState();
+  saveStateSoon(); // 拼写判定同上：高频，合并落盘
   homeDirty = true; // 首页今日卡回首页时刷（nav('units') 必调 renderToday）
 
   $('#spell-input').disabled = true;
@@ -2210,13 +2281,23 @@ const TEST_SESS_KEY = 'sgwd_test_sess';
 let testSessTimer = 0; // 防抖句柄：连续判定合并写盘（整队列序列化上百 KB，每题一写会把主线程卡出顿挫）
 function saveTestSessNow() {
   if (!test || !test.sessKey) return;
+  const pack = (queue) => JSON.stringify({
+    key: test.sessKey, title: test.origin, mode: test.mode, pos: test.pos,
+    right: test.right, miss: test.miss || [], queue: queue,
+    day: bjDayStr(), ts: Date.now(),
+  });
   try {
-    localStorage.setItem(TEST_SESS_KEY, JSON.stringify({
-      key: test.sessKey, title: test.origin, mode: test.mode, pos: test.pos,
-      right: test.right, miss: test.miss || [], queue: test.queue,
-      day: bjDayStr(), ts: Date.now(),
-    }));
-  } catch (e) { /* 存储满等异常不阻断检验 */ }
+    localStorage.setItem(TEST_SESS_KEY, pack(test.queue));
+  } catch (e) {
+    // 配额满兜底（2026-11-03）：整词对象太大，降级成"词头+音标+一条释义"，
+    // 断点还能续做（详情略减），总比整组进度丢掉强。
+    try {
+      localStorage.setItem(TEST_SESS_KEY, pack(test.queue.map((it) => ({
+        unitId: it.unitId, idx: it.idx,
+        word: it.word ? { w: it.word.w, ph: it.word.ph, defs: (it.word.defs || []).slice(0, 1) } : it.word,
+      }))));
+    } catch (e2) { /* 仍失败：不阻断检验 */ }
+  }
 }
 function saveTestSess(immediate) {
   if (!test || !test.sessKey) return;
@@ -2448,7 +2529,7 @@ function judge(mode) { // got 认得 / fuzzy 模糊 / nope 忘了
   } else {
     test.miss.push(item);
   }
-  saveState();
+  saveStateSoon(); // 高频判定：合并 800ms 落盘（切后台/关闭有 flushStateSoon 兜底）
 
   test.pos += 1;
   saveTestSess(); // 判定粒度存档：退出再进从下一词继续（800ms 防抖合并连续判定）
@@ -2580,7 +2661,8 @@ function renderFavorites() {
     const m = state.favorites[String(u.id)] || {};
     if (Array.isArray(m)) return;
     Object.keys(m).forEach((k) => {
-      const w = u.words.find((x) => wordKey(x.w) === k);
+      const pos = wordPosOf(u, k);
+      const w = pos >= 0 ? u.words[pos] : null;
       if (!w) return;
       items.push({ u, w, k, star: getFavStar(u.id, k) });
     });
@@ -2723,7 +2805,7 @@ function buildQueueFavorites() {
     keys.forEach((k) => {
       const star = getFavStar(u.id, k);
       if (favFilter !== 'all' && star !== Number(favFilter.slice(1))) return; // 只考当前档位
-      const idx = u.words.findIndex((w) => wordKey(w.w) === k);
+      const idx = wordPosOf(u, k);
       if (idx >= 0) q.push({ unitId: u.id, idx, word: u.words[idx] });
     });
   });
@@ -2813,7 +2895,7 @@ function renderWrongList() {
     const m = state.wrong[String(u.id)] || {};
     const words = Array.isArray(m)
       ? m.map((idx) => u.words[idx]).filter(Boolean)
-      : Object.keys(m).map((k) => u.words.find((x) => wordKey(x.w) === k)).filter(Boolean);
+      : Object.keys(m).map((k) => { const p = wordPosOf(u, k); return p >= 0 ? u.words[p] : null; }).filter(Boolean);
     if (!words.length) return;
     words.forEach((w) => {
       count++;
@@ -3358,8 +3440,7 @@ const Daily = (() => {
   function open() {
     if (typeof Sync !== 'undefined' && Sync.isShell && Sync.isShell()) return; // 壳内禁用
     loadSummary(false); // 首屏不再无条件打云函数（体验官 exp10：836ms 全站最慢）；打开面板时一次拉齐
-    loadFull(false);
-    if (!DATA) loadFull(false);
+    loadFull(false);    // DATA 为空时这一次就会真正去拉；原先下面还有一次同参调用，被 LOADING 挡住，纯冗余
   }
 
   function init() {
@@ -3425,7 +3506,7 @@ const Reading = (() => {
     return state.reading;
   }
 
-  function bjDate(ts) { return new Date((ts || Date.now()) + 8 * 3600e3).toISOString().slice(0, 10); }
+  function bjDate(ts) { return bjDateOf(ts); } // 与全局 bjDateOf 同实现（原来这里抄了第三份）
 
   function stats() {
     const r = rState();
@@ -4068,6 +4149,7 @@ const Listening = (() => {
   let activeIdx = -1;                   // 当前高亮句（跨重渲保持）
   let scrolledIdx = -1;                 // 跟随窗口已滚到第几句（去抖，防反复滚）
   let wordMap = null;                   // 词库索引（小写 → 词条）
+  let wordMapStamp = -1;                // 建表时的已加载分片数：分片增减必须重建，否则新拉到分片的词查不到
   let blobUrl = null, blobFor = null;   // 当前段音频的 Blob URL
   const LAST_KEY = 'sgwd_ls_last';      // 上次听到哪（设备本地 UI 态，不进云同步）
   let pendingSeek = 0, lastSaveAt = 0;  // 续播待应用的秒数 / 写盘节流时间戳
@@ -4143,8 +4225,11 @@ const Listening = (() => {
   }
 
   function words() {
-    if (!wordMap) {
+    // 2026-11-03 修：原实现只建一次表 ⇒ 之后 ensureUnitData 拉进新分片，这张表永远看不到那些词，
+    // 点词兜底"拉分片→再查"就必然落空、误报「词库里没有这个词」。用已加载分片数当构建戳，集合一变就重建。
+    if (!wordMap || wordMapStamp !== loadedUnits.size) {
       wordMap = new Map();
+      wordMapStamp = loadedUnits.size;
       (DATA.units || []).forEach((u) => (u.words || []).forEach((w) => {
         if (!wordMap.has(w.w.toLowerCase())) wordMap.set(w.w.toLowerCase(), { unit: u.id, w });
       }));
@@ -4482,7 +4567,7 @@ const Listening = (() => {
     rec.answered = Object.keys(rec.picks).length;
     rec.correct = task.questions.filter((x) => rec.picks[x.n] && rec.picks[x.n] === x.answer).length;
     rec.ts = Date.now();
-    saveState();
+    saveStateSoon(); // 逐题连答：合并落盘（flush 钩子已在）
     renderQuestions();
     renderStats();
     renderHome();
@@ -4501,17 +4586,23 @@ const Listening = (() => {
   }
 
   function bindLines(box) {
-    box.querySelectorAll('.ls-line').forEach((el) => el.addEventListener('click', (ev) => {
-      if (ev.target.closest('.ls-w')) return;         // 点词交给词卡
-      seekLine(Number(el.dataset.i));
-    }));
-    box.querySelectorAll('.ls-w').forEach((el) => el.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      // 点词 = 查词 + 重听该句（体验反馈：只点中文行才能重听，违背精听直觉）
-      const lineEl = el.closest('.ls-line');
+    // 事件委托（2026-11-03）：原先每行每词各挂一个监听器（全文模式翻倍，几百个）；
+    // 容器是复用的（只换 innerHTML），所以绑定一次即可，dataset 打标防重复绑。
+    if (box.dataset.lsBound) return;
+    box.dataset.lsBound = '1';
+    box.addEventListener('click', (ev) => {
+      const wEl = ev.target.closest('.ls-w');
+      if (wEl) {
+        ev.stopPropagation();
+        // 点词 = 查词 + 重听该句（体验反馈：只点中文行才能重听，违背精听直觉）
+        const lineEl = wEl.closest('.ls-line');
+        if (lineEl) seekLine(Number(lineEl.dataset.i));
+        showWord(wEl.dataset.w, wEl);
+        return;
+      }
+      const lineEl = ev.target.closest('.ls-line');
       if (lineEl) seekLine(Number(lineEl.dataset.i));
-      showWord(el.dataset.w, el);
-    }));
+    });
   }
 
   function renderTranscript() {
@@ -4806,11 +4897,6 @@ const Reminder = (() => {
       el.textContent = msg;
       el.className = 'set-note' + (cls ? ' ' + cls : '');
     }
-  }
-
-  async function api(path, opts) {
-    // 兼容旧签名：转成 CloudBase 动作调用（path 即 action 名）
-    return Sync.request(path, opts && opts.body ? JSON.parse(opts.body) : {});
   }
 
   /** 上报服务端的提醒设置（时间/智能/开关/活跃度） */
@@ -5287,7 +5373,16 @@ async function renderSearch(q) {
   box.classList.remove('hidden');
 }
 
-$('#search-input').addEventListener('input', (e) => renderSearch(e.target.value));
+/* 搜索防抖（2026-11-03）：原先每敲一个键就全库扫一遍（逐词拼搜索串 + 1.5 万词头索引 + 离线词典），
+   8 个字母 = 8 轮白算。200ms 合并；清空仍然立即响应。 */
+let searchTimer = 0, lastSearchQ = '';
+$('#search-input').addEventListener('input', (e) => {
+  const v = e.target.value;
+  clearTimeout(searchTimer);
+  if (!v.trim()) { lastSearchQ = ''; renderSearch(''); return; }
+  if (v === lastSearchQ) return;                    // 同一串（如仅移动光标）不重算
+  searchTimer = setTimeout(() => { lastSearchQ = v; renderSearch(v); }, 200);
+});
 $('#search-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); }
 });
@@ -5723,7 +5818,19 @@ const AI = (() => {
     try { localStorage.setItem(HIST_KEY, JSON.stringify(s)); } catch (e) { }
     return s;
   }
-  function saveStore(s) { try { localStorage.setItem(HIST_KEY, JSON.stringify(s)); } catch (e) { } }
+  function saveStore(s) {
+    // 体积护栏（2026-11-03）：30 会话 × 60 条长回答可能顶到 5MB 配额，一旦超了整段历史写不进去（静默丢）。
+    // 按正文总字数兜：超过约 120 万字符就从最旧的会话丢起，宁可少历史也别丢全部。
+    try {
+      let total = 0;
+      for (const c of s.convs) for (const m of (c.msgs || [])) total += String(m.content || '').length;
+      while (total > 1200000 && s.convs.length > 1) {
+        const dropped = s.convs.pop();
+        for (const m of (dropped.msgs || [])) total -= String(m.content || '').length;
+      }
+    } catch (e) { }
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(s)); } catch (e) { }
+  }
   function newConv() {
     const s = loadStore();
     const c = { id: 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), title: '新对话', day: todayStr(), msgs: [] };
@@ -5776,7 +5883,10 @@ const AI = (() => {
       if (u) bits.push(`最近在学 ${u.name}`);
       const t = todayCount();
       bits.push(`今日新词 ${t.n}、复习 ${t.r}`);
-      const due = srsDueCapped().length;
+      // 只要数量：srsDueCapped 会逐词查对象再排序，仅为显示"待复习 N 词"不值当（词量大时每次发消息都白算）
+      const dueTotal = srsDueCount();
+      const cap = Number(dailyCfg().review.cap) || 0;
+      const due = cap > 0 ? Math.min(dueTotal, cap) : dueTotal;
       if (due) bits.push(`待复习 ${due} 词`);
     } catch (e) { }
     return bits.join('，');
@@ -6080,6 +6190,20 @@ const AI = (() => {
     buzz(okN ? 15 : [30, 50, 30]);
   }
 
+  /* md 渲染缓存（2026-11-03）：历史重渲时同一条回复的 md→HTML 只算一次。
+     只缓存转换结果，不动 DOM 结构；上限 80 条，超了整体清空（简单、无泄漏）。 */
+  const MD_CACHE = new Map();
+  function mdCached(s) {
+    const k = String(s || '');
+    let h = MD_CACHE.get(k);
+    if (h === undefined) {
+      if (MD_CACHE.size >= 80) MD_CACHE.clear();
+      h = mdLite(k);
+      MD_CACHE.set(k, h);
+    }
+    return h;
+  }
+
   function renderMsgs() {
     const box = $('#ai-msgs');
     if (!box) return;
@@ -6089,7 +6213,7 @@ const AI = (() => {
     } else {
       box.innerHTML = h.map((m, idx) => m.role === 'user'
         ? `<div class="ai-msg user"><span class="ai-user-txt">${esc(m.content)}</span><button class="msg-edit" data-edit="${idx}" title="编辑重发">✎</button></div>`
-        : `<div class="ai-msg bot${/^请求失败/.test(m.content) ? ' ai-err' : ''}">${mdLite(m.content)}</div>`).join('');
+        : `<div class="ai-msg bot${/^请求失败/.test(m.content) ? ' ai-err' : ''}">${mdCached(m.content)}</div>`).join('');
     }
     box.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => editResend(Number(b.dataset.edit))));
     linkifyMsgBox(box);
@@ -6452,7 +6576,16 @@ const AI = (() => {
 
   const backBtn = document.getElementById('ai-back');
   if (backBtn) backBtn.addEventListener('click', () => { returnView = null; }); // data-nav 委托负责跳转
-  return { bind, renderMsgs, askWith, popAsk, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn, hist, saveHist, newConv, loadStore };
+  /** 启动时的零成本迁移检查：旧格式（平铺数组）才真正解析并迁移；
+      已是 v2 结构或从没存过就直接返回，避免首屏解析上兆历史（原来靠启动渲染顺带触发迁移） */
+  function ensureMigrated() {
+    let raw = null;
+    try { raw = localStorage.getItem(HIST_KEY); } catch (e) { return; }
+    if (!raw || raw.trim().charAt(0) !== '[') return;
+    loadStore();
+  }
+
+  return { bind, renderMsgs, ensureMigrated, askWith, popAsk, send, mdLite, showLeft, parseActions, stripActions, execAction, findWord, applyBackBtn, hist, saveHist, newConv, loadStore };
 })();
 
 /* 对外快捷入口：词卡讲解 / 错词记忆（就地弹窗，不跳 AI 页） */
@@ -6547,7 +6680,8 @@ async function boot() {
   bindTodo();
   renderTodoRemBar();
   AI.bind();
-  AI.renderMsgs();
+  // 首屏不渲染聊天历史（nav('ai') 首次进入时自会渲染）；这里只做旧格式迁移的轻量检查
+  AI.ensureMigrated();
 
   Reading.bind();
   Writing.bind();
@@ -6581,9 +6715,15 @@ async function boot() {
     ensureIndex();
   }
 }
-/* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存（仅内存，落盘见 saveStudyPos） */
+/* 位置兜底：定期快照（部分环境 scroll 事件不可靠），每 3 秒仅在停留学习页时保存。
+   2026-11-03：加"没滚动就跳过"判断——currentTopWordKey 会逐卡 getBoundingClientRect（强制布局），
+   干坐着复习也会每 3 秒触发一次布局，白烧。 */
+let lastSnapY = -1, lastSnapUnit = null;
 setInterval(() => {
-  if (currentView === 'study' && studyUnitId != null) saveStudyPos(true);
+  if (currentView !== 'study' || studyUnitId == null) return;
+  if (studyUnitId === lastSnapUnit && window.scrollY === lastSnapY) return; // 没动过
+  lastSnapUnit = studyUnitId; lastSnapY = window.scrollY;
+  saveStudyPos(true);
 }, 3000);
 
 /* ================= 作文助手 ================= */
