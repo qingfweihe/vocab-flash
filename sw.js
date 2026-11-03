@@ -1,6 +1,6 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
    听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
-const CACHE = 'sgwd-20261103-200244';
+const CACHE = 'sgwd-20261103-200855';
 const AUDIO_CACHE = 'sgwd-audio-v1';
 const ASSETS = [
   './',
@@ -18,9 +18,11 @@ const ASSETS = [
 
 self.addEventListener('install', (e) => {
   // 逐项缓存：单个资源失败不影响其余（网络抖动时也能装上 SW）
+  // cache:'reload'（2026-11-03）：强制绕过浏览器 HTTP 缓存。否则发版瞬间升级 SW 时，
+  // 可能把"旧 app.js + 新缓存名"一起装进去，用户会卡在旧版直到下一次发版。
   e.waitUntil(
     caches.open(CACHE).then((c) =>
-      Promise.allSettled(ASSETS.map((u) => c.add(u)))
+      Promise.allSettled(ASSETS.map((u) => c.add(new Request(u, { cache: 'reload' }))))
     ).then(() => self.skipWaiting())
   );
 });
