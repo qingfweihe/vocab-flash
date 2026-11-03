@@ -351,7 +351,7 @@ function setFav(id, w, v) {
   }
 }
 /* 收藏星级：0~3，星越多越熟练；取消收藏时一并清除 */
-function favStarMap(id) { return state.favStars[String(id)] || (state.favStars[String(id)] = {}); }
+function favStarMap(id) { if (!state.favStars) state.favStars = {}; return state.favStars[String(id)] || (state.favStars[String(id)] = {}); }
 function getFavStar(id, w) { const e = favStarMap(id)[wordKey(w)]; return (e && e.v) || 0; }
 function setFavStar(id, w, v) { favStarMap(id)[wordKey(w)] = { v: v | 0, ts: Date.now() }; }
 /* 阅读生词自由池（词库外的收藏词）：存 state.reading.vocab，词条可带 star(0~3)，随 reading 域同步 */
@@ -2574,13 +2574,48 @@ $('#btn-test-unit').addEventListener('click', () => {
   startTest(buildQueueByUnit(studyUnitId), `检验 ${u.name}`, 'unit:' + studyUnitId);
 });
 
-$('#btn-test-wrong').addEventListener('click', () => {
-  ensureUnits(unitIdsWithKeys(state.wrong)).then(() => { // 分片没到齐会漏词
-    startTest(buildQueueWrong(), '复习错词本', 'wrong');
+/* 复习入口统一包装（2026-11-03）：原来点下去只是静默等分片加载，加载慢/抛异常时
+   iPhone 上没有任何反馈（没有控制台，异步异常被静默吞掉），表现就是「按钮点不动」。
+   现在：按下立刻变「准备中…」，1.2 秒还没好就提示正在加载；异常/空队列都变成看得见的一句话。 */
+function bindReviewBtn(sel, opts) {
+  const btn = $(sel);
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    if (btn.dataset.busy) return;                     // 连点不重复触发
+    const label = btn.textContent;
+    btn.dataset.busy = '1';
+    btn.textContent = '准备中…';
+    btn.disabled = true;
+    const hint = setTimeout(() => { if (btn.dataset.busy) toast('正在准备复习（要加载还没缓存的单元）…', 2200); }, 1200);
+    try {
+      await ensureUnits(opts.ids(), 10);              // 用户显式动作：并发放宽到 10，比默认 6 快
+      const q = opts.queue();
+      if (!q.length) {
+        // 队列为空要分清两种情况：真没词 / 单元没加载成功（弱网）——后者提示连网重试，别误导
+        const missing = opts.ids().filter((id) => !loadedUnits.has(Number(id))).length;
+        toast(missing ? ('还有 ' + missing + ' 个单元没加载成功（网络），连网后再点一次') : opts.empty(), 2600);
+        return;
+      }
+      startTest(q, opts.title(), opts.key());
+    } catch (e) {
+      toast('准备失败：' + String((e && e.message) || e).slice(0, 50), 2800);
+      try { console.error('[review]', e); } catch (e2) { }
+    } finally {
+      clearTimeout(hint);
+      btn.textContent = label;
+      btn.disabled = false;
+      delete btn.dataset.busy;
+    }
   });
-});
+}
 
-/* ================= 收藏夹 ================= */
+bindReviewBtn('#btn-test-wrong', {
+  ids: () => unitIdsWithKeys(state.wrong),
+  queue: buildQueueWrong,
+  title: () => '复习错词本',
+  key: () => 'wrong',
+  empty: () => '错词本是空的：先去学习里做一轮检验，答错的词会自动进来',
+});
 /* 收藏筛选档位：全部 / 按星级一星一档（☆☆☆=未评，★★★=熟练）；检验收藏跟随当前档位 */
 let favFilter = 'all';
 const favOpen = new Set(); // 已展开详情的卡片 key（重渲染后保留展开状态）
@@ -2822,13 +2857,12 @@ function buildQueueFavorites() {
   return q;
 }
 
-$('#btn-test-fav').addEventListener('click', () => {
-  ensureUnits(unitIdsWithKeys(state.favorites)).then(() => { // 分片没到齐会漏词
-    const q = buildQueueFavorites();
-    if (!q.length) { toast(favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'); return; }
-    const title = favFilter === 'all' ? '复习收藏' : '复习收藏 · ' + favStarHtml(Number(favFilter.slice(1)));
-    startTest(q, title, 'fav:' + favFilter); // 会话键带档位：否则切星级后仍被旧档断点劫持
-  });
+bindReviewBtn('#btn-test-fav', {
+  ids: () => unitIdsWithKeys(state.favorites),
+  queue: buildQueueFavorites,
+  title: () => (favFilter === 'all' ? '复习收藏' : '复习收藏 · ' + favStarHtml(Number(favFilter.slice(1)))),
+  key: () => 'fav:' + favFilter, // 会话键带档位：否则切星级后仍被旧档断点劫持
+  empty: () => (favFilter === 'all' ? '收藏夹是空的，先去学习中点 ☆ 收藏' : '这一档还没有词'),
 });
 
 /* 复习收藏时的熟练度星行（只有收藏复习会话显示；+ 加一星 / − 扣一星，0 和 3 封底封顶）
