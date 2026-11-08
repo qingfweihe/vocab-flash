@@ -146,7 +146,17 @@ function ensureUnitData(unitId, force) {
   if (loadedUnits.has(unitId)) return Promise.resolve(true);
   if (unitPromises.has(unitId)) return unitPromises.get(unitId);
   if (!force && Date.now() - (unitFailAt.get(unitId) || 0) < 30000) return Promise.resolve(false); // 冷却期内不重试
-  const p = fetch('data/units/words_' + unitId + '.json', { cache: 'no-cache' })
+  // 强制超时（2026-11-08）：iPhone 弱网下 fetch 会无限挂起，把 ensureUnits 并发池和「检验收藏」
+  // 一起卡死（按钮永远「准备中…」）。超时按失败处理（进冷却），保证池子总能收尾。
+  // 冒烟可覆写 window.__VF_UNIT_TIMEOUT 加速。
+  let unitCtrl = null, unitTimer = null;
+  try {
+    if (typeof AbortController !== 'undefined') {
+      unitCtrl = new AbortController();
+      unitTimer = setTimeout(() => { try { unitCtrl.abort(); } catch (e) { } }, (typeof window !== 'undefined' && window.__VF_UNIT_TIMEOUT) || 12000);
+    }
+  } catch (e) { }
+  const p = fetch('data/units/words_' + unitId + '.json', { cache: 'no-cache', signal: unitCtrl ? unitCtrl.signal : undefined })
     .then((r) => r.json())
     .then((j) => {
       if (j && j.id && j.words && j.words.length) {
@@ -163,7 +173,8 @@ function ensureUnitData(unitId, force) {
       unitPromises.delete(unitId);
       return false;
     })
-    .catch(() => { unitFailAt.set(unitId, Date.now()); unitPromises.delete(unitId); return false; });
+    .catch(() => { unitFailAt.set(unitId, Date.now()); unitPromises.delete(unitId); return false; })
+    .then((ok) => { if (unitTimer) clearTimeout(unitTimer); return ok; }); // 计时器必须清：否则挂着到 12s 才释放
   unitPromises.set(unitId, p);
   return p;
 }
@@ -2577,36 +2588,56 @@ $('#btn-test-unit').addEventListener('click', () => {
 /* 复习入口统一包装（2026-11-03）：原来点下去只是静默等分片加载，加载慢/抛异常时
    iPhone 上没有任何反馈（没有控制台，异步异常被静默吞掉），表现就是「按钮点不动」。
    现在：按下立刻变「准备中…」，1.2 秒还没好就提示正在加载；异常/空队列都变成看得见的一句话。 */
+const REVIEW_BTNS = {}; // id → 配置（给 document 捕获阶段的兜底用）
 function bindReviewBtn(sel, opts) {
+  REVIEW_BTNS[sel.slice(1)] = opts;
   const btn = $(sel);
   if (!btn) return;
-  btn.addEventListener('click', async () => {
-    if (btn.dataset.busy) return;                     // 连点不重复触发
-    const label = btn.textContent;
-    btn.dataset.busy = '1';
-    btn.textContent = '准备中…';
-    btn.disabled = true;
-    const hint = setTimeout(() => { if (btn.dataset.busy) toast('正在准备复习（要加载还没缓存的单元）…', 2200); }, 1200);
-    try {
-      await ensureUnits(opts.ids(), 10);              // 用户显式动作：并发放宽到 10，比默认 6 快
-      const q = opts.queue();
-      if (!q.length) {
-        // 队列为空要分清两种情况：真没词 / 单元没加载成功（弱网）——后者提示连网重试，别误导
-        const missing = opts.ids().filter((id) => !loadedUnits.has(Number(id))).length;
-        toast(missing ? ('还有 ' + missing + ' 个单元没加载成功（网络），连网后再点一次') : opts.empty(), 2600);
-        return;
-      }
-      startTest(q, opts.title(), opts.key());
-    } catch (e) {
-      toast('准备失败：' + String((e && e.message) || e).slice(0, 50), 2800);
-      try { console.error('[review]', e); } catch (e2) { }
-    } finally {
-      clearTimeout(hint);
-      btn.textContent = label;
-      btn.disabled = false;
-      delete btn.dataset.busy;
+  btn._rvBound = true;
+  btn.addEventListener('click', () => runReview(btn, opts));
+}
+/* 兜底：万一按钮上的绑定没生效（元素被重建 / 上一次异常中断了脚本），
+   在 document 捕获阶段仍能接管点击——这层在 iPhone 上尤其重要，出问题时没有控制台可看。 */
+document.addEventListener('click', (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('#btn-test-fav, #btn-test-wrong') : null;
+  if (!el || el._rvBound) return;
+  const opts = REVIEW_BTNS[el.id];
+  if (opts) runReview(el, opts);
+}, true);
+
+async function runReview(btn, opts) {
+  if (btn.dataset.busy) {
+    // 上一次任务卡住超过 15 秒就放行，别让按钮永久锁死
+    if (Date.now() - Number(btn.dataset.busyAt || 0) < 15000) return;
+  }
+  const label = btn.textContent;
+  btn.dataset.busy = '1';
+  btn.dataset.busyAt = String(Date.now());
+  btn.textContent = '准备中…';
+  btn.disabled = true;
+  const hint = setTimeout(() => { if (btn.dataset.busy) toast('正在准备复习（要加载还没缓存的单元）…', 2200); }, 1200);
+  try {
+    await ensureUnits(opts.ids(), 10);              // 用户显式动作：并发放宽到 10，比默认 6 快
+    const q = opts.queue();
+    if (!q.length) {
+      // 队列为空要分清两种情况：真没词 / 单元没加载成功（弱网）——后者提示连网重试，别误导
+      const missing = opts.ids().filter((id) => !loadedUnits.has(Number(id))).length;
+      toast(missing ? ('还有 ' + missing + ' 个单元没加载成功（网络），连网后再点一次') : opts.empty(), 2600);
+      return;
     }
-  });
+    const missingUnits = opts.ids().filter((id) => !loadedUnits.has(Number(id))).length;
+    startTest(q, opts.title(), opts.key());
+    if (missingUnits) setTimeout(() => { toast('还有 ' + missingUnits + ' 个单元的词没进这次检验（没加载成功），点收藏页的「重试」或联网后再检验一次', 3200); }, 60); // 后出的提示覆盖断点续做提示，缺词信息更重要
+  } catch (e) {
+    toast('准备失败：' + String((e && e.message) || e).slice(0, 50), 2800);
+    try { console.error('[review]', e); } catch (e2) { }
+  } finally {
+    clearTimeout(hint);
+    btn.textContent = label;
+    btn.disabled = false;
+    delete btn.dataset.busy;
+    delete btn.dataset.busyAt;
+  }
 }
 
 bindReviewBtn('#btn-test-wrong', {
@@ -2691,21 +2722,27 @@ function renderFavorites() {
   if (!WORD_INDEX) ensureIndex().then(() => { if (WORD_INDEX) renderFavorites(); }); // 自由词与词库内词的去重靠词头索引
   box.innerHTML = '';
   renderFavChips();
-  const items = [];
+  const items = [], missing = [];
   DATA.units.forEach((u) => {
     const m = state.favorites[String(u.id)] || {};
     if (Array.isArray(m)) return;
     Object.keys(m).forEach((k) => {
       const pos = wordPosOf(u, k);
       const w = pos >= 0 ? u.words[pos] : null;
-      if (!w) return;
+      if (!w) {
+        // 词对象拿不到分两种：单元分片没加载成功（网络）→ 占位卡可见可重试（2026-11-08，
+        // 之前静默 return，弱网时表现为「数量对但词看不见」）；键本身不在词库 → 维持跳过。
+        if (!loadedUnits.has(u.id)) missing.push({ u, k, star: getFavStar(u.id, k) });
+        return;
+      }
       items.push({ u, w, k, star: getFavStar(u.id, k) });
     });
   });
   const shown = items.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
+  const shownMissing = missing.filter((it) => favFilter === 'all' || it.star === Number(favFilter.slice(1)));
   const freeShownN = Object.keys(freeVocabMap()).filter((k) => !freeInVocab(k))
     .filter((k) => favFilter === 'all' || ((freeVocabMap()[k] && freeVocabMap()[k].star) || 0) === Number(favFilter.slice(1))).length;
-  if (!shown.length && !freeShownN) {
+  if (!shown.length && !shownMissing.length && !freeShownN) {
     box.innerHTML = items.length
       ? '<div class="empty-tip">这一档是空的<br>点上面的「全部」看看其它词</div>'
       : '<div class="empty-tip">收藏夹是空的<br>学习时点单词旁的「☆」把不熟的词收进来，之后在这里集中复习</div>';
@@ -2770,6 +2807,33 @@ function renderFavorites() {
       setFav(u.id, w.w, false);
       saveState(); renderFavorites();
       toast('已取消收藏');
+    });
+    box.appendChild(card);
+  });
+
+  // 分片没加载成功的收藏词：占位卡（词头可见 + 一键重试）。之前静默跳过，弱网时像「词丢了」。
+  shownMissing.forEach((it) => {
+    const card = document.createElement('div');
+    card.className = 'word-card wc-missing';
+    card.dataset.key = it.u.id + ':' + it.k;
+    card.innerHTML = `
+      <div class="wc-head">
+        <div class="wc-main">
+          <div class="wc-word-row">
+            <span class="wc-word">${it.k}</span>
+            <span class="mini-btn tag-y">${it.u.name}</span>
+          </div>
+          <div class="wc-cn" style="opacity:.65">详情还没加载出来（网络）<br>点右边「重试」，加载好就会完整显示</div>
+        </div>
+        <div class="wc-actions"><button class="mini-btn" data-retry-unit="${it.u.id}">重试</button></div>
+      </div>`;
+    card.querySelector('[data-retry-unit]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      toast('正在重试…', 1500);
+      ensureUnitData(it.u.id, true).then((ok) => { // 显式动作：绕过失败冷却
+        if (ok) { renderFavorites(); toast('加载成功'); }
+        else toast('还是没加载成功，检查网络后再点一次');
+      });
     });
     box.appendChild(card);
   });
@@ -2925,11 +2989,19 @@ function renderWrongList() {
     box.appendChild(st);
   }
   let count = 0;
+  const wrongMissing = [];
   DATA.units.forEach((u) => {
     const m = state.wrong[String(u.id)] || {};
     const words = Array.isArray(m)
       ? m.map((idx) => u.words[idx]).filter(Boolean)
       : Object.keys(m).map((k) => { const p = wordPosOf(u, k); return p >= 0 ? u.words[p] : null; }).filter(Boolean);
+    // 分片没加载成功的错词也走占位卡（与收藏页同病同修 2026-11-08；旧数组兜底格式不生成占位卡）
+    if (!Array.isArray(m)) {
+      Object.keys(m).forEach((k) => {
+        const p = wordPosOf(u, k);
+        if ((p < 0 || !u.words[p]) && !loadedUnits.has(u.id)) wrongMissing.push({ u, k });
+      });
+    }
     if (!words.length) return;
     words.forEach((w) => {
       count++;
@@ -2973,6 +3045,33 @@ function renderWrongList() {
       });
       box.appendChild(card);
     });
+  });
+  // 占位卡：错词所在单元没加载成功时也可见可重试（与收藏页一致）
+  wrongMissing.forEach((it) => {
+    const card = document.createElement('div');
+    card.className = 'word-card wc-missing';
+    card.dataset.key = it.u.id + ':' + it.k;
+    card.innerHTML = `
+      <div class="wc-head">
+        <div class="wc-main">
+          <div class="wc-word-row">
+            <span class="wc-word">${it.k}</span>
+            <span class="mini-btn tag-r">${it.u.name}</span>
+          </div>
+          <div class="wc-cn" style="opacity:.65">详情还没加载出来（网络）<br>点右边「重试」，加载好就会完整显示</div>
+        </div>
+        <div class="wc-actions"><button class="mini-btn" data-retry-unit="${it.u.id}">重试</button></div>
+      </div>`;
+    card.querySelector('[data-retry-unit]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      toast('正在重试…', 1500);
+      ensureUnitData(it.u.id, true).then((ok) => { // 显式动作：绕过失败冷却
+        if (ok) { renderWrongList(); toast('加载成功'); }
+        else toast('还是没加载成功，检查网络后再点一次');
+      });
+    });
+    box.appendChild(card);
+    count++;
   });
   if (!count) box.innerHTML = '<div class="empty-tip">错词本还是空的<br>做检验时点「忘了」的词会自动进来</div>';
 }

@@ -233,9 +233,12 @@ html.dark .mini-btn.tag-r { background: rgba(229, 72, 77, .16); color: #f0a2a4; 
 .test-btn {
   border: none; background: var(--brand); color: #fff;
   font-size: 13px; font-weight: 600; font-family: inherit;
-  padding: 7px 13px; border-radius: 999px; cursor: pointer;
+  /* 点按区放大到 36px 高（原来约 29px，低于苹果建议的 44px，手指稍偏就点空） */
+  padding: 9px 14px; min-height: 36px; border-radius: 999px; cursor: pointer;
   transition: background-color .15s ease;
-  text-decoration: none; display: inline-block;
+  text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .test-btn:active { background: var(--brand-deep); }
 .back-btn {
@@ -446,13 +449,16 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
 .subhead {
   position: sticky;
   top: calc(var(--safe-top) + 52px);
-  z-index: 15;
+  /* 必须高于 #topbar（z-index:30）：iPhone 字体行高与 Windows 不同，顶栏实际高度可能多出几像素，
+     一旦重叠，点按钮会被顶栏吃掉（2026-11-03 用户反馈「复习收藏点不动」的元凶之一） */
+  z-index: 32;
   display: flex; align-items: center; gap: 10px;
   padding: 9px 2px;
   margin: 0 -2px 8px;
   background: rgba(242, 243, 245, .94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  touch-action: manipulation; /* 触发按钮后不等 300ms、避免双击缩放误判 */
 }
 .subhead-title { flex: 1; font-weight: 600; font-size: 16.5px; text-align: center; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .subhead.no-back .subhead-title { text-align: left; }
@@ -469,6 +475,8 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
   overflow: hidden;
   cursor: pointer;
 }
+/* 详情还没加载成功的占位卡（分片拉取失败时可见可重试，2026-11-08） */
+.wc-missing { border: 1px dashed rgba(0, 0, 0, .28); opacity: .82; cursor: default; }
 .wc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; }
 .wc-main { flex: 1; min-width: 0; }
 .wc-word-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
