@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="闪过背单词">
-<meta name="theme-color" content="#f2f3f5">
+<meta name="theme-color" content="#fbf6f7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="stylesheet" href="style.css">
@@ -34,21 +34,10 @@
       <div id="search-results" class="hidden"></div>
     </div>
       <div class="settings-box set-entries">
-      <button id="daily-card" class="todo-card" data-homepanel="daily">
-        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M9 18h6%27/%3E%3Cpath d=%27M10 22h4%27/%3E%3Cpath d=%27M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14%27/%3E%3C/svg%3E&quot;)"></i></div>
-        <div class="todo-card-main">
-          <div class="todo-card-title">每日精进</div>
-          <div class="todo-card-sub" id="daily-card-sub">毛选 + AI 方法论 · 点击加载</div>
-        </div>
-        <div class="reading-pct hidden" id="daily-card-badge">0</div>
-      </button>
-      <button id="today-card" class="todo-card">
-        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%276%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27/%3E%3C/svg%3E&quot;)"></i></div>
-        <div class="todo-card-main">
-          <div class="todo-card-title">今日任务</div>
-          <div class="todo-card-sub" id="today-sub">正在统计…</div>
-        </div>
-        <div class="reading-pct hidden" id="today-badge">0</div>
+      <button id="home-words-card" class="set-entry home-hero" data-homepanel="words">
+        <span class="ico set-entry-ico" style="--ico:var(--ico-book)"></span>
+        <span class="set-entry-main"><b>背单词</b><i id="home-words-sub">选择单元开始学习</i></span>
+        <span class="set-entry-arrow">›</span>
       </button>
       <button id="reading-card" class="todo-card duo-card">
         <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 19.5A2.5 2.5 0 0 1 6.5 17H20%27/%3E%3Cpath d=%27M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z%27/%3E%3C/svg%3E&quot;)"></i></div>
@@ -57,6 +46,14 @@
           <div class="todo-card-sub" id="reading-card-sub">六级真题 · 一篇一题 · 随手刷</div>
         </div>
         <div class="reading-pct hidden" id="reading-card-pct">0%</div>
+      </button>
+      <button id="today-card" class="todo-card">
+        <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%276%27/%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%272%27/%3E%3C/svg%3E&quot;)"></i></div>
+        <div class="todo-card-main">
+          <div class="todo-card-title">今日任务</div>
+          <div class="todo-card-sub" id="today-sub">正在统计…</div>
+        </div>
+        <div class="reading-pct hidden" id="today-badge">0</div>
       </button>
       <button id="listening-card" class="todo-card duo-card">
         <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M3 18v-6a9 9 0 0 1 18 0v6%27/%3E%3Cpath d=%27M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z%27/%3E%3C/svg%3E&quot;)"></i></div>
@@ -74,14 +71,17 @@
         </div>
         <div class="reading-pct hidden" id="writing-card-pct">0%</div>
       </button>
+        <button id="daily-card" class="todo-card" data-homepanel="daily">
+          <div class="todo-card-ico"><i class="ico" style="--ico:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.9%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M9 18h6%27/%3E%3Cpath d=%27M10 22h4%27/%3E%3Cpath d=%27M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14%27/%3E%3C/svg%3E&quot;)"></i></div>
+          <div class="todo-card-main">
+            <div class="todo-card-title">每日精进</div>
+            <div class="todo-card-sub" id="daily-card-sub">毛选 + AI 方法论 · 点击加载</div>
+          </div>
+          <div class="reading-pct hidden" id="daily-card-badge">0</div>
+        </button>
         <button id="home-todo-card" class="set-entry" data-homepanel="todo">
           <span class="ico set-entry-ico" style="--ico:var(--ico-checklist)"></span>
           <span class="set-entry-main"><b>待办清单</b><i id="home-todo-sub">新建提醒事项，到点推送</i></span>
-          <span class="set-entry-arrow">›</span>
-        </button>
-        <button id="home-words-card" class="set-entry" data-homepanel="words">
-          <span class="ico set-entry-ico" style="--ico:var(--ico-book)"></span>
-          <span class="set-entry-main"><b>背单词</b><i id="home-words-sub">选择单元开始学习</i></span>
           <span class="set-entry-arrow">›</span>
         </button>
         <button id="home-heat-card" class="set-entry" data-homepanel="heat">
@@ -299,8 +299,8 @@
     <div class="fav-seg-bar">
       <button class="fav-seg active" data-seg="fav">⭐ 收藏夹</button>
       <button class="fav-seg" data-seg="wrong">📝 错词本</button>
+      <label class="switch fav-hide-sw"><input type="checkbox" id="chk-hide-cn-fav"><span>遮中文</span></label>
     </div>
-    <div class="fav-hidetool"><label class="switch"><input type="checkbox" id="chk-hide-cn-fav"><span>遮住中文（自测）</span></label></div>
     <div id="fav-seg-fav">
     <div id="fav-filters"></div>
     <div id="fav-list"></div>

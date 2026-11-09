@@ -13,11 +13,11 @@
 
 /* ---------- 设计令牌 ---------- */
 :root {
-  /* 品牌色：学习蓝（参照知乎/微信读书的信息蓝，沉稳不躁） */
-  --brand: #3f7bf5;
-  --brand-deep: #2f63d6;
-  --brand-soft: #e8effd;
-  --brand-bg: #f5f8fe;
+  /* 品牌色：v6 粉白改版（2026-11-09）——玫瑰粉主色，白字/白底对比度与旧学习蓝同级 */
+  --brand: #d84e73;
+  --brand-deep: #b93a5f;
+  --brand-soft: #fceef3;
+  --brand-bg: #fdf6f8;
 
   /* 语义色（唯一的三盏信号灯） */
   --ok: #34a853;
@@ -35,9 +35,9 @@
 
   /* 面板与线 */
   --card: #ffffff;
-  --page-bg: #f2f3f5;      /* 国内主流的浅灰画布（微信/钉钉同款） */
-  --line: #ebedf0;         /* 通用分隔线 */
-  --line-strong: #dfe3e8;
+  --page-bg: #fbf6f7;      /* v6 粉白画布：低饱和暖粉白，长时间学习不刺眼 */
+  --line: #f0e7ea;         /* 通用分隔线（带一点暖粉灰） */
+  --line-strong: #e3d4da;
 
   /* 字体：系统栈，阅读优先 */
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
@@ -455,9 +455,10 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
   display: flex; align-items: center; gap: 10px;
   padding: 9px 2px;
   margin: 0 -2px 8px;
-  background: rgba(242, 243, 245, .94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #fbf6f7;
+  /* v6：去毛玻璃——滚动每帧重采样 blur 是掉帧元凶，且粉白底与卡片色差小，实底观感几乎无差 */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   touch-action: manipulation; /* 触发按钮后不等 300ms、避免双击缩放误判 */
 }
 .subhead-title { flex: 1; font-weight: 600; font-size: 16.5px; text-align: center; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -971,7 +972,7 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 .star-btn b { color: var(--warn); font-size: 16px; letter-spacing: 2px; margin: 0 2px; }
 .star-btn .star-hint { font-size: 11px; color: var(--ink-3); margin-left: 6px; }
 #fav-read-box, #fav-listen-box { margin-top: 10px; }
-#fav-filters { position: sticky; top: calc(var(--safe-top) + 104px); z-index: 15; margin: 0 -16px 10px; padding: 8px 16px 10px; background: rgba(242, 243, 245, .94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+#fav-filters { position: sticky; top: calc(var(--safe-top) + 104px); z-index: 15; margin: 0 -16px 10px; padding: 8px 16px 10px; background: #fbf6f7; backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 /* ---------- 词卡弹层 ---------- */
 #word-card { position: fixed; inset: 0; z-index: 90; display: none; }
@@ -1101,10 +1102,10 @@ input[type="time"]:focus, input[type="datetime-local"]:focus, input[type="text"]
 
 /* ---------- 深色模式 ---------- */
 html.dark {
-  --brand: #6d9bff;
-  --brand-deep: #86adff;
-  --brand-soft: #24324d;
-  --brand-bg: #1a2334;
+  --brand: #f08cae;
+  --brand-deep: #f5a9c4;
+  --brand-soft: #3a2129;
+  --brand-bg: #2a1a20;
   --ok: #5cbf75;
   --ok-soft: #1d2b21;
   --warn: #e8b45a;
@@ -1126,15 +1127,14 @@ html.dark {
 html.dark body { background: var(--page-bg); }
 html.dark #topbar { background: #15161b; }
 html.dark #tabbar { background: #12131a; }
-html.dark .subhead { background: rgba(21, 22, 27, .94); }
+html.dark .subhead { background: rgba(21, 22, 27, .97); }
 html.dark #fav-filters { background: rgba(21, 22, 27, .94); }
 
-/* iOS：去掉吸顶栏 backdrop-filter（滚动每帧重采样毛玻璃=掉帧元凶），换不透明背景。
-   原背景已 94% 不透明，视觉差异可忽略 */
+/* iOS：v6 全平台统一实底吸顶（毛玻璃=掉帧元凶），此规则保留作双保险 */
 html.ios .subhead, html.ios #fav-filters {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  background: #f2f3f5;
+  background: #fbf6f7;
 }
 html.ios.dark .subhead, html.ios.dark #fav-filters { background: #15161b; }
 html.dark .speak-btn { background: var(--brand-soft); }
@@ -1646,4 +1646,157 @@ html.dark .hs-ctl button { background: #1d1f26; }
   /* ---- 桌面悬停反馈（触屏没有 hover，不受影响） ---- */
   .todo-card:hover, .unit-card:hover, .ls-paper:hover, .ls-group:hover, .rd-item:hover { border-color: var(--brand); }
   .tab:not(.active):hover { color: var(--brand); }
+}
+
+/* ============================================================
+   v6 界面改版（2026-11-09）——粉白清爽 · iPhone 优先（390×844 / 375×812）
+   1. 首页「背单词 / 阅读」视觉优先，其余入口降权（默认顺序见 index.html）
+   2. 吸顶栏实底去毛玻璃（上面 subhead/#fav-filters 规则已改，此处为组件补充）
+   3. 阅读做题页顶栏合并为一行（rd-topbar，配合 app.js 模板改动）
+   4. 命中区统一：关键操作 ≥44px，次级 ≥36px
+   5. 仅覆盖观感与命中区——不动 DOM 结构 / 业务逻辑 / 数据协议
+   ============================================================ */
+
+/* ---------- 1. 首页：背单词主入口 hero ---------- */
+#home-main .set-entries #home-words-card.home-hero {
+  margin: 6px 10px 12px;
+  padding: 16px 16px;
+  border: 1px solid var(--brand-soft);
+  border-bottom: 1px solid var(--brand-soft);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #ffffff 0%, var(--brand-bg) 78%, var(--brand-soft) 100%);
+  box-shadow: var(--shadow-1);
+}
+#home-words-card.home-hero .set-entry-ico { width: 26px; height: 26px; color: var(--brand); }
+#home-words-card.home-hero .set-entry-main b { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
+#home-words-card.home-hero .set-entry-main i { font-size: 12px; margin-top: 3px; }
+#home-words-card.home-hero .set-entry-arrow {
+  flex: none; font-size: 14px; font-weight: 600; color: var(--brand-deep);
+  background: var(--brand-soft); border-radius: 999px; padding: 8px 14px;
+}
+html.dark #home-words-card.home-hero {
+  background: linear-gradient(135deg, var(--card) 0%, var(--brand-bg) 100%);
+  border-color: var(--line-strong);
+}
+
+/* ---------- 1b. 阅读入口次级强调（首页第 2 行） ---------- */
+#home-main .set-entries #reading-card { padding: 14px 16px; }
+#home-main .set-entries #reading-card .todo-card-title { font-size: 16px; font-weight: 700; }
+#home-main .set-entries #reading-card .todo-card-sub { font-size: 12px; }
+#home-main .set-entries #reading-card .todo-card-ico {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: var(--brand-soft); color: var(--brand-deep);
+  display: flex; align-items: center; justify-content: center;
+}
+#home-main .set-entries #reading-card .todo-card-ico .ico { width: 21px; height: 21px; }
+
+/* ---------- 1c. 其余入口降权（图标转灰、行高收紧） ---------- */
+#home-main .set-entries #today-card,
+#home-main .set-entries #listening-card,
+#home-main .set-entries #writing-card,
+#home-main .set-entries #daily-card { padding: 12px 16px; }
+#home-main .set-entries #today-card .todo-card-title,
+#home-main .set-entries #listening-card .todo-card-title,
+#home-main .set-entries #writing-card .todo-card-title,
+#home-main .set-entries #daily-card .todo-card-title { font-size: 14.5px; font-weight: 600; }
+#home-main .set-entries #today-card .todo-card-sub,
+#home-main .set-entries #listening-card .todo-card-sub,
+#home-main .set-entries #writing-card .todo-card-sub,
+#home-main .set-entries #daily-card .todo-card-sub { font-size: 11px; }
+#home-main .set-entries #home-todo-card,
+#home-main .set-entries #home-heat-card { padding: 11px 16px; }
+#home-main .set-entries #home-todo-card .set-entry-main b,
+#home-main .set-entries #home-heat-card .set-entry-main b { font-size: 14px; font-weight: 500; }
+#home-main .set-entries #home-todo-card .set-entry-ico,
+#home-main .set-entries #home-heat-card .set-entry-ico { color: var(--ink-3); }
+
+/* ---------- 1d. 继续学习主按钮升级（renderContinue 仍写同一节点） ---------- */
+.continue-btn {
+  background: linear-gradient(135deg, var(--brand) 0%, #e87f9d 100%);
+  font-size: 16.5px;
+  padding: 15px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 10px rgba(216, 78, 115, .22);
+}
+.continue-btn:active { background: var(--brand-deep); }
+
+/* ---------- 2. 阅读做题页：源信息 + 工具合并一行（rd-topbar） ---------- */
+.rd-topbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 7px 10px; margin: 0 0 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.rd-topbar .rd-src-line { display: inline; margin: 0; flex: 1 1 auto; min-width: 55%; font-size: 12px; color: var(--ink-3); }
+.rd-topbar .rd-tts { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.rd-topbar .rd-tools { display: inline-flex; gap: 6px; margin: 0; flex: none; }
+.rd-topbar .rd-tool { flex: none; padding: 8px 12px; min-height: 34px; border-radius: 999px; }
+.rd-topbar .rd-speak { min-height: 34px; display: inline-flex; align-items: center; }
+html.dark .rd-topbar { background: var(--card); border-color: var(--line-strong); }
+
+/* ---------- 3. 阅读底部答题 dock：命中区加大 ---------- */
+.rd-dock-head { gap: 6px; }
+.rd-nav { width: 40px; height: 36px; }
+.rd-dot { width: 34px; height: 36px; }
+.rd-nav.rd-dock-toggle {
+  width: 44px; height: 36px; border-radius: 10px; font-size: 15px;
+  color: var(--brand-deep); border-color: var(--line-strong);
+}
+.rd-dock.collapsed .rd-dock-head { height: 48px; }
+.rd-dock .rd-dock-status { font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rd-dock .rd-submit-inline { min-height: 36px; padding: 0 12px; }
+
+/* ---------- 4. 收藏页：分段行内并遮中文开关 + 命中区 ---------- */
+.fav-seg-bar { align-items: stretch; }
+.fav-seg { min-height: 44px; padding: 10px 0; border-radius: var(--radius-sm); }
+.fav-seg-bar .fav-hide-sw {
+  flex: none; display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12.5px; color: var(--ink-2); padding: 0 2px 0 8px;
+}
+.fav-seg-bar .fav-hide-sw input { width: 18px; height: 18px; }
+.fav-chip { padding: 9px 12px; }
+
+/* ---------- 5. 全局命中区/紧凑杂项 ---------- */
+.test-btn { min-height: 40px; }
+.hs-ctl button { width: 36px; height: 28px; }
+#today-cfg-btn { width: 36px; height: 36px; }
+.reading-stats { gap: 6px; margin-bottom: 10px; }
+.reading-stats .rs-item { padding: 8px 4px; }
+#view-reading .subhead, #view-listening .subhead { padding: 8px 2px; }
+
+/* 内容层级：不新增可排序节点，避免破坏设备上保存的首页顺序。 */
+#home-main .set-entries { padding-top: 10px; }
+#home-main .set-entries::before {
+  content: '学习与练习'; display: block; padding: 2px 16px 10px;
+  font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--ink-3);
+}
+#home-main .set-entries #listening-card { border-top: 8px solid var(--page-bg); }
+#home-main .set-entries #home-todo-card { border-top: 8px solid var(--page-bg); }
+.wc-word { font-size: 1.3em; line-height: 1.35; }
+.wc-cn { line-height: 1.75; }
+.wc-detail { line-height: 1.75; }
+.wcsheet { border-radius: 20px 20px 0 0; }
+#settings-home .set-entry { min-height: 66px; }
+.test-btn, .rd-tool, .rd-speak { min-height: 44px; }
+#fav-filters { position: static; margin-top: 0; padding-top: 4px; }
+
+/* 手机阅读只保留返回/文章标题栏，安全区不变，底部四入口仍在。 */
+@media (max-width: 1099px) {
+  body[data-view='reading'] #topbar { display: none; }
+  body[data-view='reading'] main { padding-top: calc(var(--safe-top) + 8px); }
+  body[data-view='reading'] #view-reading > .subhead { top: var(--safe-top); }
+  .rd-dock-head { flex-wrap: wrap; }
+  .rd-nav, .rd-dot { flex-shrink: 0; }
+  .rd-dots { gap: 4px; }
+  .rd-nav { width: 34px; }
+  .rd-dot { width: 28px; }
+  .rd-nav.rd-dock-toggle { width: 44px; height: 44px; }
+  .rd-dock-status { flex-basis: auto; }
+}
+
+/* ---------- 6. 桌面 ≥1100：hero 占整行已有规则；补 hero 悬停与阅读统计对齐 ---------- */
+@media (min-width: 1100px) {
+  #home-words-card.home-hero:hover { border-color: var(--brand); }
+  #home-words-card.home-hero .set-entry-arrow { padding: 9px 16px; }
 }

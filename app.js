@@ -1482,12 +1482,16 @@ function nav(view) {
   }
   if (currentView === 'favorites' && view !== 'favorites') saveFavSegPos(false); // 按分段保存（离开收藏页时落盘）
   currentView = view;
+  document.body.dataset.view = view; // 界面层标记：阅读页合并顶部栏，不改变导航状态
   $$('.view').forEach((v) => v.classList.add('hidden'));
   const el = $('#view-' + view);
   if (!el) return; // 视图不存在（旧别名已在上面映射）
   if (el) el.classList.remove('hidden');
+  // 首页的子功能页（学习/阅读/听力/写作都从首页入口进）：底栏「首页」tab 保持高亮，
+  // 让用户知道按它能回到入口来源页（原来这四类页面底栏一个都不亮）
+  const homeTabViews = ['study', 'reading', 'listening', 'writing'];
   $$('#tabbar .tab').forEach((b) => {
-    b.classList.toggle('active', b.dataset.nav === view || (view === 'study' && b.dataset.nav === 'units'));
+    b.classList.toggle('active', b.dataset.nav === view || (homeTabViews.includes(view) && b.dataset.nav === 'units'));
   });
   if (TAB_VIEWS.includes(view)) window.scrollTo({ top: 0 });
   if (view === 'units') {
@@ -3956,16 +3960,19 @@ const Reading = (() => {
     box._picks = picks; // submitReading 从这里读选择
     box._qi = (sess && sess.qi) || 0;        // 单题底部作答：当前题号
     box.innerHTML = `
-      <div class="rd-src-line">${it.src} · 约 ${it.words} 词 · ${questions.length} 题
-        <button class="rd-speak" id="rd-speak"> 朗读</button>
-        <span class="rd-tts-ctrl hidden" id="rd-tts-ctrl">
-          <button class="rd-speak" id="rd-pause">暂停</button>
-          <button class="rd-speak" id="rd-stop">停止</button>
+      <div class="rd-topbar">
+        <span class="rd-src-line">${it.src} · 约 ${it.words} 词 · ${questions.length} 题</span>
+        <span class="rd-tts">
+          <button class="rd-speak" id="rd-speak">朗读</button>
+          <span class="rd-tts-ctrl hidden" id="rd-tts-ctrl">
+            <button class="rd-speak" id="rd-pause">暂停</button>
+            <button class="rd-speak" id="rd-stop">停止</button>
+          </span>
         </span>
-      </div>
-      <div class="rd-tools">
-        <button class="rd-tool" id="rd-cn-sw">对照译文</button>
-        <button class="rd-tool" id="rd-fullai">全文精讲</button>
+        <span class="rd-tools">
+          <button class="rd-tool" id="rd-cn-sw">对照译文</button>
+          <button class="rd-tool" id="rd-fullai">全文精讲</button>
+        </span>
       </div>
       <div class="rd-ai-box hidden" id="rd-fullai-box"></div>
       <div class="rd-text" id="rd-text"></div>
