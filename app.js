@@ -2713,10 +2713,13 @@ function renderFavorites() {
   if (!box) return;
   const hideCn = !!state.settings.hideCn; // 遮中文（与学习页联动）
   // 收藏词卡要拿词对象：涉及单元的分片未加载时先拉齐，拉到新的才重渲（失败死循环防护）
+  // ⚠️ 判定必须是「本次真的拉到新分片（loadedUnits 增大）」——不能写成「有任何一个单元已加载」：
+  //    多单元收藏时若部分成功、部分失败冷却，后者条件恒真 → 递归重渲无限循环（主线程死锁，2026-11-09 实测）
   const needUnits = unitIdsWithKeys(state.favorites);
   if (needUnits.some((id) => !loadedUnits.has(id))) {
+    const loadedBefore = loadedUnits.size;
     ensureUnits(needUnits).then(() => {
-      if (needUnits.some((id) => loadedUnits.has(id))) renderFavorites();
+      if (loadedUnits.size > loadedBefore) renderFavorites();
     });
   }
   if (!WORD_INDEX) ensureIndex().then(() => { if (WORD_INDEX) renderFavorites(); }); // 自由词与词库内词的去重靠词头索引
@@ -2967,8 +2970,9 @@ function renderWrongList() {
   // 错词卡片要拿词对象：涉及单元的分片未加载时先拉齐，再重渲一次（首次先用已加载的渲染，不等网络）
   const needUnits = unitIdsWithKeys(state.wrong);
   if (needUnits.some((id) => !loadedUnits.has(id))) {
+    const loadedBefore = loadedUnits.size;
     ensureUnits(needUnits).then(() => {
-      if (needUnits.some((id) => loadedUnits.has(id))) renderWrongList(); // 拉到新的才重渲（失败死循环防护）
+      if (loadedUnits.size > loadedBefore) renderWrongList(); // 本次真拉到新分片才重渲（部分失败时不递归，2026-11-09）
     });
   }
   box.innerHTML = '';
@@ -3156,8 +3160,104 @@ $('#settings-home').addEventListener('click', (e) => {
       try { Sync.refreshPartnerStatus(); } catch (e2) { /* 静默 */ }
     }
   }
+  if (b.dataset.setpanel === 'offline') { renderWordsOfflineUI(); }
 });
 $$('.set-panel [data-setback]').forEach((b) => b.addEventListener('click', () => showSetPanel(null)));
+
+/* ================= 离线词库（2026-11-09）
+   把全部单元分片 + 词头索引存进独立缓存区 sgwd-words-v1（SW 对分片改为缓存优先直读）。
+   断网/弱网时开单元、收藏、检验收藏不再依赖网络；个人数据（进度/收藏/错词）仍走云同步，不受影响。
+   增量续传：已缓存的跳过，失败的下次点「继续下载」只补缺的。 */
+const WORDS_CACHE_NAME = 'sgwd-words-v1';
+let woBusy = false;
+function wordsOfflineUrls() {
+  const ids = (DATA.units || []).map((u) => u && u.id).filter((n) => n);
+  return ['data/index.json'].concat(ids.map((id) => 'data/units/words_' + id + '.json'));
+}
+async function wordsOfflineCount() {
+  try {
+    if (!('caches' in window)) return 0;
+    const urls = wordsOfflineUrls();
+    if (urls.length < 10) return 0; // 词表骨架没就绪时别误报「已下载」
+    const c = await caches.open(WORDS_CACHE_NAME);
+    const ks = await c.keys();
+    const have = new Set(ks.map((r) => { try { return new URL(r.url).pathname; } catch (e) { return ''; } }));
+    return urls.filter((u) => have.has(new URL(u, location.href).pathname)).length;
+  } catch (e) { return 0; }
+}
+async function renderWordsOfflineUI() {
+  const st = $('#wo-status'), dl = $('#wo-download'), cl = $('#wo-clear');
+  if (!st || !dl) return;
+  if (!('caches' in window)) { st.textContent = '当前浏览器不支持离线缓存'; dl.classList.add('hidden'); return; }
+  const urls = wordsOfflineUrls();
+  const total = urls.length;
+  if (total < 10) { st.textContent = '词库列表还没加载好，稍后再进这个页面看看'; return; }
+  const n = await wordsOfflineCount();
+  if (n >= total) {
+    st.textContent = '✅ 已下载完成（' + n + '/' + total + '）：本机直读，没网也能背单词';
+    dl.textContent = '重新下载（词库更新后用）';
+    dl.classList.remove('hidden');
+    if (cl) cl.classList.remove('hidden');
+  } else if (n > 0) {
+    st.textContent = '已下载 ' + n + '/' + total + '（点「继续下载」只补没下完的部分）';
+    dl.textContent = '继续下载（剩余约 ' + Math.max(1, Math.round((total - n) * 120 / 1024)) + 'MB）';
+    dl.classList.remove('hidden');
+    if (cl) cl.classList.add('hidden');
+  } else {
+    st.textContent = '尚未下载：下载后开单元／收藏／检验直接读本机，弱网不转圈';
+    dl.textContent = '下载全部词库（约 11.3MB）';
+    dl.classList.remove('hidden');
+    if (cl) cl.classList.add('hidden');
+  }
+}
+async function downloadWordsOffline() {
+  if (woBusy) return;
+  if (!('caches' in window)) { toast('当前浏览器不支持离线缓存'); return; }
+  const urls = wordsOfflineUrls();
+  const total = urls.length;
+  if (total < 10) { toast('词库列表还没加载好，稍后再试'); return; }
+  woBusy = true;
+  const dl = $('#wo-download'), st = $('#wo-status'), wrap = $('#wo-bar-wrap'), bar = $('#wo-bar'), cl = $('#wo-clear');
+  if (dl) { dl.disabled = true; dl.textContent = '下载中…'; }
+  if (cl) cl.classList.add('hidden');
+  if (wrap) wrap.classList.remove('hidden');
+  let done = 0, fail = 0;
+  const paint = () => {
+    if (bar) bar.style.width = Math.round(done / total * 100) + '%';
+    if (st) st.textContent = '下载中 ' + done + '/' + total + (fail ? '（失败 ' + fail + ' 个，稍后可续传）' : '');
+  };
+  try {
+    const cache = await caches.open(WORDS_CACHE_NAME);
+    paint();
+    let i = 0;
+    const worker = async () => {
+      while (i < urls.length) {
+        const u = urls[i++];
+        try {
+          const has = await cache.match(u, { ignoreSearch: true });
+          if (has) { done++; paint(); continue; }
+          const res = await fetch(u, { cache: 'no-cache' });
+          if (res && res.ok) { await cache.put(u, res.clone()); done++; } else fail++;
+        } catch (e) { fail++; }
+        paint();
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]); // 4 路并发
+  } catch (e) { toast('下载出错：' + String((e && e.message) || e).slice(0, 40), 2600); }
+  woBusy = false;
+  if (dl) dl.disabled = false;
+  await renderWordsOfflineUI();
+  if (!fail) toast('词库已下载完成，本机直读');
+  else toast('有 ' + fail + ' 个没下成功，检查网络后再点「继续下载」', 3000);
+}
+const woDl = $('#wo-download');
+if (woDl) woDl.addEventListener('click', downloadWordsOffline);
+const woCl = $('#wo-clear');
+if (woCl) woCl.addEventListener('click', async () => {
+  if (!confirm('删除离线词库？\n之后开单元/收藏要联网下载；学习进度和收藏内容不受影响。')) return;
+  try { await caches.delete(WORDS_CACHE_NAME); toast('已删除离线词库'); } catch (e) { toast('删除失败，稍后再试'); }
+  renderWordsOfflineUI();
+});
 
 $('#btn-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });

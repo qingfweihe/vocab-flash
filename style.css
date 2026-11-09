@@ -477,6 +477,9 @@ button, .unit-card, .todo-card, .tab, .rd-item, .sr-item, .today-item, .ls-paper
 }
 /* 详情还没加载成功的占位卡（分片拉取失败时可见可重试，2026-11-08） */
 .wc-missing { border: 1px dashed rgba(0, 0, 0, .28); opacity: .82; cursor: default; }
+/* 离线词库下载进度条（2026-11-09） */
+.wo-bar-wrap { margin-top: 10px; height: 8px; border-radius: 5px; background: rgba(0, 0, 0, .08); overflow: hidden; }
+.wo-bar { height: 100%; width: 0; border-radius: 5px; background: var(--accent, #d98aa8); transition: width .25s ease; }
 .wc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; }
 .wc-main { flex: 1; min-width: 0; }
 .wc-word-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }

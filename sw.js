@@ -1,7 +1,10 @@
 /* Service Worker — 静态资源缓存优先；词表网络优先（保证数据更新能到达手机）
-   听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB） */
-const CACHE = 'sgwd-20261108-234203';
+   听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB）
+   词库全量离线包单独放 sgwd-words-* 缓存区（2026-11-09）：用户在设置里点「下载全部词库」后，
+   分片请求改为缓存优先直读本地（发版不清除）；未下载时行为与原来完全一致（网络优先+回落） */
+const CACHE = 'sgwd-20261109-123839';
 const AUDIO_CACHE = 'sgwd-audio-v1';
+const WORD_CACHE = 'sgwd-words-v1'; // 全量词库离线包（93 分片 + index.json，约 11.3MB）
 const ASSETS = [
   './',
   './index.html',
@@ -30,8 +33,8 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      // 只清旧版本主缓存；音频缓存（sgwd-audio-*）保留
-      Promise.all(keys.filter((k) => k !== CACHE && k.indexOf('sgwd-audio-') !== 0).map((k) => caches.delete(k)))
+      // 只清旧版本主缓存；音频缓存（sgwd-audio-*）与词库离线包（sgwd-words-*）保留
+      Promise.all(keys.filter((k) => k !== CACHE && k.indexOf('sgwd-audio-') !== 0 && k.indexOf('sgwd-words-') !== 0).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -79,6 +82,29 @@ self.addEventListener('fetch', (e) => {
     || url.pathname.endsWith('/version.json')
     || url.pathname.indexOf('/data/listening/') >= 0
     || url.pathname.indexOf('/data/units/') >= 0;
+
+  // 单元分片：已下载全量词库离线包时缓存优先（本地秒读，弱网/离线可用）；否则维持网络优先+回落
+  if (url.pathname.indexOf('/data/units/') >= 0) {
+    e.respondWith(
+      caches.open(WORD_CACHE).then((wc) =>
+        wc.match(e.request, { ignoreSearch: true }).then((hit) => {
+          if (hit) return hit;
+          return fetch(e.request).then((res) => {
+            if (res && res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(e.request, copy));
+            }
+            return res;
+          }).catch(() =>
+            caches.match(e.request, { ignoreSearch: true }).then((h) =>
+              h || new Response('{"units":[]}', { headers: { 'Content-Type': 'application/json' } })
+            )
+          );
+        })
+      )
+    );
+    return;
+  }
 
   if (isData) {
     // 词表/索引/听力数据：网络优先，成功即刷新缓存；离线回落缓存

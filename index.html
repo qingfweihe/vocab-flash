@@ -379,6 +379,11 @@
         <span class="set-entry-main"><b>数据备份</b><i>导出 · 导入 · 清空进度</i></span>
         <span class="set-entry-arrow">›</span>
       </button>
+      <button class="set-entry" data-setpanel="offline">
+        <span class="ico set-entry-ico" style="--ico:var(--ico-cloud)"></span>
+        <span class="set-entry-main"><b>离线词库</b><i>全量下载约 11.3MB · 没网也能背 · 收藏秒开</i></span>
+        <span class="set-entry-arrow">›</span>
+      </button>
       <button class="set-entry" id="set-entry-dailycfg">
         <span class="ico set-entry-ico" style="--ico:var(--ico-target)"></span>
         <span class="set-entry-main"><b>每日任务</b><i>每天背多少词 · 复习上限 · 各学习项开关</i></span>
@@ -604,6 +609,22 @@
       <div class="set-note">
         进度保存在本机浏览器中。换手机或清除 Safari 数据前，请先「导出备份」保存文件。
       </div>
+    </div>
+  </div>
+
+  <div id="setpanel-offline" class="set-panel hidden">
+    <div class="subhead"><button class="back-btn" data-setback>‹ 设置</button><div class="subhead-title">离线词库</div></div>
+    <div class="settings-box">
+      <div class="set-section-title">把词库下载到本机</div>
+      <div class="set-note">
+        全部 93 个单元 + 词头索引，合计约 <b>11.3MB</b>。下载后：开单元 / 收藏 / 检验收藏直接读本机
+        ——弱网不再转圈缺词，完全没网也能背单词。<br>
+        学习进度、收藏、错词仍走云端同步，<b>不受影响</b>；换手机登录照样全部恢复。
+      </div>
+      <div id="wo-status" class="set-note" style="margin-top:10px">检查中…</div>
+      <div id="wo-bar-wrap" class="wo-bar-wrap hidden"><div id="wo-bar" class="wo-bar"></div></div>
+      <button class="ghost-btn" id="wo-download" style="margin-top:10px">下载全部词库（约 11.3MB）</button>
+      <button class="ghost-btn hidden" id="wo-clear" style="margin-top:6px">删除离线词库（释放约 11.3MB）</button>
     </div>
   </div>
   </section>
