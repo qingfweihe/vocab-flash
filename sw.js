@@ -2,7 +2,7 @@
    听力音频单独放 sgwd-audio-* 缓存区：按需下载、版本升级不清除（否则每次发版都要重下几百 MB）
    词库全量离线包单独放 sgwd-words-* 缓存区（2026-11-09）：用户在设置里点「下载全部词库」后，
    分片请求改为缓存优先直读本地（发版不清除）；未下载时行为与原来完全一致（网络优先+回落） */
-const CACHE = 'sgwd-20261112-155001';
+const CACHE = 'sgwd-20261112-183507';
 const AUDIO_CACHE = 'sgwd-audio-v1';
 const WORD_CACHE = 'sgwd-words-v1'; // 全量词库离线包（93 分片 + index.json，约 11.3MB）
 const ASSETS = [

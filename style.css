@@ -1827,6 +1827,24 @@ html.dark .rd-topbar { background: var(--card); border-color: var(--line-strong)
   }
 }
 
+/* ---- C. 平板横屏全站深度适配（2026-11-12 二轮，Redmi Pad Pro 1280×800 实测体检后加） ---- */
+@media (min-width: 1024px) and (orientation: landscape), (min-width: 1100px) {
+  /* 背单词词表：双列（词卡高度自适应，与收藏页同一手法），容器放宽避免列太窄 */
+  body[data-view='study'] #view-study { max-width: 1020px; }
+  #word-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-items: start; }
+  #word-list .word-card { margin-bottom: 0; }
+
+  /* 阅读篇目列表：双列，分组标题整行跨列 */
+  #reading-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  #reading-list > .set-note { grid-column: 1 / -1; }
+  #reading-list .rd-item { margin-bottom: 0; }
+
+  /* 触控目标增高：只抬真控制按钮（原 27–28px）；mini-btn 兼做行内标签，不能一刀切 */
+  #ls-back5, #ls-play, #ls-fwd5, #ls-rate, #ls-loop,
+  #ls-en, #ls-cn, #ls-mode-follow, #ls-mode-full,
+  .wrt-catb, #btn-mark-all, #rv-promote-all { min-height: 40px; }
+}
+
 /* ---- B. 宽屏阅读做题：左文章 / 右题目面板 ---- */
 @media (min-width: 1024px) and (orientation: landscape), (min-width: 1100px) {
   body[data-view='reading'] main { max-width: 1200px; }
