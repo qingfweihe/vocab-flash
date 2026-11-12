@@ -1800,3 +1800,77 @@ html.dark .rd-topbar { background: var(--card); border-color: var(--line-strong)
   #home-words-card.home-hero:hover { border-color: var(--brand); }
   #home-words-card.home-hero .set-entry-arrow { padding: 9px 16px; }
 }
+
+/* ---------- 平板/宽屏阅读适配（2026-11-12） ----------
+   原则同 1100 桌面块：手机布局零变化——所有规则都关在宽度媒体查询里，纯 CSS 不动 DOM。
+   字号全部走 var(--fs-base) 相对值，尊重设置页的字号调节。
+   A) 768–1099 竖屏平板带：阅读保持上下排，只放大字号行距、加大点按目标；
+      做题面板避开左导航条、对齐内容区中心（复用 #toast 的定位算法）。
+   B) ≥1024 横屏或 ≥1100：阅读做题 = 左边整篇文章 / 右边题目面板 sticky 跟随，
+      一屏看全不再上下滚；交卷后结果与回看面板仍在同一屏左右各半。 */
+
+/* ---- A. 竖屏平板带（768–1099）：阅读加宽放大 ---- */
+@media (min-width: 768px) and (max-width: 1099px) {
+  body[data-view='reading'] #view-reading .rd-text {
+    font-size: var(--fs-base);
+    line-height: 1.85;
+  }
+  body[data-view='reading'] #view-reading .rd-q { font-size: calc(var(--fs-base) + 0.5px); }
+  body[data-view='reading'] #view-reading .rd-opt {
+    font-size: calc(var(--fs-base) - 1px);
+    padding: 13px 14px;
+  }
+  /* 做题面板避开左导航条、对齐内容区中心 */
+  body[data-view='reading'] .rd-dock {
+    max-width: min(720px, calc(100vw - var(--rail-w) - 28px));
+    left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2);
+  }
+}
+
+/* ---- B. 宽屏阅读做题：左文章 / 右题目面板 ---- */
+@media (min-width: 1024px) and (orientation: landscape), (min-width: 1100px) {
+  body[data-view='reading'] main { max-width: 1200px; }
+  body[data-view='reading'] #view-reading { max-width: 1100px; }
+  body[data-view='reading'] #view-reading .rd-text {
+    font-size: var(--fs-base);
+    line-height: 1.85;
+  }
+  body[data-view='reading'] #view-reading .rd-q { font-size: calc(var(--fs-base) + 0.5px); }
+  body[data-view='reading'] #view-reading .rd-opt {
+    font-size: calc(var(--fs-base) - 1px);
+    padding: 13px 14px;
+  }
+
+  /* 做题态网格：顶栏横跨两列，文章/精讲/结果/动作依文档流排左列，
+     题目面板固定右列（第 2 行起跨 6 行——隐藏元素不占行，空行行高为 0 无缝隙） */
+  #reading-quiz.quiz-on {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+    column-gap: 26px;
+    align-items: start;
+    /* 原为固定面板预留的 38vh 底距，分栏后取消 */
+    padding-bottom: var(--sp-4);
+  }
+  #reading-quiz.quiz-on > .rd-topbar { grid-column: 1 / -1; }
+  #reading-quiz.quiz-on > .rd-ai-box,
+  #reading-quiz.quiz-on > .rd-text,
+  #reading-quiz.quiz-on > #rd-result,
+  #reading-quiz.quiz-on > .rd-actions { grid-column: 1; }
+  #reading-quiz.quiz-on > .rd-dock {
+    grid-column: 2;
+    grid-row: 2 / span 6;
+    align-self: start;
+    /* 由「贴底悬浮」改为「右栏 sticky 跟随」 */
+    position: sticky;
+    top: calc(var(--safe-top) + 64px);
+    left: auto;
+    width: auto;
+    max-width: none;
+    transform: none;
+    bottom: auto;
+    max-height: calc(100vh - var(--safe-top) - 100px);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    box-shadow: var(--shadow-2);
+  }
+}
